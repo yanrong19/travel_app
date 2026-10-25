@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { ATTRACTIONS } from '../data/attractions';
 import { DESTINATIONS } from '../data/destinations';
+import { REGIONS } from '../data/regions';
 import { BottomTabs, Footer, TopNav } from '../components/Chrome';
 import { CREDITS, photo } from '../lib/photos';
 import { useMedia } from '../lib/useMedia';
@@ -8,6 +9,8 @@ import { useMedia } from '../lib/useMedia';
 const LANDMARKS = DESTINATIONS.flatMap((d) => d.landmarks.map((l) => ({ ...l, country: d.name })));
 const nameOf = (id: string) => {
   if (id === 'hero') return 'Japan page';
+  const region = REGIONS.find((r) => r.photo === id && id.startsWith('region-'));
+  if (region) return `${region.name}, Japan`;
   const l = LANDMARKS.find((x) => x.photo === id && !ATTRACTIONS.some((a) => a.id === id));
   return l ? `${l.name}, ${l.country}` : ATTRACTIONS.find((a) => a.id === id)?.name ?? id;
 };
