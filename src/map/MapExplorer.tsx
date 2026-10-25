@@ -5,14 +5,15 @@ import { geoBounds } from 'd3-geo';
 import type { Attraction } from '../data/types';
 import { ATTRACTIONS } from '../data/attractions';
 import { AREA_COUNTS, JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, slug, type Level, type MapTarget, type Place } from '../data/places';
+import { regionBounds } from '../data/regions';
 import { prefersReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { readings } from '../lib/factors';
 import { lensRating, type LensId } from '../lib/lens';
 import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
-import { GlobeCard } from '../components/GlobeCard';
-import { DESTINATIONS, countrySlugOf, destinationByWorldId, worldShape, type Destination } from '../data/destinations';
+import { GlobeCard, type CardSubject } from '../components/GlobeCard';
+import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
 import type { Insets } from './camera';
 
 /** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
@@ -89,15 +90,25 @@ interface Props {
   fitPins?: boolean;
   /** Embedded in a scrolling page: Ctrl or Cmd + scroll zooms, two fingers pan on phones. */
   embed?: boolean;
-  /** A coming-soon country to pin its landmark card to (country level). */
-  pinned?: Destination | null;
+  /** A coming-soon country, or a region of Japan, to pin its card to (country level). */
+  pinned?: CardSubject | null;
+  /** Prefectures to light on `fl-prefs`; while any are set they replace the map's own hover. */
+  hotPrefs?: number[];
+  /** Prefectures the country-level camera frames instead of the whole of Japan. */
+  focusPrefs?: number[] | null;
   /** The page scrolls on the wheel: the map zooms only with Ctrl + wheel (and trackpad pinch). */
   wheelScrollsPage?: boolean;
   /** A plain wheel over the map while `wheelScrollsPage` is on. */
   onWheelPassThrough?: () => void;
   /** Where the map's attribution goes instead of the map corner, for when the map can be covered. */
   attributionHost?: HTMLElement | null;
+  /** Phone: the room under the docked card, for whatever sits at the bottom of the page. */
+  cardBottom?: number;
   onHover: (id: string | null) => void;
+  /** The prefecture under the pointer at country level, so a list can follow the map. */
+  onPrefHover?: (code: number | null) => void;
+  /** A prefecture clicked at country level. Without it, Tokyo flies in and the rest get a notice. */
+  onPrefPick?: (code: number) => void;
   onCountry: (slug: string) => void;
   onRegion: () => void;
   onArea: (slug: string) => void;
@@ -110,7 +121,24 @@ type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: numb
 const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function MapExplorer(props: Props) {
-  const { target, insets, pins, hoverId, selectedId = null, lens = 'any', fitPins = false, embed = false, pinned = null, wheelScrollsPage = false, attributionHost = null } = props;
+  const {
+    target,
+    insets,
+    pins,
+    hoverId,
+    selectedId = null,
+    lens = 'any',
+    fitPins = false,
+    embed = false,
+    pinned = null,
+    hotPrefs,
+    focusPrefs = null,
+    wheelScrollsPage = false,
+    attributionHost = null,
+    cardBottom = 92,
+  } = props;
+  const cardBottomRef = useRef(cardBottom);
+  cardBottomRef.current = cardBottom;
   const wrap = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const tether = useRef<SVGSVGElement>(null);
@@ -129,6 +157,12 @@ export function MapExplorer(props: Props) {
   const spin = useRef(0);
   const insetsRef = useRef(insets);
   insetsRef.current = insets;
+  // The one shape the map itself has under the pointer, so the next hover can put it back.
+  const hovered = useRef<{ source: string; id: number } | null>(null);
+  const hotKey = (hotPrefs ?? []).join(',');
+  const hotPrefsRef = useRef(hotPrefs ?? []);
+  hotPrefsRef.current = hotPrefs ?? [];
+  const focusKey = (focusPrefs ?? []).join(',');
 
   // The tour: one destination lit at a time while the globe turns.
   const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
@@ -145,9 +179,12 @@ export function MapExplorer(props: Props) {
   const toured = useRef(false);
   const flightId = useRef(0);
   const tourOn = !embed && target.level === 'world';
-  const cardDest = tourOn ? (touring ? current : null) : pinned;
+  const tourDest: Destination | null = tourOn && touring ? current : null;
+  const cardDest: CardSubject | null = tourOn ? tourDest : pinned;
   const cardRef = useRef(cardDest);
   cardRef.current = cardDest;
+  // Regions share the card but have no country shape of their own to light.
+  const litWid = cardDest ? destinationBySlug(cardDest.slug)?.worldId : undefined;
 
   // ---- Create the map once ----
   useEffect(() => {
@@ -305,7 +342,7 @@ export function MapExplorer(props: Props) {
     let y: number;
     if (narrow) {
       x = (W - cw) / 2;
-      y = H - ch - 92;
+      y = H - ch - cardBottomRef.current;
     } else {
       // Japan's card clears the Tokyo pin's label on the right.
       const gapRight = d.live ? 210 : 70;
@@ -330,10 +367,10 @@ export function MapExplorer(props: Props) {
   }
 
   // ---- The tour ----
-  function highlight(d: Destination | null) {
+  function highlight(wid: string | undefined) {
     const map = mapRef.current;
     if (!map || !map.getSource('fl-dest')) return;
-    DEST_SHAPES.features.forEach((f) => map.setFeatureState({ source: 'fl-dest', id: f.id }, { current: f.properties.wid === d?.worldId }));
+    DEST_SHAPES.features.forEach((f) => map.setFeatureState({ source: 'fl-dest', id: f.id }, { current: f.properties.wid === wid }));
   }
 
   /** Light another destination facing the viewer; any one will do, as long as it is on this side of the globe. */
@@ -363,10 +400,10 @@ export function MapExplorer(props: Props) {
 
   useEffect(() => {
     if (!ready) return;
-    highlight(cardDest);
+    highlight(litWid);
     place();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cardDest, ready]);
+  }, [cardDest, litWid, ready]);
 
   // Leaving the globe ends the tour; coming back starts it again five seconds after landing.
   useEffect(() => {
@@ -387,7 +424,7 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom]);
 
   // Ticker widths change once the web fonts arrive: measure again.
   useEffect(() => {
@@ -413,11 +450,39 @@ export function MapExplorer(props: Props) {
     TOKYO_AREAS.forEach((a) => map.setFeatureState({ source: 'fl-areas', id: Number(a.id) }, { selected: a.id === target.area?.id }));
   }, [ready, target.level, target.area?.id]);
 
+  // ---- Prefectures lit from the outside: the hovered set, and the focused region ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !map.getSource('fl-prefs')) return;
+    const codes = hotKey ? hotKey.split(',').map(Number) : [];
+    // The list has taken over: drop whatever the map had under the pointer.
+    if (codes.length && hovered.current?.source === 'fl-prefs') {
+      map.setFeatureState(hovered.current, { hover: false });
+      hovered.current = null;
+    }
+    codes.forEach((id) => map.setFeatureState({ source: 'fl-prefs', id }, { hover: true }));
+    return () => {
+      if (!mapRef.current) return;
+      codes.forEach((id) => map.setFeatureState({ source: 'fl-prefs', id }, { hover: false }));
+    };
+  }, [hotKey, ready]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !map.getSource('fl-prefs')) return;
+    const codes = focusKey ? focusKey.split(',').map(Number) : [];
+    codes.forEach((id) => map.setFeatureState({ source: 'fl-prefs', id }, { focus: true }));
+    return () => {
+      if (!mapRef.current) return;
+      codes.forEach((id) => map.setFeatureState({ source: 'fl-prefs', id }, { focus: false }));
+    };
+  }, [focusKey, ready]);
+
   // ---- Camera: fly whenever the place, the visible pins or the free area changes ----
   const fitList = fitPins && target.level === 'region' ? pins : undefined;
   const fitKey = fitList ? fitList.map((a) => a.id).sort().join(',') : '';
   const insetKey = `${insets.top},${insets.right},${insets.bottom},${insets.left}`;
-  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}|${insetKey}`;
+  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}|${insetKey}`;
   const lastKey = useRef('');
 
   useEffect(() => {
@@ -471,8 +536,10 @@ export function MapExplorer(props: Props) {
     let bearing = 0;
     let maxZoom = 16;
     if (t.level === 'country' && t.country) {
-      if (t.country.id === JAPAN_ID) bounds = JAPAN_BOUNDS;
-      else {
+      if (t.country.id === JAPAN_ID) {
+        bounds = (focusPrefs?.length && (regionBounds(focusPrefs) as LngLatBoundsLike | null)) || JAPAN_BOUNDS;
+        maxZoom = focusPrefs?.length ? 7.5 : 6;
+      } else {
         const [[w, s], [e, n]] = geoBounds(t.country);
         if (e <= w) {
           // Shapes across the date line just get centred.
@@ -483,8 +550,8 @@ export function MapExplorer(props: Props) {
           [w, s],
           [e, n],
         ];
+        maxZoom = 6;
       }
-      maxZoom = 6;
     } else if (t.level === 'region') {
       const list = fitList && fitList.length ? (all ? fitList : corePins(fitList)) : null;
       bounds = list
@@ -526,11 +593,14 @@ export function MapExplorer(props: Props) {
     const map = mapRef.current;
     if (!map || !ready) return;
     type Ev = { features?: MapGeoJSONFeature[]; point: { x: number; y: number } };
-    let hovered: { source: string; id: number } | null = null;
     const setHover = (f: MapGeoJSONFeature | null, source: string) => {
-      if (hovered) map.setFeatureState(hovered, { hover: false });
-      hovered = f && f.id != null ? { source, id: Number(f.id) } : null;
-      if (hovered) map.setFeatureState(hovered, { hover: true });
+      const was = hovered.current;
+      if (was) map.setFeatureState(was, { hover: false });
+      // While a list drives the prefecture lighting, the map's own single-shape hover stands aside.
+      const taken = source === 'fl-prefs' && !!hotPrefsRef.current.length;
+      const next = f && f.id != null && !taken ? { source, id: Number(f.id) } : null;
+      hovered.current = next;
+      if (next) map.setFeatureState(next, { hover: true });
     };
     const showTip = (e: Ev, title: string, sub: string, pointer: boolean) => {
       map.getCanvas().style.cursor = pointer ? 'pointer' : '';
@@ -543,6 +613,7 @@ export function MapExplorer(props: Props) {
     };
     const leave = () => {
       setHover(null, '');
+      handlers.current.onPrefHover?.(null);
       if (tip.current) tip.current.dataset.on = '';
       map.getCanvas().style.cursor = '';
     };
@@ -557,6 +628,7 @@ export function MapExplorer(props: Props) {
     const onPrefMove = (e: Ev) => {
       const f = e.features?.[0];
       if (!f) return;
+      handlers.current.onPrefHover?.(Number(f.id));
       setHover(f, 'fl-prefs');
       const isTokyo = f.properties.fid === TOKYO_PREF_ID;
       showTip(e, f.properties.name, isTokyo ? `${ATTRACTIONS.length} attractions checked` : 'Not mapped yet', true);
@@ -575,7 +647,9 @@ export function MapExplorer(props: Props) {
     const onPrefClick = (e: Ev) => {
       const f = e.features?.[0];
       if (!f) return;
-      if (f.properties.fid === TOKYO_PREF_ID) handlers.current.onRegion();
+      const pick = handlers.current.onPrefPick;
+      if (pick) pick(Number(f.id));
+      else if (f.properties.fid === TOKYO_PREF_ID) handlers.current.onRegion();
       else handlers.current.onNotice(`${f.properties.name} isn’t mapped yet. Tokyo is the first prefecture with checked attractions.`);
     };
     const onAreaClick = (e: Ev) => {
@@ -680,7 +754,7 @@ export function MapExplorer(props: Props) {
             ref={card}
             dest={cardDest ?? current}
             mode={tourOn ? 'tour' : 'pinned'}
-            onOpen={() => cardDest && handlers.current.onCountry(countrySlugOf(cardDest))}
+            onOpen={() => tourDest && handlers.current.onCountry(countrySlugOf(tourDest))}
             onTokyo={() => handlers.current.onRegion()}
           />
         </>
@@ -738,6 +812,8 @@ function addOurLayers(map: MapLibreMap) {
   map.addSource('fl-dest', { type: 'geojson', data: DEST_SHAPES });
   const hover = ['boolean', ['feature-state', 'hover'], false];
   const lit = ['boolean', ['feature-state', 'current'], false];
+  // A region of Japan the list has opened: its prefectures stay lit while the camera holds them.
+  const focus = ['boolean', ['feature-state', 'focus'], false];
 
   map.addLayer(
     {
@@ -785,8 +861,9 @@ function addOurLayers(map: MapLibreMap) {
       type: 'fill',
       source: 'fl-prefs',
       paint: {
-        'fill-color': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], C.cedar, C.ink],
-        'fill-opacity': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], ['case', hover, 0.85, 0.7], hover, 0.07, 0] as never,
+        'fill-color': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], C.cedar, ['any', hover, focus], C.cedar, C.ink] as never,
+        'fill-opacity': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], ['case', hover, 0.85, 0.7], hover, 0.3, focus, 0.18, 0] as never,
+        'fill-opacity-transition': { duration: 180 },
       },
     },
     firstSymbol,
@@ -796,7 +873,11 @@ function addOurLayers(map: MapLibreMap) {
       id: 'fl-pref-line',
       type: 'line',
       source: 'fl-prefs',
-      paint: { 'line-color': '#8fa3ad', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 0.5, 9, 1], 'line-opacity': 0.6 },
+      paint: {
+        'line-color': ['case', ['any', hover, focus], C.cedar, '#8fa3ad'] as never,
+        'line-width': ['case', ['any', hover, focus], 1.4, ['interpolate', ['linear'], ['zoom'], 4, 0.5, 9, 1]] as never,
+        'line-opacity': 0.6,
+      },
     },
     firstSymbol,
   );

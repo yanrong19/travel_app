@@ -4233,6 +4233,149 @@ h2:focus {
   color: var(--muted);
 }
 
+/* The region list in the right-hand panel at Japan level: an accordion, one region open. */
+.rlist {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  margin: 0 -6px;
+  padding: 2px 6px 6px;
+  overscroll-behavior: contain;
+}
+.rrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: var(--surface);
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.rrow:hover,
+.rrow.is-hot {
+  border-color: var(--cedar);
+}
+.rrow[aria-expanded='true'] {
+  background: var(--cedar-soft);
+  border-color: var(--cedar);
+}
+.rrow-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.rrow-text strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.rrow-ja {
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rrow-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.rrow.is-live .rrow-status {
+  color: var(--cedar);
+}
+.rrow-mark {
+  flex: none;
+  display: inline-flex;
+  color: var(--muted);
+  transition: rotate 0.2s var(--ease-out);
+}
+.rrow[aria-expanded='true'] .rrow-mark {
+  rotate: 180deg;
+  color: var(--cedar);
+}
+.rprefs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 4px 4px;
+}
+.rpref {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.rpref:hover,
+.rpref.is-hot {
+  border-color: var(--cedar);
+  background: var(--cedar-soft);
+}
+.rpref-live {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--cedar);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Phone: the same regions as a scrolling row of chips in the sheet's peek. */
+.rchips {
+  display: flex;
+  gap: 6px;
+  margin: 0 -16px;
+  padding: 2px 16px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rchips::-webkit-scrollbar {
+  display: none;
+}
+.rchip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rchip[aria-pressed='true'] {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.rchip[aria-pressed='true'] .live-dot {
+  background: #fff;
+}
+
 /* MapLibre's attribution, moved above the sheet: it rests just above the peek at the top of the
    page and ends at the bottom edge (above the tab bar on phones) once the guides are up. */
 .explore > .explore-attrib.maplibregl-ctrl-bottom-right {
@@ -4288,6 +4431,23 @@ h2:focus {
   }
   .gsheet-body {
     padding-bottom: 120px;
+  }
+  /* The chips have to fit the 90px strip with the heading and the cue, so everything tightens. */
+  .gsheet-head:has(.rchips) {
+    gap: 6px;
+    padding-top: 12px;
+  }
+  .gsheet-head:has(.rchips) .gsheet-intro h2 {
+    font-size: 18px;
+    line-height: 22px;
+  }
+  .rchips {
+    padding-bottom: 2px;
+  }
+  .rchip {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 }
 
@@ -4671,7 +4831,8 @@ button.area-card {
   height: 150px;
   margin-bottom: 10px;
 }
-.globe-fan img {
+.globe-fan img,
+.globe-fan .is-blank {
   position: absolute;
   top: 12px;
   width: 58%;
@@ -4680,6 +4841,20 @@ button.area-card {
   border: 3px solid #fff;
   object-fit: cover;
   box-shadow: 0 10px 24px -12px rgba(16, 25, 27, 0.5);
+}
+/* No photo for this subject yet: a quiet misty panel in its place. */
+.globe-fan .is-blank {
+  display: block;
+  background: linear-gradient(160deg, var(--mist), var(--control));
+}
+/* One photo (a region of Japan) sits centred and a little wider instead of fanning. */
+.globe-fan.is-solo img,
+.globe-fan.is-solo .is-blank {
+  left: 50%;
+  top: 6px;
+  width: 72%;
+  height: 134px;
+  translate: -50% 0;
 }
 .globe-fan .fan-0 {
   left: 0;

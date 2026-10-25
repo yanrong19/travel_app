@@ -2,9 +2,20 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { useNavigate, useParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
-import { AREA_COUNTS, JAPAN_ID, MAP_ROOT, TOKYO_PATH, WORLD_PATH, countryPath, slug, targetFromParams, type MapTarget } from '../data/places';
+import {
+  AREA_COUNTS,
+  JAPAN_ID,
+  MAP_ROOT,
+  TOKYO_PATH,
+  TOKYO_PREF_ID,
+  WORLD_PATH,
+  countryPath,
+  slug,
+  targetFromParams,
+  type MapTarget,
+} from '../data/places';
 import { DESTINATIONS, destinationByWorldId } from '../data/destinations';
-import { REGIONS } from '../data/regions';
+import { REGIONS, prefName, regionAnchor, regionOfPref, type Region } from '../data/regions';
 import type { Attraction } from '../data/types';
 import type { Insets } from '../map/camera';
 import { KineticTitle } from '../components/KineticTitle';
@@ -13,6 +24,8 @@ import { PanelRow, PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
 import { BAR_H, BAR_TOP, BAR_TOP_PHONE, GuideSheet } from '../components/guides/GuideSheet';
+import { RegionChips, RegionList, type Hot } from '../components/guides/RegionList';
+import type { CardSubject } from '../components/GlobeCard';
 import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
@@ -29,7 +42,24 @@ const MapExplorer = lazy(() => import('../map/MapExplorer'));
 const PHONE_CLEAR = 92;
 /** Phone: where the attraction row sits without a sheet (`.msheet` in styles.css); with one it moves up above the peek. */
 const MSHEET_BOTTOM = 86;
+/** Phone: the room MapExplorer leaves under the docked card without a sheet (the tab bar). */
+const CARD_BOTTOM = 92;
 const WHEEL_HINT = 'Scrolling shows the guides. Use Ctrl + scroll to zoom the map.';
+const TOKYO_PREF = Number(TOKYO_PREF_ID);
+const NO_HOT: Hot = { region: null, pref: null };
+
+/** A region shown on the map's card, in the shape the coming-soon country card already uses. */
+function regionCard(r: Region): CardSubject {
+  return {
+    slug: r.id,
+    name: r.name,
+    local: r.ja,
+    oneLiner: r.oneLiner,
+    live: false,
+    anchor: regionAnchor(r),
+    landmarks: [{ photo: r.photo, name: r.name }],
+  };
+}
 
 /** The guide sheet's words at the levels that have guides: Japan, Tokyo and a ward. */
 function sheetFor(t: MapTarget) {
@@ -77,6 +107,10 @@ export default function Explore() {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Japan: which region row is open, which region is framed, and what the pointer is over.
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [hot, setHot] = useState<Hot>(NO_HOT);
 
   const listed = target.level === 'region' || target.level === 'area';
   const scoped = useMemo(
@@ -110,10 +144,59 @@ export default function Explore() {
   }, []);
 
   const country = target.level === 'country' ? destinationByWorldId(target.country!.id) : undefined;
-  const pinned = country && !country.live ? country : null;
+  const japan = target.level === 'country' && target.country!.id === JAPAN_ID;
+
+  // Japan's regions: the open row, the framed region, and the lit prefectures. They live at
+  // Japan's level only, so a level change cannot leave a region's card over Tokyo.
+  const focus = japan && focusId ? REGIONS.find((r) => r.id === focusId) ?? null : null;
+  const card = useMemo(() => (focus && !focus.live ? regionCard(focus) : null), [focus]);
+  const pinned: CardSubject | null = card ?? (country && !country.live ? country : null);
+  const focusPrefs = focus ? focus.prefectures : null;
+  const focused = !!focus;
+  const hotPrefs = useMemo(() => {
+    if (!japan) return [];
+    if (hot.pref) return [hot.pref];
+    return REGIONS.find((r) => r.id === hot.region)?.prefectures ?? [];
+  }, [hot, japan]);
 
   // Changing level clears the picked pin.
   useEffect(() => setSelected(null), [target.level, target.area?.id]);
+
+  // The region focus is page state, so it goes when the level does.
+  useEffect(() => {
+    setOpenId(null);
+    setFocusId(null);
+    setHot(NO_HOT);
+  }, [target.level, target.country?.id, target.area?.id]);
+
+  /** A region row: it opens and the camera frames it. Kantō is live, so it gets no card. */
+  const toggleRegion = (id: string) => {
+    const closing = openId === id;
+    setOpenId(closing ? null : id);
+    setFocusId(closing ? null : id);
+    setHot({ region: id, pref: null });
+  };
+
+  /** A prefecture row or map shape: Tokyo flies in, the rest of Kantō gets a notice, others open their region. */
+  const pickPref = (code: number) => {
+    if (code === TOKYO_PREF) return navigate(TOKYO_PATH);
+    const r = regionOfPref(code);
+    if (!r) return;
+    if (r.live) return setNotice(`${prefName(code)} isn’t mapped yet. Tokyo is the first prefecture with checked attractions.`);
+    setOpenId(r.id);
+    setFocusId(r.id);
+    setHot({ region: r.id, pref: code });
+  };
+
+  /** A phone chip: the same, except Kantō's chip goes straight to Tokyo, its only live place. */
+  const pickChip = (id: string) => {
+    if (REGIONS.find((r) => r.id === id)?.live) return navigate(TOKYO_PATH);
+    setFocusId((f) => (f === id ? null : id));
+    setOpenId(id);
+  };
+
+  const onPrefHover = (code: number | null) =>
+    setHot(code == null ? NO_HOT : { region: regionOfPref(code)?.id ?? null, pref: code });
 
   // Wrong URL: settle on the nearest real level.
   useEffect(() => {
@@ -136,11 +219,13 @@ export default function Explore() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || document.querySelector('.drawer')) return;
       if (selected) setSelected(null);
+      // A framed region is a level of its own: Escape goes back to all of Japan first.
+      else if (focused) setFocusId(null);
       else if (upPath) navigate(upPath);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [upPath, navigate, selected]);
+  }, [upPath, navigate, selected, focused]);
 
   // Guides under the map: the page scrolls, the sheet slides over the map.
   const sheet = sheetFor(target);
@@ -171,19 +256,30 @@ export default function Explore() {
   }, []);
 
   const world = target.level === 'world';
+  // Japan keeps the right-hand slot for the region list, so the camera frames it in what is left.
+  const rightPanel = listed || (japan && !narrow);
   const base: Insets = world
     ? narrow
       ? { top: titleBox.bottom + 4, right: 16, bottom: 236, left: 16 }
       : { top: 90, right: 24, bottom: 0, left: titleBox.right + 24 }
     : narrow
       ? { top: listed ? 236 : 210, right: 16, bottom: listed ? 280 : pinned ? 300 : 220, left: 16 }
-      : { top: 150, right: listed ? 476 : pinned ? 420 : 40, bottom: listed ? 220 : 240, left: 40 };
+      : { top: 150, right: rightPanel ? 476 : pinned ? 420 : 40, bottom: listed ? 220 : 240, left: 40 };
   // The sheet's peek covers the bottom of the map. Above it sit the title card (laptop) or the
   // attraction row and pin card (phone), so the free area shrinks by the peek.
+  // Phone: the docked card clears the peek instead of the tab bar, so it sits that much higher.
+  const cardBottom = sheet && narrow ? clear + PEEK + 8 : CARD_BOTTOM;
   const insets: Insets = !sheet
     ? base
     : narrow
-      ? { ...base, bottom: listed ? base.bottom + clear + PEEK + 8 - MSHEET_BOTTOM : Math.max(base.bottom, clear + PEEK + 16) }
+      ? {
+          ...base,
+          bottom: listed
+            ? base.bottom + clear + PEEK + 8 - MSHEET_BOTTOM
+            : pinned
+              ? base.bottom + cardBottom - CARD_BOTTOM
+              : Math.max(base.bottom, clear + PEEK + 16),
+        }
       : { ...base, bottom: base.bottom + PEEK };
 
   const crumbs = [
@@ -225,10 +321,15 @@ export default function Explore() {
             selectedId={selected}
             fitPins
             pinned={pinned}
+            hotPrefs={hotPrefs}
+            focusPrefs={focusPrefs}
             wheelScrollsPage={!!sheet}
             onWheelPassThrough={onWheelPassThrough}
             attributionHost={sheet ? attribHost : null}
+            cardBottom={cardBottom}
             onHover={setHoverId}
+            onPrefHover={onPrefHover}
+            onPrefPick={pickPref}
             onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
             onRegion={() => navigate(TOKYO_PATH)}
             onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
@@ -275,7 +376,7 @@ export default function Explore() {
                 Explore Tokyo
               </button>
             )}
-            {target.level === 'country' && target.country!.id === JAPAN_ID && (
+            {japan && (
               <>
                 <button type="button" className="button" onClick={() => navigate(TOKYO_PATH)}>
                   Open Tokyo
@@ -286,13 +387,17 @@ export default function Explore() {
               </>
             )}
             {upPath && (
-              <button type="button" className="button is-quiet" onClick={() => navigate(upPath)}>
+              <button type="button" className="button is-quiet" onClick={() => (focus ? setFocusId(null) : navigate(upPath))}>
                 <Icon name="zoomOut" />
-                Zoom out
+                {focus ? 'All of Japan' : 'Zoom out'}
               </button>
             )}
           </div>
         </section>
+
+        {japan && !narrow && (
+          <RegionList openId={openId} hot={hot} onHover={setHot} onToggle={toggleRegion} onPickPref={pickPref} />
+        )}
 
         {listed && !narrow && (
           <aside className="panel" aria-labelledby="panel-title">
@@ -355,7 +460,14 @@ export default function Explore() {
         <>
           {/* Above the sheet, so the map's attribution stays readable at every scroll position. */}
           <div ref={setAttribHost} className="explore-attrib maplibregl-ctrl-bottom-right" />
-          <GuideSheet heading={sheet.heading} cue={sheet.cue} barLabel={sheet.barLabel} atGuides={atGuides} onBackToMap={scrollToTop}>
+          <GuideSheet
+            heading={sheet.heading}
+            cue={sheet.cue}
+            barLabel={sheet.barLabel}
+            atGuides={atGuides}
+            onBackToMap={scrollToTop}
+            peek={japan && narrow ? <RegionChips focusId={focusId} onPick={pickChip} /> : undefined}
+          >
             <p className="guides-soon">Region guides coming in the next task</p>
           </GuideSheet>
         </>

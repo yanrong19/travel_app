@@ -1,5 +1,7 @@
+import { geoArea, geoBounds } from 'd3-geo';
+import type { Feature, Geometry, Polygon } from 'geojson';
 import { ATTRACTIONS } from './attractions';
-import { PREFECTURES } from './places';
+import { PREFECTURES, type Place } from './places';
 import { summarize, type Summary } from '../lib/summary';
 
 export interface Region {
@@ -111,3 +113,35 @@ export const regionSummary = (r: Region): Summary => (r.live ? summarize(ATTRACT
 
 /** English prefecture name from the map data. */
 export const prefName = (code: number) => PREFECTURES.find((p) => Number(p.id) === code)?.properties.name ?? '';
+
+/**
+ * A prefecture without its far-flung specks: Tokyo reaches Ogasawara, 1,000km to the south, which
+ * would stretch a frame around Kantō across half the Pacific. Parts under 2% of the largest go.
+ */
+function mainLand(p: Place): Feature<Geometry> {
+  const g = p.geometry;
+  if (g.type !== 'MultiPolygon') return p;
+  const parts = g.coordinates.map((coordinates) => ({ type: 'Polygon', coordinates }) as Polygon);
+  const areas = parts.map((part) => geoArea(part));
+  const max = Math.max(...areas);
+  const keep = parts.filter((_, i) => areas[i] >= max * 0.02);
+  return { type: 'Feature', properties: {}, geometry: { type: 'MultiPolygon', coordinates: keep.map((k) => k.coordinates) } };
+}
+
+/** The lng/lat box around a region's prefectures: what the camera frames and where the card tethers. */
+export function regionBounds(prefectures: number[]): [[number, number], [number, number]] | null {
+  const features = PREFECTURES.filter((p) => prefectures.includes(Number(p.id))).map(mainLand);
+  if (!features.length) return null;
+  const [[w, s], [e, n]] = geoBounds({ type: 'FeatureCollection', features });
+  if (!(e > w) || !(n > s)) return null;
+  return [
+    [w, s],
+    [e, n],
+  ];
+}
+
+/** Where a region's card tethers: the middle of that box. */
+export function regionAnchor(r: Region): [number, number] {
+  const b = regionBounds(r.prefectures);
+  return b ? [(b[0][0] + b[1][0]) / 2, (b[0][1] + b[1][1]) / 2] : [138.5, 36.5];
+}

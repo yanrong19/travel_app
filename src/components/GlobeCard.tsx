@@ -8,8 +8,16 @@ import { plural } from '../lib/format';
 import { KineticTitle } from './KineticTitle';
 import { Icon } from './Icon';
 
+/**
+ * What the card can show: a destination, or anything else shaped like one — a region of Japan,
+ * which has a single photo (or none yet) instead of a landmark fan.
+ */
+export type CardSubject = Pick<Destination, 'slug' | 'name' | 'local' | 'oneLiner' | 'live' | 'anchor'> & {
+  landmarks: { photo: string | null; name: string }[];
+};
+
 interface Props {
-  dest: Destination;
+  dest: CardSubject;
   /** 'tour': the destination lit on the turning globe, the whole card flies in.
    *  'pinned': a coming-soon country we have flown to, with a way on to Tokyo. */
   mode: 'tour' | 'pinned';
@@ -20,22 +28,35 @@ interface Props {
 /** Photo fan, name and one-liner for a destination, tethered to its country on the map. */
 export const GlobeCard = forwardRef<HTMLDivElement, Props>(function GlobeCard({ dest, mode, onOpen, onTokyo }, ref) {
   const status = dest.live ? `${plural(ATTRACTIONS.length, 'attraction')} checked in Tokyo` : 'Coming soon';
+  const solo = dest.landmarks.length === 1;
   return (
     <div ref={ref} className={`globe-card is-${mode} ${dest.live ? 'is-live' : ''}`}>
-      <span className="globe-fan" aria-hidden="true">
+      <span className={`globe-fan ${solo ? 'is-solo' : ''}`} aria-hidden="true">
         <AnimatePresence initial={false}>
-          {dest.landmarks.map((l, i) => (
-            <motion.img
-              key={`${dest.slug}-${l.photo}`}
-              src={photo(l.photo)}
-              alt=""
-              className={`fan-${i}`}
-              initial={{ opacity: 0, y: 24, rotate: 0, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, rotate: [-7, 0, 7][i], scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.6, delay: i * 0.08, ease: EASE_OUT }}
-            />
-          ))}
+          {dest.landmarks.map((l, i) =>
+            l.photo ? (
+              <motion.img
+                key={`${dest.slug}-${l.photo}`}
+                src={photo(l.photo)}
+                alt=""
+                className={`fan-${i}`}
+                initial={{ opacity: 0, y: 24, rotate: 0, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, rotate: solo ? 0 : [-7, 0, 7][i], scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: EASE_OUT }}
+              />
+            ) : (
+              /* No photo for this one yet: a neutral panel, so the card keeps its shape. */
+              <motion.span
+                key={`${dest.slug}-blank-${i}`}
+                className={`fan-${i} is-blank`}
+                initial={{ opacity: 0, y: 24, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, rotate: solo ? 0 : [-7, 0, 7][i], scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: EASE_OUT }}
+              />
+            ),
+          )}
         </AnimatePresence>
       </span>
       <span className="globe-card-body">
