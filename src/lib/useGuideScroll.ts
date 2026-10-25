@@ -34,6 +34,9 @@ type Options = {
 /**
  * Drives the guide sheet: Lenis smooths the window scroll, the progress lands in
  * the `--gp` CSS variable on `root`, and the page settles to the nearer end.
+ * It also writes `--vh` (window.innerHeight in px) on `root`, so the CSS that places the
+ * guides uses the same viewport height as the progress and the settle (on phones the
+ * window grows past 100svh when the toolbar retracts).
  */
 export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
   const [atGuides, setAtGuides] = useState(false);
@@ -56,6 +59,8 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     let held = false;
 
     const progress = () => guideProgress(l.scroll, window.innerHeight, PEEK, barRef.current);
+    // The one viewport height for both sides: the CSS reads --vh, the maths reads innerHeight.
+    const writeVh = () => root.current?.style.setProperty('--vh', `${window.innerHeight}px`);
     const update = () => {
       const p = progress();
       root.current?.style.setProperty('--gp', p.toFixed(3));
@@ -85,11 +90,13 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
       arm();
     };
     const onResize = () => {
+      writeVh();
       update();
       arm();
     };
 
     refresh.current = update;
+    writeVh();
     update();
     l.on('scroll', onScroll);
     window.addEventListener('resize', onResize);

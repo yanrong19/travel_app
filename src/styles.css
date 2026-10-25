@@ -4068,7 +4068,8 @@ h2:focus {
   /* Flex, so the bar's negative margin doesn't collapse into this one. */
   display: flex;
   flex-direction: column;
-  margin-top: calc(100svh - 90px - var(--sheet-clear, 0px));
+  /* --vh is window.innerHeight, written by useGuideScroll: the same height its progress and settle use. */
+  margin-top: calc(var(--vh, 100svh) - 90px - var(--sheet-clear, 0px));
 }
 
 /* Rides just above the sheet, fading in near the end, and pins once the sheet is up. The frosted
@@ -4148,9 +4149,8 @@ h2:focus {
 
 .gsheet {
   flex: 1;
-  /* Always tall enough for the sheet to come fully up, even with little in it
-     (and with a phone's address bar hidden, when the window is taller than 100svh). */
-  min-height: calc(100vh + 120px);
+  /* Always tall enough for the sheet to come fully up, even with little in it. */
+  min-height: var(--vh, 100vh);
   border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
   background: var(--surface);
   box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
