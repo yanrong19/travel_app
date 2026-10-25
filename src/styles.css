@@ -4403,6 +4403,9 @@ h2:focus {
   .explore.has-guides[data-level='area'] > .explore-attrib.maplibregl-ctrl-bottom-right {
     --attrib-rest: calc(90px + var(--sheet-clear) + 8px + 188px); /* clears the row or the pin card */
   }
+  .explore.has-guides[data-focus='1'] > .explore-attrib.maplibregl-ctrl-bottom-right {
+    --attrib-rest: calc(90px + var(--sheet-clear) + 8px + 160px); /* clears the region's card */
+  }
   .gsheet-head {
     flex-direction: column;
     align-items: stretch;
@@ -4431,6 +4434,13 @@ h2:focus {
   }
   .gsheet-body {
     padding-bottom: 120px;
+  }
+  /* A framed region docks its own card over the map, and a phone has no room for both. Japan's
+     title card steps back to the name and the way out while a region is framed. */
+  .explore[data-focus='1'] .explore-title .crumbs,
+  .explore[data-focus='1'] .explore-title .explore-line,
+  .explore[data-focus='1'] .explore-actions .button:not(.is-back) {
+    display: none;
   }
   /* The chips have to fit the 90px strip with the heading and the cue, so everything tightens. */
   .gsheet-head:has(.rchips) {

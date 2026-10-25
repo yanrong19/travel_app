@@ -44,6 +44,8 @@ const PHONE_CLEAR = 92;
 const MSHEET_BOTTOM = 86;
 /** Phone: the room MapExplorer leaves under the docked card without a sheet (the tab bar). */
 const CARD_BOTTOM = 92;
+/** Phone: how tall a region's card runs (one photo beside the text), measured at 390×844. */
+const REGION_CARD_H = 160;
 const WHEEL_HINT = 'Scrolling shows the guides. Use Ctrl + scroll to zoom the map.';
 const TOKYO_PREF = Number(TOKYO_PREF_ID);
 const NO_HOT: Hot = { region: null, pref: null };
@@ -169,9 +171,16 @@ export default function Explore() {
     setHot(NO_HOT);
   }, [target.level, target.country?.id, target.area?.id]);
 
+  /** Back to all of Japan: the row that was framed closes with it, so the next click reframes it. */
+  const clearFocus = () => {
+    setFocusId(null);
+    setOpenId(null);
+  };
+
   /** A region row: it opens and the camera frames it. Kantō is live, so it gets no card. */
   const toggleRegion = (id: string) => {
-    const closing = openId === id;
+    // Keyed on the focus, not the open row, so a region left by Escape reframes on one click.
+    const closing = focusId === id;
     setOpenId(closing ? null : id);
     setFocusId(closing ? null : id);
     setHot({ region: id, pref: null });
@@ -191,7 +200,8 @@ export default function Explore() {
   /** A phone chip: the same, except Kantō's chip goes straight to Tokyo, its only live place. */
   const pickChip = (id: string) => {
     if (REGIONS.find((r) => r.id === id)?.live) return navigate(TOKYO_PATH);
-    setFocusId((f) => (f === id ? null : id));
+    if (focusId === id) return clearFocus();
+    setFocusId(id);
     setOpenId(id);
   };
 
@@ -220,7 +230,7 @@ export default function Explore() {
       if (e.key !== 'Escape' || document.querySelector('.drawer')) return;
       if (selected) setSelected(null);
       // A framed region is a level of its own: Escape goes back to all of Japan first.
-      else if (focused) setFocusId(null);
+      else if (focused) clearFocus();
       else if (upPath) navigate(upPath);
     };
     window.addEventListener('keydown', onKey);
@@ -263,7 +273,14 @@ export default function Explore() {
       ? { top: titleBox.bottom + 4, right: 16, bottom: 236, left: 16 }
       : { top: 90, right: 24, bottom: 0, left: titleBox.right + 24 }
     : narrow
-      ? { top: listed ? 236 : 210, right: 16, bottom: listed ? 280 : pinned ? 300 : 220, left: 16 }
+      ? {
+          // Japan's title card is tall (three buttons, wrapping), so measure it rather than guess:
+          // the region has to land in the band the card leaves, not behind it.
+          top: japan ? titleBox.bottom + 4 : listed ? 236 : 210,
+          right: 16,
+          bottom: listed ? 280 : card ? CARD_BOTTOM + REGION_CARD_H : pinned ? 300 : 220,
+          left: 16,
+        }
       : { top: 150, right: rightPanel ? 476 : pinned ? 420 : 40, bottom: listed ? 220 : 240, left: 40 };
   // The sheet's peek covers the bottom of the map. Above it sit the title card (laptop) or the
   // attraction row and pin card (phone), so the free area shrinks by the peek.
@@ -296,6 +313,7 @@ export default function Explore() {
       ref={rootRef}
       className={`explore ${sheet ? 'has-guides' : ''}`}
       data-level={target.level}
+      data-focus={focused ? '1' : undefined}
       style={{ '--sheet-clear': `${clear}px`, '--bar-top': `${barTop}px` } as CSSProperties}
     >
       {/* Above the guide sheet at every scroll position; the sheet's sticky bar pins just below the search. */}
@@ -387,9 +405,9 @@ export default function Explore() {
               </>
             )}
             {upPath && (
-              <button type="button" className="button is-quiet" onClick={() => (focus ? setFocusId(null) : navigate(upPath))}>
+              <button type="button" className="button is-quiet is-back" onClick={() => (focused ? clearFocus() : navigate(upPath))}>
                 <Icon name="zoomOut" />
-                {focus ? 'All of Japan' : 'Zoom out'}
+                {focused ? 'All of Japan' : 'Zoom out'}
               </button>
             )}
           </div>

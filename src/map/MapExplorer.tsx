@@ -296,6 +296,17 @@ export function MapExplorer(props: Props) {
     return () => ro.disconnect();
   }, []);
 
+  // The card is docked by its own height, which it only has once it has laid out (and which
+  // changes with its subject), so follow its size rather than place it once and hope.
+  useLayoutEffect(() => {
+    const el = card.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => place());
+    ro.observe(el);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ---- Place the HTML overlay (tickers, callout) on every camera move ----
   function place() {
     const map = mapRef.current;
@@ -571,7 +582,8 @@ export function MapExplorer(props: Props) {
     const cam = map.cameraForBounds(bounds, { padding: padding(), maxZoom, pitch, bearing });
     if (!cam || cam.zoom == null || !cam.center) return;
     // Ticker labels are wider than the points they mark; on narrow maps step back a little.
-    const narrow = wrap.current!.clientWidth < 700;
+    // Only where there are tickers: a country or a framed region needs every pixel it has.
+    const narrow = wrap.current!.clientWidth < 700 && (t.level === 'region' || t.level === 'area');
     go({ center: cam.center as Cam['center'], zoom: cam.zoom - (narrow ? 0.45 : 0), pitch, bearing, padding: NO_PAD });
   }
 
