@@ -4542,6 +4542,125 @@ h2:focus {
   letter-spacing: 0.02em;
 }
 
+/* The ward list in the right-hand panel at Tokyo level: flat, the fullest ward first. */
+.wlist {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  margin: 0 -6px;
+  padding: 2px 6px 6px;
+  overscroll-behavior: contain;
+}
+.wrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 12px 8px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: var(--surface);
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    opacity 0.2s;
+}
+.wrow:hover,
+.wrow.is-hot {
+  border-color: var(--cedar);
+}
+.wrow img {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.wrow-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.wrow-text strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.wrow-ja {
+  font-family: var(--font-ja);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.wrow-count {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: 13px;
+  font-weight: 700;
+}
+/* Nothing left under this filter: the ward stays listed, so the list never jumps about. */
+.wrow.is-empty {
+  opacity: 0.45;
+}
+
+/* Tokyo's guides, in order: the ward cards, the top picks and every attraction. */
+.tsections > .areas:first-child {
+  padding-top: 0;
+}
+.picks {
+  padding-top: 88px;
+}
+.picks .section-head {
+  align-items: center;
+}
+/* In the sheet the rail is boxed by the page width, so only whole cards show. */
+.picks .rail {
+  overflow: hidden;
+  border-radius: var(--r-xl);
+}
+/* Four of these fit the 1240px page; the hero's 300px leaves a card's worth of gap. */
+.picks .rail .rail-slide {
+  width: 292px;
+}
+.picks .rail .swiper-slide:not(.swiper-slide-fully-visible) {
+  visibility: hidden;
+}
+.picks-empty {
+  font-size: 15px;
+  color: var(--muted);
+}
+/* The hero's search box, on the sheet's light surface. */
+.search.is-plain {
+  height: 46px;
+  width: 340px;
+  margin-top: 0;
+  padding: 0 16px;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+.search.is-plain input {
+  color: var(--ink);
+  font-size: 15px;
+}
+.search.is-plain input::placeholder {
+  color: var(--muted);
+}
+.search.is-plain input::-webkit-search-cancel-button {
+  filter: none;
+}
+.search.is-plain:focus-within {
+  border-color: var(--cedar);
+}
+
 /* Phone: the same regions as a scrolling row of chips in the sheet's peek. */
 .rchips {
   display: flex;
@@ -4645,16 +4764,29 @@ h2:focus {
     display: none;
   }
   /* The chips have to fit the 90px strip with the heading and the cue, so everything tightens. */
-  .gsheet-head:has(.rchips) {
+  .gsheet-head:has(.rchips),
+  .gsheet-head:has(.gsheet-peek .chips) {
     gap: 6px;
     padding-top: 12px;
   }
-  .gsheet-head:has(.rchips) .gsheet-intro h2 {
+  .gsheet-head:has(.rchips) .gsheet-intro h2,
+  .gsheet-head:has(.gsheet-peek .chips) .gsheet-intro h2 {
     font-size: 18px;
     line-height: 22px;
   }
   .rchips {
     padding-bottom: 2px;
+  }
+  /* Tokyo's filter chips bleed to the screen edges, like the region chips. */
+  .gsheet-peek .chips {
+    margin: 0 -16px;
+    padding: 2px 16px;
+  }
+  .picks {
+    padding-top: 56px;
+  }
+  .search.is-plain {
+    width: 100%;
   }
   .rchip {
     height: 30px;

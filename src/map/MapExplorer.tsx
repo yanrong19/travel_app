@@ -94,6 +94,8 @@ interface Props {
   pinned?: CardSubject | null;
   /** Prefectures to light on `fl-prefs`; while any are set they replace the map's own hover. */
   hotPrefs?: number[];
+  /** The ward to light on `fl-areas`; while it is set it replaces the map's own hover. */
+  hotArea?: string | null;
   /** Prefectures the country-level camera frames instead of the whole of Japan. */
   focusPrefs?: number[] | null;
   /** The page scrolls on the wheel: the map zooms only with Ctrl + wheel (and trackpad pinch). */
@@ -107,6 +109,8 @@ interface Props {
   onHover: (id: string | null) => void;
   /** The prefecture under the pointer at country level, so a list can follow the map. */
   onPrefHover?: (code: number | null) => void;
+  /** The ward under the pointer at Tokyo level, so the ward list can follow the map. */
+  onAreaHover?: (id: string | null) => void;
   /** A prefecture clicked at country level. Without it, Tokyo flies in and the rest get a notice. */
   onPrefPick?: (code: number) => void;
   onCountry: (slug: string) => void;
@@ -132,6 +136,7 @@ export function MapExplorer(props: Props) {
     embed = false,
     pinned = null,
     hotPrefs,
+    hotArea = null,
     focusPrefs = null,
     wheelScrollsPage = false,
     attributionHost = null,
@@ -162,6 +167,8 @@ export function MapExplorer(props: Props) {
   const hotKey = (hotPrefs ?? []).join(',');
   const hotPrefsRef = useRef(hotPrefs ?? []);
   hotPrefsRef.current = hotPrefs ?? [];
+  const hotAreaRef = useRef(hotArea);
+  hotAreaRef.current = hotArea;
   const focusKey = (focusPrefs ?? []).join(',');
 
   // The tour: one destination lit at a time while the globe turns.
@@ -478,6 +485,22 @@ export function MapExplorer(props: Props) {
     };
   }, [hotKey, ready]);
 
+  // ---- The ward the list is pointing at, lit the same way ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !hotArea || !map.getSource('fl-areas')) return;
+    // The list has taken over: drop whatever the map had under the pointer.
+    if (hovered.current?.source === 'fl-areas') {
+      map.setFeatureState(hovered.current, { hover: false });
+      hovered.current = null;
+    }
+    const id = Number(hotArea);
+    map.setFeatureState({ source: 'fl-areas', id }, { hover: true });
+    return () => {
+      if (mapRef.current) map.setFeatureState({ source: 'fl-areas', id }, { hover: false });
+    };
+  }, [hotArea, ready]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || !map.getSource('fl-prefs')) return;
@@ -608,8 +631,8 @@ export function MapExplorer(props: Props) {
     const setHover = (f: MapGeoJSONFeature | null, source: string) => {
       const was = hovered.current;
       if (was) map.setFeatureState(was, { hover: false });
-      // While a list drives the prefecture lighting, the map's own single-shape hover stands aside.
-      const taken = source === 'fl-prefs' && !!hotPrefsRef.current.length;
+      // While a list drives the lighting, the map's own single-shape hover stands aside.
+      const taken = (source === 'fl-prefs' && !!hotPrefsRef.current.length) || (source === 'fl-areas' && !!hotAreaRef.current);
       const next = f && f.id != null && !taken ? { source, id: Number(f.id) } : null;
       hovered.current = next;
       if (next) map.setFeatureState(next, { hover: true });
@@ -626,6 +649,7 @@ export function MapExplorer(props: Props) {
     const leave = () => {
       setHover(null, '');
       handlers.current.onPrefHover?.(null);
+      handlers.current.onAreaHover?.(null);
       if (tip.current) tip.current.dataset.on = '';
       map.getCanvas().style.cursor = '';
     };
@@ -648,6 +672,7 @@ export function MapExplorer(props: Props) {
     const onAreaMove = (e: Ev) => {
       const f = e.features?.[0];
       if (!f) return;
+      handlers.current.onAreaHover?.(f.properties.fid);
       setHover(f, 'fl-areas');
       const n = AREA_COUNTS[f.properties.fid] ?? 0;
       showTip(e, `${f.properties.name} ${f.properties.ja}`, n ? `${n} attraction${n > 1 ? 's' : ''}` : 'Nothing checked yet', n > 0);

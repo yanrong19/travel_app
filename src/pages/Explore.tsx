@@ -9,6 +9,7 @@ import {
   TOKYO_PATH,
   TOKYO_PREF_ID,
   WORLD_PATH,
+  areaPath,
   countryPath,
   slug,
   targetFromParams,
@@ -27,6 +28,8 @@ import { BAR_H, BAR_TOP, BAR_TOP_PHONE, GuideSheet } from '../components/guides/
 import { GuideCard } from '../components/guides/GuideCard';
 import { MiniMap } from '../components/guides/MiniMap';
 import { RegionChips, RegionList, regionStatus, type Hot } from '../components/guides/RegionList';
+import { WARDS, WardList } from '../components/guides/WardList';
+import { TokyoSections } from '../components/guides/TokyoSections';
 import type { CardSubject } from '../components/GlobeCard';
 import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
@@ -117,8 +120,11 @@ export default function Explore() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [hot, setHot] = useState<Hot>(NO_HOT);
+  // Tokyo: the ward the ward list, a guide card or the map itself is pointing at.
+  const [hotArea, setHotArea] = useState<string | null>(null);
 
   const listed = target.level === 'region' || target.level === 'area';
+  const tokyo = target.level === 'region';
   const scoped = useMemo(
     () => (target.level === 'area' ? ATTRACTIONS.filter((a) => a.area === target.area!.id) : listed ? ATTRACTIONS : []),
     [target, listed],
@@ -126,6 +132,8 @@ export default function Explore() {
   const activeFilter = FILTERS.find((f) => f.id === filter)!;
   const shown = scoped.filter(activeFilter.test);
   const picked = selected ? ATTRACTIONS.find((a) => a.id === selected) ?? null : null;
+  // The ward list counts follow the active filter; wards with nothing left stay listed, muted.
+  const wardCounts = Object.fromEntries(WARDS.map((w) => [w.id, shown.filter((a) => a.area === w.id).length]));
 
   const title = titleFor(target);
   useEffect(() => {
@@ -173,6 +181,7 @@ export default function Explore() {
     setOpenId(null);
     setFocusId(null);
     setHot(NO_HOT);
+    setHotArea(null);
   }, [target.level, target.country?.id, target.area?.id]);
 
   /** Back to all of Japan: the row that was framed closes with it, so the next click reframes it. */
@@ -211,6 +220,9 @@ export default function Explore() {
 
   const onPrefHover = (code: number | null) =>
     setHot(code == null ? NO_HOT : { region: regionOfPref(code)?.id ?? null, pref: code });
+
+  /** A ward row on the right, or a ward guide below: the map flies down to it. */
+  const pickWard = (id: string) => navigate(areaPath(id));
 
   // Wrong URL: settle on the nearest real level.
   useEffect(() => {
@@ -272,6 +284,8 @@ export default function Explore() {
   const world = target.level === 'world';
   // Japan keeps the right-hand slot for the region list, so the camera frames it in what is left.
   const rightPanel = listed || (japan && !narrow);
+  // Phone: the swipeable attraction row is a ward-level thing; Tokyo's chips live in the sheet's peek.
+  const mrow = target.level === 'area';
   const base: Insets = world
     ? narrow
       ? { top: titleBox.bottom + 4, right: 16, bottom: 236, left: 16 }
@@ -282,7 +296,7 @@ export default function Explore() {
           // the region has to land in the band the card leaves, not behind it.
           top: japan ? titleBox.bottom + 4 : listed ? 236 : 210,
           right: 16,
-          bottom: listed ? 280 : card ? CARD_BOTTOM + REGION_CARD_H : pinned ? 300 : 220,
+          bottom: mrow ? 280 : card ? CARD_BOTTOM + REGION_CARD_H : pinned ? 300 : 220,
           left: 16,
         }
       : { top: 150, right: rightPanel ? 476 : pinned ? 420 : 40, bottom: listed ? 220 : 240, left: 40 };
@@ -295,7 +309,7 @@ export default function Explore() {
     : narrow
       ? {
           ...base,
-          bottom: listed
+          bottom: mrow
             ? base.bottom + clear + PEEK + 8 - MSHEET_BOTTOM
             : pinned
               ? base.bottom + cardBottom - CARD_BOTTOM
@@ -344,6 +358,7 @@ export default function Explore() {
             fitPins
             pinned={pinned}
             hotPrefs={hotPrefs}
+            hotArea={hotArea}
             focusPrefs={focusPrefs}
             wheelScrollsPage={!!sheet}
             onWheelPassThrough={onWheelPassThrough}
@@ -351,6 +366,7 @@ export default function Explore() {
             cardBottom={cardBottom}
             onHover={setHoverId}
             onPrefHover={onPrefHover}
+            onAreaHover={setHotArea}
             onPrefPick={pickPref}
             onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
             onRegion={() => navigate(TOKYO_PATH)}
@@ -421,17 +437,19 @@ export default function Explore() {
           <RegionList openId={openId} hot={hot} onHover={setHot} onToggle={toggleRegion} onPickPref={pickPref} />
         )}
 
-        {listed && !narrow && (
+        {tokyo && !narrow && <WardList counts={wardCounts} hot={hotArea} onHover={setHotArea} onPick={pickWard} />}
+
+        {target.level === 'area' && !narrow && (
           <aside className="panel" aria-labelledby="panel-title">
             <div className="panel-head">
-              <h2 id="panel-title">{target.level === 'area' ? `In ${target.area!.properties.name}` : 'All of Tokyo'}</h2>
+              <h2 id="panel-title">{`In ${target.area!.properties.name}`}</h2>
               <p className="panel-scope">{plural(shown.length, 'place')}</p>
             </div>
             <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
             <ul className="plist" data-lenis-prevent>
               {shown.map((a) => (
                 <li key={a.id}>
-                  <PanelRow a={a} hot={(selected ?? hoverId) === a.id} onHover={setHoverId} onOpen={open} showArea={target.level === 'region'} />
+                  <PanelRow a={a} hot={(selected ?? hoverId) === a.id} onHover={setHoverId} onOpen={open} showArea={false} />
                 </li>
               ))}
               {shown.length === 0 && (
@@ -446,7 +464,7 @@ export default function Explore() {
           </aside>
         )}
 
-        {listed && narrow && !picked && (
+        {mrow && narrow && !picked && (
           <aside className="msheet" aria-labelledby="msheet-title">
             <h2 id="msheet-title" className="sr-only">
               Attractions
@@ -455,7 +473,7 @@ export default function Explore() {
             <ul className="mrow">
               {shown.map((a) => (
                 <li key={a.id}>
-                  <PanelRow a={a} hot={false} onHover={() => {}} onOpen={(id) => setSelected(id)} showArea={target.level === 'region'} axis="inline" />
+                  <PanelRow a={a} hot={false} onHover={() => {}} onOpen={(id) => setSelected(id)} showArea={false} axis="inline" />
                 </li>
               ))}
             </ul>
@@ -488,10 +506,29 @@ export default function Explore() {
             barLabel={sheet.barLabel}
             atGuides={atGuides}
             onBackToMap={scrollToTop}
-            peek={japan && narrow ? <RegionChips focusId={focusId} onPick={pickRegion} /> : undefined}
-            miniMap={japan ? <MiniMap kind="japan" hot={hotPrefs} /> : undefined}
+            peek={
+              japan && narrow ? (
+                <RegionChips focusId={focusId} onPick={pickRegion} />
+              ) : tokyo ? (
+                <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
+              ) : undefined
+            }
+            miniMap={
+              japan ? <MiniMap kind="japan" hot={hotPrefs} /> : tokyo ? <MiniMap kind="tokyo" hot={hotArea ? [Number(hotArea)] : []} /> : undefined
+            }
           >
-            {japan ? (
+            {tokyo ? (
+              <TokyoSections
+                scope="tokyo"
+                filter={filter}
+                setFilter={setFilter}
+                onWard={(id) => {
+                  scrollToTop();
+                  pickWard(id);
+                }}
+                onWardHover={setHotArea}
+              />
+            ) : japan ? (
               <div className="gcards">
                 {GUIDED.map((r) => (
                   <GuideCard
