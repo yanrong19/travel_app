@@ -6,7 +6,7 @@ import { Keyboard, A11y, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import { ATTRACTIONS, attractionById } from '../data/attractions';
 import { LINES, type LineId } from '../data/lines';
-import { areaById, areaPagePath, areaPath, TOKYO_PATH } from '../data/places';
+import { areaById, areaPath, TOKYO_PATH } from '../data/places';
 import { CROWD_START_HOUR, type Attraction as A } from '../data/types';
 import { projection } from '../map/camera';
 import { AREA_PATHS, TOKYO_BOUNDS, WARDS_BOUNDS } from '../map/paths';
@@ -127,7 +127,7 @@ function Detail({ a }: { a: A }) {
           />
           <div className="d-scrim" aria-hidden="true" />
           <div className="d-top">
-            <button type="button" className="glass-button" onClick={() => go(areaPagePath(a.area))} aria-label={`Back to ${area.properties.name}`}>
+            <button type="button" className="glass-button" onClick={() => go(areaPath(a.area))} aria-label={`Back to ${area.properties.name}`}>
               <Icon name="arrowLeft" size={20} />
             </button>
             <HeartButton id={a.id} name={a.name} size={44} />

@@ -209,6 +209,3 @@ export const destinationByWorldId = (id: string) => DESTINATIONS.find((d) => d.w
 export const worldShape = (d: Destination): Place | undefined => WORLD.find((f) => f.id === d.worldId);
 /** The map URL uses the Natural Earth name ("united-states-of-america"), not the short slug. */
 export const countrySlugOf = (d: Destination) => slug(worldShape(d)!.properties.name);
-
-/** Prefectures shown as "coming soon" on Japan's page, after Tokyo. */
-export const JAPAN_SOON = ['Kyoto', 'Osaka', 'Hokkaidō', 'Okinawa', 'Hiroshima'];

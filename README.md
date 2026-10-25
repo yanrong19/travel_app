@@ -18,7 +18,8 @@ To make a production build: `npm run build` (output in `dist/`), and `npm run pr
 ## Project layout
 
 - `src/data/attractions.ts` – the sample attraction data (`src/data/types.ts` is its shape)
-- `src/pages/` – Home, Attraction, Map (`Explore.tsx`) and Credits pages
+- `src/pages/` – the map and its guides (`Explore.tsx`, the home page), Attraction, Credits, and `Place.tsx` for coming-soon countries
+- `src/components/guides/` – the sheet under the map: region and ward guide cards, lists and the sticky bar's mini map
 - `src/map/MapExplorer.tsx` – the 3D map (MapLibre with OpenStreetMap data from OpenFreeMap)
 - `scripts/build-geo.mjs` – rebuilds the country, prefecture and Tokyo ward shapes
 - `scripts/build-photos.mjs` – makes web-sized photos from `photos-src/`

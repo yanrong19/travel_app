@@ -88,8 +88,6 @@ interface Props {
   lens?: LensId;
   /** Frame the visible pins instead of the whole region. */
   fitPins?: boolean;
-  /** Embedded in a scrolling page: Ctrl or Cmd + scroll zooms, two fingers pan on phones. */
-  embed?: boolean;
   /** A coming-soon country, or a region of Japan, to pin its card to (country level). */
   pinned?: CardSubject | null;
   /** Prefectures to light on `fl-prefs`; while any are set they replace the map's own hover. */
@@ -118,6 +116,8 @@ interface Props {
   onArea: (slug: string) => void;
   onAttraction: (id: string) => void;
   onNotice: (text: string) => void;
+  /** The style has loaded and the map is drawing, so the page around it can settle. */
+  onReady?: () => void;
 }
 
 type Pad = { top: number; right: number; bottom: number; left: number };
@@ -133,7 +133,6 @@ export function MapExplorer(props: Props) {
     selectedId = null,
     lens = 'any',
     fitPins = false,
-    embed = false,
     pinned = null,
     hotPrefs,
     hotArea = null,
@@ -185,7 +184,7 @@ export function MapExplorer(props: Props) {
   const firstWorld = useRef(true);
   const toured = useRef(false);
   const flightId = useRef(0);
-  const tourOn = !embed && target.level === 'world';
+  const tourOn = target.level === 'world';
   const tourDest: Destination | null = tourOn && touring ? current : null;
   const cardDest: CardSubject | null = tourOn ? tourDest : pinned;
   const cardRef = useRef(cardDest);
@@ -199,10 +198,9 @@ export function MapExplorer(props: Props) {
       container: canvasBox.current!,
       style: STYLE_URL,
       center: [139.2, 36],
-      zoom: embed ? 8 : 1.4,
+      zoom: 1.4,
       maxPitch: 70,
       attributionControl: false, // added below, so it can live outside the map
-      cooperativeGestures: embed,
       fadeDuration: 150,
       renderWorldCopies: false,
     });
@@ -218,6 +216,7 @@ export function MapExplorer(props: Props) {
       addOurLayers(map);
       map.setProjection({ type: 'globe' });
       setReady(true);
+      handlers.current.onReady?.();
     });
 
     map.on('move', place);
@@ -734,11 +733,11 @@ export function MapExplorer(props: Props) {
   const placeName = target.area?.properties.name ?? (level === 'world' ? 'the world' : level === 'region' ? 'Tokyo' : target.country?.properties.name);
 
   return (
-    <div ref={wrap} className={`map ${embed ? 'is-embed' : ''} ${ready ? 'is-ready' : ''}`} data-level={level}>
+    <div ref={wrap} className={`map ${ready ? 'is-ready' : ''}`} data-level={level}>
       <div ref={canvasBox} className="map-canvas" role="region" aria-label={`Map of ${placeName}`} />
 
       <div ref={overlay} className="map-overlay">
-        {level === 'world' && !embed && (
+        {level === 'world' && (
           <button type="button" className="livepin" data-flip="" data-ll={TOKYO_LL.join(',')} onClick={() => handlers.current.onRegion()} aria-label={`Tokyo, live: ${plural(ATTRACTIONS.length, 'attraction')} checked. Fly in`}>
             <span className="livepin-photo" aria-hidden="true">
               <img src={photo('shibuya-sky')} alt="" draggable={false} />
@@ -781,21 +780,17 @@ export function MapExplorer(props: Props) {
           })}
       </div>
 
-      {!embed && (
-        <>
-          <svg ref={tether} className="globe-tether" aria-hidden="true">
-            <line />
-            <circle r="5" />
-          </svg>
-          <GlobeCard
-            ref={card}
-            dest={cardDest ?? current}
-            mode={tourOn ? 'tour' : 'pinned'}
-            onOpen={() => tourDest && handlers.current.onCountry(countrySlugOf(tourDest))}
-            onTokyo={() => handlers.current.onRegion()}
-          />
-        </>
-      )}
+      <svg ref={tether} className="globe-tether" aria-hidden="true">
+        <line />
+        <circle r="5" />
+      </svg>
+      <GlobeCard
+        ref={card}
+        dest={cardDest ?? current}
+        mode={tourOn ? 'tour' : 'pinned'}
+        onOpen={() => tourDest && handlers.current.onCountry(countrySlugOf(tourDest))}
+        onTokyo={() => handlers.current.onRegion()}
+      />
 
       <div className="map-controls" role="group" aria-label="Map controls">
         <button type="button" onClick={() => zoomBy(1)} aria-label="Zoom in">

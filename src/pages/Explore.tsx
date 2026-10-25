@@ -1,9 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
 import {
   AREA_COUNTS,
+  GUIDES_HASH,
   JAPAN_ID,
   MAP_ROOT,
   TOKYO_PATH,
@@ -108,6 +109,7 @@ function titleFor(t: MapTarget) {
 
 export default function Explore() {
   const params = useParams();
+  const { hash } = useLocation();
   const navigate = useNavigate();
   const go = useGo();
   const target = useMemo(() => targetFromParams(params.country, params.region, params.area), [params.country, params.region, params.area]);
@@ -116,6 +118,7 @@ export default function Explore() {
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   // Japan: which region row is open, which region is framed, and what the pointer is over.
   const [openId, setOpenId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -263,6 +266,18 @@ export default function Explore() {
   const { scrollToGuides, scrollToTop, atGuides } = useGuideScroll({ enabled: !!sheet, root: rootRef, barH: barTop + BAR_H + clear, levelKey });
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
 
+  // `/map/japan/tokyo#guides` (where the old place-page URLs land) opens on the guides. It waits
+  // for the map, because the sheet's travel is measured against a laid-out viewport, and for one
+  // frame after it, so the sheet this level renders is in the page before it is scrolled over.
+  const onMapReady = useCallback(() => setMapReady(true), []);
+  const hasGuides = !!sheet;
+  useEffect(() => {
+    if (hash !== GUIDES_HASH || !hasGuides || !mapReady) return;
+    const frame = requestAnimationFrame(scrollToGuides);
+    return () => cancelAnimationFrame(frame);
+    // `levelKey` is here so a level change with the hash still on it opens on its guides too.
+  }, [hash, hasGuides, mapReady, levelKey, scrollToGuides]);
+
   // Browser back and forward must not put the page back where it was scrolled: a level starts at the top.
   useEffect(() => {
     const prev = history.scrollRestoration;
@@ -373,6 +388,7 @@ export default function Explore() {
             onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
             onAttraction={(id) => setSelected(id)}
             onNotice={setNotice}
+            onReady={onMapReady}
           />
         </Suspense>
 
@@ -517,18 +533,7 @@ export default function Explore() {
               japan ? <MiniMap kind="japan" hot={hotPrefs} /> : tokyo ? <MiniMap kind="tokyo" hot={hotArea ? [Number(hotArea)] : []} /> : undefined
             }
           >
-            {tokyo ? (
-              <TokyoSections
-                scope="tokyo"
-                filter={filter}
-                setFilter={setFilter}
-                onWard={(id) => {
-                  scrollToTop();
-                  pickWard(id);
-                }}
-                onWardHover={setHotArea}
-              />
-            ) : japan ? (
+            {japan ? (
               <div className="gcards">
                 {GUIDED.map((r) => (
                   <GuideCard
@@ -550,7 +555,17 @@ export default function Explore() {
                 ))}
               </div>
             ) : (
-              <p className="guides-soon">Region guides coming in the next task</p>
+              /* Tokyo and its wards: the same three sections, scoped by the level. */
+              <TokyoSections
+                scope={tokyo ? 'tokyo' : target.area!.id}
+                filter={filter}
+                setFilter={setFilter}
+                onWard={(id) => {
+                  scrollToTop();
+                  pickWard(id);
+                }}
+                onWardHover={setHotArea}
+              />
             )}
           </GuideSheet>
         </>

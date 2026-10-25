@@ -229,18 +229,6 @@ h2:focus {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.text-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  color: var(--cedar);
-  text-decoration: none;
-}
-.text-link:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .icon-button {
   display: grid;
   place-items: center;
@@ -731,17 +719,6 @@ h2:focus {
 .search:focus-within {
   border-color: #fff;
 }
-.search-go {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-  border: 0;
-  background: #fff;
-  color: var(--cedar);
-}
-
 .lens {
   display: flex;
   align-items: center;
@@ -805,32 +782,9 @@ h2:focus {
   opacity: 0.88;
 }
 
-.hero-rail {
-  min-width: 0;
-  margin-right: calc((100vw - 100%) / -2);
-}
-.rail-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding-right: max(32px, calc((100vw - 1240px) / 2));
-}
-.rail-head h2 {
-  font-size: 18px;
-  font-weight: 600;
-}
 .rail-nav {
   display: flex;
   gap: 8px;
-}
-.hero-rail .round-button {
-  background: var(--glass-strong);
-  border-color: var(--glass-line);
-  color: #fff;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
 }
 .rail {
   overflow: visible;
@@ -1093,9 +1047,6 @@ h2:focus {
 
 /* ---------- Home: sections ---------- */
 
-.hero-below {
-  display: none;
-}
 .home-main {
   width: var(--page);
   margin: 0 auto;
@@ -1184,24 +1135,6 @@ h2:focus {
   font-size: 12px;
   opacity: 0.85;
 }
-.area-count {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: grid;
-  place-items: center;
-  min-width: 30px;
-  height: 30px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-line);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  font-size: 13px;
-  font-weight: 700;
-}
-
 .all {
   padding-top: 88px;
   scroll-margin-top: 24px;
@@ -3023,12 +2956,6 @@ h2:focus {
     gap: 36px;
     padding-top: 48px;
   }
-  .hero-rail {
-    margin-right: 0;
-  }
-  .rail-head {
-    padding-right: 0;
-  }
   .rail {
     overflow: hidden;
     border-radius: var(--r-xl);
@@ -3093,41 +3020,9 @@ h2:focus {
     height: 54px;
     margin-top: 20px;
   }
-  .search-go {
-    width: 42px;
-    height: 42px;
-  }
   .hero-credit {
     right: 16px;
     bottom: 8px;
-  }
-  .hero-below {
-    display: block;
-    padding: 20px 0 12px;
-    overflow-x: clip;
-  }
-  .hero-below .lens {
-    width: var(--page);
-    margin: 0 auto;
-    color: var(--ink);
-  }
-  .hero-below .lens-options {
-    background: var(--surface);
-    border-color: var(--line);
-    width: 100%;
-  }
-  .hero-below .lens-options button[aria-pressed='true'] .lens-text {
-    color: #fff;
-  }
-  .hero-below .lens-pill,
-  .hero-below .lens-options button[aria-pressed='true'] {
-    background: var(--ink);
-  }
-  .hero-below .lens-note {
-    width: var(--page);
-    margin: 10px auto 0;
-    color: var(--muted);
-    opacity: 1;
   }
   .deck {
     width: min(78vw, 330px);
@@ -3431,14 +3326,7 @@ h2:focus {
 .map-controls button:active {
   transform: scale(0.92);
 }
-.map.is-embed .map-controls {
-  left: auto;
-  right: 14px;
-  top: 14px;
-  transform: none;
-}
-
-/* ---------- Home: grid or map ---------- */
+/* ---------- Home: the all-attractions tools ---------- */
 
 .all-tools {
   display: flex;
@@ -3457,7 +3345,6 @@ h2:focus {
   gap: 10px;
   flex: none;
 }
-.view-toggle,
 .lens-mini {
   display: flex;
   gap: 2px;
@@ -3465,33 +3352,6 @@ h2:focus {
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface);
-}
-.view-toggle button {
-  position: relative;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 0;
-  background: none;
-  font-size: 14px;
-  font-weight: 600;
-}
-.view-toggle button[aria-pressed='true'] {
-  color: #fff;
-  background: var(--ink);
-  transition: background-color 0s 0.35s;
-}
-.view-pill {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: var(--ink);
-}
-.view-text {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 .lens-mini button {
   display: grid;
@@ -3514,54 +3374,6 @@ h2:focus {
   color: #fff;
 }
 
-.hmap {
-  display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
-  gap: 16px;
-  height: min(78vh, 760px);
-  min-height: 520px;
-}
-.hmap-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  padding: 16px;
-  border-radius: var(--r-xl);
-  background: var(--surface);
-}
-.hmap-list-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 34px;
-  padding: 0 4px;
-}
-.hmap-list-head p {
-  font-size: 16px;
-  font-weight: 700;
-}
-.hmap-list .prow {
-  background: var(--raised);
-}
-.hmap-list .prow:hover,
-.hmap-list .prow.is-hot {
-  background: var(--surface);
-}
-.area-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 12px 0 14px;
-  border-radius: 999px;
-  border: 0;
-  background: var(--ink);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-}
 .prow-lens {
   font-weight: 700;
 }
@@ -3573,56 +3385,6 @@ h2:focus {
 }
 .prow-lens.is-poor {
   color: var(--negative);
-}
-.hmap-stage {
-  position: relative;
-  min-height: 0;
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  background: #c9dde7;
-  isolation: isolate;
-}
-.hmap-stage .map {
-  position: absolute;
-  inset: 0;
-}
-.hmap-card {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  z-index: 9;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-.hmap-card .pin-card {
-  width: min(460px, 100%);
-  pointer-events: auto;
-}
-.hmap-tip {
-  position: absolute;
-  left: 16px;
-  bottom: 16px;
-  z-index: 3;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: var(--frost);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  font-size: 13px;
-  font-weight: 600;
-  pointer-events: none;
-}
-.hmap-card ~ .hmap-tip {
-  display: none;
-}
-
-@media (max-width: 1100px) {
-  .hmap {
-    grid-template-columns: 320px minmax(0, 1fr);
-  }
 }
 @media (max-width: 760px) {
   .all-tools {
@@ -3636,54 +3398,10 @@ h2:focus {
   .all-tools-end {
     width: 100%;
   }
-  .view-toggle {
-    width: 100%;
-  }
-  .view-toggle button {
-    flex: 1;
-  }
-  .hmap {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    min-height: 0;
-    gap: 14px;
-  }
-  .hmap-stage {
-    order: -1;
-    height: 62svh;
-    min-height: 420px;
-  }
-  .hmap-list {
-    padding: 0;
-    background: none;
-    gap: 8px;
-  }
-  .hmap-list .mrow {
-    margin: 0 -16px;
-  }
-  .hmap-list .prow {
-    background: var(--surface);
-  }
-  .hmap-tip {
-    left: 12px;
-    right: 64px;
-    bottom: 12px;
-    border-radius: 14px;
-  }
-  .hmap-card {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-  }
   .map-controls {
     left: auto;
     right: 12px;
     top: 50%;
-  }
-  .map.is-embed .map-controls {
-    top: 12px;
-    right: 12px;
   }
 }
 
@@ -3718,14 +3436,6 @@ h2:focus {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0);
-}
-.map.is-embed .map-offscreen {
-  left: 14px;
-  top: 14px;
-  transform: translateY(-6px);
-}
-.map.is-embed .map-offscreen[data-on='1'] {
-  transform: none;
 }
 @media (max-width: 760px) {
   .explore .map-offscreen {
@@ -3820,9 +3530,6 @@ h2:focus {
 @media (max-width: 760px) {
   .explore .maplibregl-ctrl-bottom-right {
     bottom: 236px;
-  }
-  .hmap-stage .maplibregl-ctrl-bottom-right {
-    bottom: 56px;
   }
 }
 
@@ -4227,10 +3934,6 @@ h2:focus {
   width: var(--page);
   margin: 0 auto;
   padding: 24px 0 64px;
-}
-.guides-soon {
-  font-size: 15px;
-  color: var(--muted);
 }
 
 /* One guide card per region (or ward), in a grid that drops to one column on a phone. */
@@ -4843,70 +4546,7 @@ h2:focus {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* The sub-place filter sits in the hero, right under the search. */
-.scope {
-  display: flex;
-  gap: 6px;
-  margin-top: 18px;
-  padding: 2px;
-  max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.scope-chip {
-  position: relative;
-  flex: none;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-line);
-  background: var(--glass);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-}
-.scope-chip:hover {
-  background: var(--glass-strong);
-}
-.scope-chip[aria-pressed='true'] {
-  color: var(--ink);
-  border-color: #fff;
-  background: #fff;
-  transition: background-color 0s 0.4s;
-}
-.scope-pill {
-  position: absolute;
-  inset: -1px;
-  border-radius: 999px;
-  background: #fff;
-}
-.scope-text {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.scope-text .num,
-.scope-text span {
-  font-weight: 500;
-  opacity: 0.7;
-}
-.scope-chip.is-live {
-  background: #fff;
-  color: var(--ink);
-  border-color: #fff;
-  cursor: pointer;
-}
-.scope-chip.is-soon {
-  opacity: 0.65;
-  cursor: default;
-}
-
-/* Area cards are filter buttons now. */
+/* Area cards are buttons that open a ward. */
 button.area-card {
   width: 100%;
   padding: 0;
@@ -4915,41 +4555,6 @@ button.area-card {
   font: inherit;
   cursor: pointer;
 }
-.area-card.is-on {
-  outline: 3px solid var(--cedar);
-  outline-offset: 3px;
-}
-.area-card.is-on .area-count {
-  background: var(--cedar);
-  border-color: var(--cedar);
-}
-
-.region-row {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr));
-  gap: 14px;
-}
-.area-card.is-big {
-  height: 180px;
-}
-.soon-card {
-  display: grid;
-  align-content: end;
-  gap: 2px;
-  height: 180px;
-  padding: 16px;
-  border-radius: var(--r-lg);
-  border: 1px dashed var(--control);
-  color: var(--muted);
-}
-.soon-card strong {
-  font-size: 17px;
-  color: var(--ink);
-}
-.soon-card span {
-  font-size: 13px;
-}
-
 /* Coming-soon country pages */
 .soon-pill {
   display: inline-flex;
@@ -4990,26 +4595,7 @@ button.area-card {
   font-weight: 600;
 }
 
-@media (max-width: 1100px) {
-  .region-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .region-row li:first-child {
-    grid-column: 1 / -1;
-  }
-}
 @media (max-width: 760px) {
-  .scope {
-    margin: 16px -16px 0;
-    padding: 2px 16px;
-  }
-  .region-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .area-card.is-big,
-  .soon-card {
-    height: 140px;
-  }
   .sights {
     grid-template-columns: 1fr;
   }

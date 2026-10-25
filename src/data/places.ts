@@ -60,6 +60,5 @@ export const TOKYO_PATH = '/map/japan/tokyo';
 export const countryPath = (name: string) => `${MAP_ROOT}/${slug(name)}`;
 export const areaPath = (areaId: string) => `${TOKYO_PATH}/${slug(areaById(areaId)!.properties.name)}`;
 
-/** Place pages use the same shape without /map: /japan, /japan/tokyo, /japan/tokyo/taito */
-export const TOKYO_PAGE = '/japan/tokyo';
-export const areaPagePath = (areaId: string) => `${TOKYO_PAGE}/${slug(areaById(areaId)!.properties.name)}`;
+/** The hash that lands a map level on its guides, for the old place-page URLs that redirect here. */
+export const GUIDES_HASH = '#guides';
