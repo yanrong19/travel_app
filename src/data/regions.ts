@@ -118,7 +118,7 @@ export const prefName = (code: number) => PREFECTURES.find((p) => Number(p.id) =
  * A prefecture without its far-flung specks: Tokyo reaches Ogasawara, 1,000km to the south, which
  * would stretch a frame around Kantō across half the Pacific. Parts under 2% of the largest go.
  */
-function mainLand(p: Place): Feature<Geometry> {
+export function mainLand(p: Place): Feature<Geometry> {
   const g = p.geometry;
   if (g.type !== 'MultiPolygon') return p;
   const parts = g.coordinates.map((coordinates) => ({ type: 'Polygon', coordinates }) as Polygon);

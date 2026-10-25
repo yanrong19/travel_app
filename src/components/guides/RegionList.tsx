@@ -9,7 +9,8 @@ export interface Hot {
   pref: number | null;
 }
 
-const statusOf = (r: Region) => (r.live ? 'Live · Tokyo' : 'Coming soon');
+/** What a region's row, chip or guide card says about it. */
+export const regionStatus = (r: Region) => (r.live ? 'Live · Tokyo' : 'Coming soon');
 
 interface ListProps {
   /** The one open row, if any: the accordion shows one region's prefectures at a time. */
@@ -48,7 +49,7 @@ export function RegionList({ openId, hot, onHover, onToggle, onPickPref }: ListP
                   </strong>
                   <span className="rrow-status">
                     {r.live && <span className="live-dot" aria-hidden="true" />}
-                    {statusOf(r)}
+                    {regionStatus(r)}
                   </span>
                 </span>
                 <span className="rrow-mark" aria-hidden="true">

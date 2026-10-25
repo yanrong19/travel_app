@@ -15,7 +15,7 @@ import {
   type MapTarget,
 } from '../data/places';
 import { DESTINATIONS, destinationByWorldId } from '../data/destinations';
-import { REGIONS, prefName, regionAnchor, regionOfPref, type Region } from '../data/regions';
+import { REGIONS, prefName, regionAnchor, regionOfPref, regionSummary, type Region } from '../data/regions';
 import type { Attraction } from '../data/types';
 import type { Insets } from '../map/camera';
 import { KineticTitle } from '../components/KineticTitle';
@@ -24,7 +24,9 @@ import { PanelRow, PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
 import { BAR_H, BAR_TOP, BAR_TOP_PHONE, GuideSheet } from '../components/guides/GuideSheet';
-import { RegionChips, RegionList, type Hot } from '../components/guides/RegionList';
+import { GuideCard } from '../components/guides/GuideCard';
+import { MiniMap } from '../components/guides/MiniMap';
+import { RegionChips, RegionList, regionStatus, type Hot } from '../components/guides/RegionList';
 import type { CardSubject } from '../components/GlobeCard';
 import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
@@ -49,6 +51,8 @@ const REGION_CARD_H = 160;
 const WHEEL_HINT = 'Scrolling shows the guides. Use Ctrl + scroll to zoom the map.';
 const TOKYO_PREF = Number(TOKYO_PREF_ID);
 const NO_HOT: Hot = { region: null, pref: null };
+/** The guides read live regions first, then north to south, which is REGIONS' own order. */
+const GUIDED = [...REGIONS].sort((a, b) => Number(b.live) - Number(a.live));
 
 /** A region shown on the map's card, in the shape the coming-soon country card already uses. */
 function regionCard(r: Region): CardSubject {
@@ -197,8 +201,8 @@ export default function Explore() {
     setHot({ region: r.id, pref: code });
   };
 
-  /** A phone chip: the same, except Kantō's chip goes straight to Tokyo, its only live place. */
-  const pickChip = (id: string) => {
+  /** A phone chip or a guide card: the same, except Kantō goes straight to Tokyo, its only live place. */
+  const pickRegion = (id: string) => {
     if (REGIONS.find((r) => r.id === id)?.live) return navigate(TOKYO_PATH);
     if (focusId === id) return clearFocus();
     setFocusId(id);
@@ -484,9 +488,33 @@ export default function Explore() {
             barLabel={sheet.barLabel}
             atGuides={atGuides}
             onBackToMap={scrollToTop}
-            peek={japan && narrow ? <RegionChips focusId={focusId} onPick={pickChip} /> : undefined}
+            peek={japan && narrow ? <RegionChips focusId={focusId} onPick={pickRegion} /> : undefined}
+            miniMap={japan ? <MiniMap kind="japan" hot={hotPrefs} /> : undefined}
           >
-            <p className="guides-soon">Region guides coming in the next task</p>
+            {japan ? (
+              <div className="gcards">
+                {GUIDED.map((r) => (
+                  <GuideCard
+                    key={r.id}
+                    photo={r.photo}
+                    title={r.name}
+                    ja={r.ja}
+                    status={regionStatus(r)}
+                    line={r.oneLiner}
+                    summary={regionSummary(r)}
+                    rough={!r.live}
+                    foot={r.prefectures.map((code) => prefName(code)).join(', ')}
+                    onHover={(on) => setHot(on ? { region: r.id, pref: null } : NO_HOT)}
+                    onPick={() => {
+                      scrollToTop();
+                      pickRegion(r.id);
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="guides-soon">Region guides coming in the next task</p>
+            )}
           </GuideSheet>
         </>
       )}

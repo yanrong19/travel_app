@@ -4233,6 +4233,208 @@ h2:focus {
   color: var(--muted);
 }
 
+/* One guide card per region (or ward), in a grid that drops to one column on a phone. */
+.gcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 24px;
+}
+.gcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out);
+}
+.gcard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--float);
+}
+/* The whole card is the button; the focus ring goes round the card, not the name. */
+.gcard:has(.gcard-name button:focus-visible) {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.gcard-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  margin: 8px 8px 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #d9e0e3;
+}
+.gcard-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s var(--ease-out);
+}
+.gcard:hover .gcard-media img {
+  transform: scale(1.05);
+}
+/* No photo for this region yet: a quiet panel with its Japanese name. */
+.gcard-media.is-blank {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, var(--mist), var(--control));
+}
+.gcard-blank {
+  font-family: var(--font-ja);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(16, 25, 27, 0.26);
+}
+.gcard-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+}
+.gcard-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 19px;
+  line-height: 24px;
+  font-weight: 700;
+}
+.gcard-name button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+}
+.gcard-name button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.gcard-name button:focus-visible {
+  outline: none;
+}
+.gcard-ja {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.gcard-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.gcard-status[data-live='1'] {
+  color: var(--cedar);
+}
+.gcard-line {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted);
+}
+.gcard-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.gcard-tags li {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: 12px;
+  font-weight: 700;
+}
+.gcard-empty {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+/* The small print sits on the bottom edge, so cards in a row line up. */
+.gcard-foot {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+}
+
+/* The twelve-month strip: good months filled, mock values labelled. */
+.mstrip {
+  margin-top: 12px;
+}
+.mstrip-row {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 3px;
+}
+.mstrip-row li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+}
+.mstrip-row li.is-good {
+  background: var(--cedar-soft);
+  box-shadow: inset 0 0 0 1px var(--cedar);
+  color: var(--cedar);
+}
+.mstrip-note {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px dashed var(--control);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* The sticky bar's thumbnail: a static outline with the hovered region filled. */
+.minimap {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.minimap[data-kind='tokyo'] {
+  width: 56px;
+  height: 32px;
+}
+.minimap path {
+  fill: var(--control);
+  transition: fill 0.2s;
+}
+.minimap path.is-hot {
+  fill: var(--cedar);
+  stroke: var(--cedar);
+  stroke-width: 1.2;
+}
+
 /* The region list in the right-hand panel at Japan level: an accordion, one region open. */
 .rlist {
   flex: 1;
@@ -4459,6 +4661,16 @@ h2:focus {
     padding: 0 12px;
     font-size: 13px;
   }
+  .gcards {
+    gap: 16px;
+  }
+  .gcard-media {
+    aspect-ratio: 16 / 9;
+  }
+  .minimap {
+    width: 34px;
+    height: 34px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4467,6 +4679,10 @@ h2:focus {
   .explore.has-guides .panel {
     transform: none;
     translate: none;
+  }
+  .gcard:hover,
+  .gcard:hover .gcard-media img {
+    transform: none;
   }
 }
 
