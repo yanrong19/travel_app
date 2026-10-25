@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
 import { ATTRACTIONS } from '../data/attractions';
-import { BottomTabs, TopNav } from '../components/Chrome';
+import { DESTINATIONS } from '../data/destinations';
+import { BottomTabs, Footer, TopNav } from '../components/Chrome';
 import { CREDITS, photo } from '../lib/photos';
 import { useMedia } from '../lib/useMedia';
-import { Footer } from './Home';
 
-const nameOf = (id: string) => (id === 'hero' ? 'Home page' : ATTRACTIONS.find((a) => a.id === id)?.name ?? id);
+const LANDMARKS = DESTINATIONS.flatMap((d) => d.landmarks.map((l) => ({ ...l, country: d.name })));
+const nameOf = (id: string) => {
+  if (id === 'hero') return 'Japan page';
+  const l = LANDMARKS.find((x) => x.photo === id && !ATTRACTIONS.some((a) => a.id === id));
+  return l ? `${l.name}, ${l.country}` : ATTRACTIONS.find((a) => a.id === id)?.name ?? id;
+};
 
 export default function Credits() {
   const narrow = useMedia('(max-width: 760px)');

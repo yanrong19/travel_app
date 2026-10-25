@@ -53,7 +53,13 @@ export function targetFromParams(country?: string, region?: string, area?: strin
   return { level: 'area', country: c, region: r, area: a };
 }
 
+/** The globe is the home page; deeper map levels live under /map. */
+export const WORLD_PATH = '/';
 export const MAP_ROOT = '/map';
 export const TOKYO_PATH = '/map/japan/tokyo';
 export const countryPath = (name: string) => `${MAP_ROOT}/${slug(name)}`;
 export const areaPath = (areaId: string) => `${TOKYO_PATH}/${slug(areaById(areaId)!.properties.name)}`;
+
+/** Place pages use the same shape without /map: /japan, /japan/tokyo, /japan/tokyo/taito */
+export const TOKYO_PAGE = '/japan/tokyo';
+export const areaPagePath = (areaId: string) => `${TOKYO_PAGE}/${slug(areaById(areaId)!.properties.name)}`;

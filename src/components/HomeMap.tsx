@@ -14,11 +14,26 @@ const NOOP = () => {};
 const MapExplorer = lazy(() => import('../map/MapExplorer'));
 
 /** The list and a map of Tokyo side by side; each list row has a ticker on the map. */
-export function HomeMap({ list, lens, onOpen }: { list: Attraction[]; lens: LensId; onOpen: (id: string) => void }) {
+export function HomeMap({
+  list,
+  lens,
+  onOpen,
+  areaId: areaProp,
+  onAreaChange,
+}: {
+  list: Attraction[];
+  lens: LensId;
+  onOpen: (id: string) => void;
+  /** When the page owns the ward filter, it passes it in and hears about changes. */
+  areaId?: string | null;
+  onAreaChange?: (id: string | null) => void;
+}) {
   const narrow = useMedia('(max-width: 760px)');
   const [hover, setHover] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
-  const [areaId, setAreaId] = useState<string | null>(null);
+  const [ownArea, setOwnArea] = useState<string | null>(null);
+  const areaId = areaProp !== undefined ? areaProp : ownArea;
+  const setAreaId = (id: string | null) => (onAreaChange ? onAreaChange(id) : setOwnArea(id));
 
   const area = areaId ? areaById(areaId) : undefined;
   const target = useMemo(

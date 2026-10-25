@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Map as MapLibreMap, setWorkerUrl, type LngLatBoundsLike, type MapGeoJSONFeature, type StyleSpecification } from 'maplibre-gl';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
+import { C, STYLE_URL, restyle } from './style';
 import { geoBounds } from 'd3-geo';
 import type { Attraction } from '../data/types';
 import { ATTRACTIONS } from '../data/attractions';
@@ -10,23 +9,30 @@ import { prefersReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { readings } from '../lib/factors';
 import { lensRating, type LensId } from '../lib/lens';
+import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
+import { GlobeCard } from '../components/GlobeCard';
+import { DESTINATIONS, countrySlugOf, destinationByWorldId, worldShape, type Destination } from '../data/destinations';
 import type { Insets } from './camera';
 
-// Open map data from OpenStreetMap, served free by OpenFreeMap. The style is
-// restyled on load into the app's palette (see restyle()).
-const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+/** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
+const DWELL_MS = 5000;
+const RESUME_MS = 5000;
+const SPIN_DEG_PER_FRAME = 0.035;
+const TOKYO_LL: [number, number] = [139.69, 35.69];
 
-// Point MapLibre at its worker explicitly so it loads under Vite in dev and in builds.
-setWorkerUrl(workerUrl);
+/** Great-circle distance in degrees: how far a country is from the middle of the visible globe. */
+function arc(a: [number, number], b: [number, number]) {
+  const r = Math.PI / 180;
+  const c = Math.sin(a[1] * r) * Math.sin(b[1] * r) + Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.cos((a[0] - b[0]) * r);
+  return Math.acos(Math.min(1, Math.max(-1, c))) / r;
+}
 
-const C = {
-  ground: '#eef2f4',
-  water: '#b9d5e3',
-  park: '#d3e8dc',
-  cedar: '#0e4f47',
-  ink: '#10191b',
+const DEST_SHAPES = {
+  type: 'FeatureCollection' as const,
+  features: DESTINATIONS.map((d, i) => ({ type: 'Feature' as const, id: i + 1, properties: { wid: d.worldId, live: d.live }, geometry: worldShape(d)!.geometry })),
 };
+
 
 const JAPAN_BOUNDS: LngLatBoundsLike = [
   [128.6, 30.6],
@@ -83,6 +89,8 @@ interface Props {
   fitPins?: boolean;
   /** Embedded in a scrolling page: Ctrl or Cmd + scroll zooms, two fingers pan on phones. */
   embed?: boolean;
+  /** A coming-soon country to pin its landmark card to (country level). */
+  pinned?: Destination | null;
   onHover: (id: string | null) => void;
   onCountry: (slug: string) => void;
   onRegion: () => void;
@@ -91,11 +99,15 @@ interface Props {
   onNotice: (text: string) => void;
 }
 
-type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: number; pitch: number; bearing: number };
+type Pad = { top: number; right: number; bottom: number; left: number };
+type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: number; pitch: number; bearing: number; padding?: Pad };
+const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function MapExplorer(props: Props) {
-  const { target, insets, pins, hoverId, selectedId = null, lens = 'any', fitPins = false, embed = false } = props;
+  const { target, insets, pins, hoverId, selectedId = null, lens = 'any', fitPins = false, embed = false, pinned = null } = props;
   const wrap = useRef<HTMLDivElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  const tether = useRef<SVGSVGElement>(null);
   const canvasBox = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const tip = useRef<HTMLDivElement>(null);
@@ -109,6 +121,27 @@ export function MapExplorer(props: Props) {
   const levelRef = useRef<Level>(target.level);
   levelRef.current = target.level;
   const spin = useRef(0);
+  const insetsRef = useRef(insets);
+  insetsRef.current = insets;
+
+  // The tour: one destination lit at a time while the globe turns.
+  const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
+  const [touring, setTouring] = useState(false);
+  const touringRef = useRef(touring);
+  touringRef.current = touring;
+  const currentRef = useRef(current);
+  currentRef.current = current;
+  const pinnedRef = useRef(pinned);
+  pinnedRef.current = pinned;
+  const paused = useRef(false);
+  const resumeTimer = useRef(0);
+  const firstWorld = useRef(true);
+  const toured = useRef(false);
+  const flightId = useRef(0);
+  const tourOn = !embed && target.level === 'world';
+  const cardDest = tourOn ? (touring ? current : null) : pinned;
+  const cardRef = useRef(cardDest);
+  cardRef.current = cardDest;
 
   // ---- Create the map once ----
   useEffect(() => {
@@ -139,13 +172,26 @@ export function MapExplorer(props: Props) {
 
     map.on('move', place);
     map.on('resize', place);
-    const stopSpin = () => cancelAnimationFrame(spin.current);
-    map.on('mousedown', stopSpin);
-    map.on('touchstart', stopSpin);
-    map.on('wheel', stopSpin);
+    // Touching the map stops the turn and the tour; on the globe both pick up again a few seconds after letting go.
+    const hold = () => {
+      cancelAnimationFrame(spin.current);
+      paused.current = true;
+      clearTimeout(resumeTimer.current);
+    };
+    const release = () => levelRef.current === 'world' && resumeLater(RESUME_MS);
+    map.on('mousedown', hold);
+    map.on('touchstart', hold);
+    map.on('wheel', () => {
+      hold();
+      release();
+    });
+    map.on('mouseup', release);
+    map.on('touchend', release);
+    map.on('dragend', release);
 
     return () => {
       clearTimeout(failTimer);
+      clearTimeout(resumeTimer.current);
       cancelAnimationFrame(spin.current);
       map.remove();
       mapRef.current = null;
@@ -181,7 +227,109 @@ export function MapExplorer(props: Props) {
       offscreen.current.dataset.on = off ? '1' : '';
       offscreen.current.firstElementChild!.textContent = off === 1 ? '1 place outside the view' : `${off} places outside the view`;
     }
+    placeCard(map, W, H);
   }
+
+  /** Tether the destination card to its country: beside it on wide screens, docked at the bottom on phones. */
+  function placeCard(map: MapLibreMap, W: number, H: number) {
+    const cardEl = card.current;
+    const svg = tether.current;
+    const d = cardRef.current;
+    if (!cardEl || !svg) return;
+    if (!d) {
+      cardEl.dataset.on = '';
+      svg.dataset.on = '';
+      return;
+    }
+    const c = map.getCenter();
+    const facing = map.getZoom() > 3 || arc(d.anchor, [c.lng, c.lat]) < 80;
+    const p = map.project(d.anchor);
+    const cw = cardEl.offsetWidth;
+    const ch = cardEl.offsetHeight;
+    const ins = insetsRef.current;
+    const narrow = W < 760;
+    let x: number;
+    let y: number;
+    if (narrow) {
+      x = (W - cw) / 2;
+      y = H - ch - 92;
+    } else {
+      // Japan's card clears the Tokyo pin's label on the right.
+      const gapRight = d.live ? 210 : 70;
+      const right = p.x + gapRight + cw < W - 24;
+      x = right ? p.x + gapRight : p.x - 70 - cw;
+      x = Math.max(Math.max(ins.left - 24, 16), Math.min(W - cw - 24, x));
+      y = Math.max(ins.top - 40, Math.min(H - ch - 24, p.y - ch / 2));
+    }
+    cardEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    cardEl.dataset.on = facing ? '1' : '';
+    const ex = narrow ? x + cw / 2 : p.x < x ? x : x + cw;
+    const ey = narrow ? y : Math.max(y + 24, Math.min(y + ch - 24, p.y));
+    const line = svg.firstElementChild!;
+    const dot = svg.lastElementChild!;
+    line.setAttribute('x1', p.x.toFixed(1));
+    line.setAttribute('y1', p.y.toFixed(1));
+    line.setAttribute('x2', ex.toFixed(1));
+    line.setAttribute('y2', ey.toFixed(1));
+    dot.setAttribute('cx', p.x.toFixed(1));
+    dot.setAttribute('cy', p.y.toFixed(1));
+    svg.dataset.on = facing ? '1' : '';
+  }
+
+  // ---- The tour ----
+  function highlight(d: Destination | null) {
+    const map = mapRef.current;
+    if (!map || !map.getSource('fl-dest')) return;
+    DEST_SHAPES.features.forEach((f) => map.setFeatureState({ source: 'fl-dest', id: f.id }, { current: f.properties.wid === d?.worldId }));
+  }
+
+  /** Light another destination facing the viewer; any one will do, as long as it is on this side of the globe. */
+  function pickNext() {
+    const map = mapRef.current;
+    if (!map) return;
+    const c = map.getCenter();
+    const center: [number, number] = [c.lng, c.lat];
+    const others = DESTINATIONS.filter((d) => d.slug !== currentRef.current.slug);
+    const facing = others.filter((d) => arc(d.anchor, center) < 62);
+    const pool = facing.length ? facing : [...others].sort((a, b) => arc(a.anchor, center) - arc(b.anchor, center)).slice(0, 1);
+    setCurrent(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  /** Start turning and touring again after `ms`, unless the map is touched again first. */
+  function resumeLater(ms: number) {
+    clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => {
+      if (levelRef.current !== 'world' || !mapRef.current) return;
+      paused.current = false;
+      startSpin();
+      if (touringRef.current) pickNext();
+      else setTouring(true);
+      toured.current = true;
+    }, ms);
+  }
+
+  useEffect(() => {
+    if (!ready) return;
+    highlight(cardDest);
+    place();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cardDest, ready]);
+
+  // Leaving the globe ends the tour; coming back starts it again five seconds after landing.
+  useEffect(() => {
+    if (!tourOn) {
+      setTouring(false);
+      clearTimeout(resumeTimer.current);
+      paused.current = false;
+    }
+  }, [tourOn]);
+
+  useEffect(() => {
+    if (!tourOn || !touring) return;
+    const t = window.setInterval(() => !paused.current && pickNext(), DWELL_MS);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourOn, touring]);
 
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
@@ -203,6 +351,8 @@ export function MapExplorer(props: Props) {
     const lv = target.level;
     const show = (id: string, on: boolean) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
     show('fl-world-fill', lv === 'world' || lv === 'country');
+    show('fl-dest-fill', lv === 'world' || lv === 'country');
+    show('fl-dest-line', lv === 'world' || lv === 'country');
     show('fl-pref-fill', lv === 'country');
     show('fl-pref-line', lv !== 'world');
     show('fl-area-fill', lv === 'region' || lv === 'area');
@@ -237,6 +387,8 @@ export function MapExplorer(props: Props) {
     const map = mapRef.current;
     if (!map) return;
     cancelAnimationFrame(spin.current);
+    // A newer flight cancels this one; its end must not start the spin under the new flight.
+    const flight = ++flightId.current;
     const reduced = prefersReducedMotion();
     const go = (cam: Cam) => {
       if (reduced) map.jumpTo(cam);
@@ -244,8 +396,21 @@ export function MapExplorer(props: Props) {
     };
     const t = target;
     if (t.level === 'world') {
-      go({ center: [139.5, 30], zoom: map.getContainer().clientWidth < 700 ? 1 : 1.9, pitch: 0, bearing: 0 });
-      if (!reduced) map.once('moveend', () => levelRef.current === 'world' && startSpin());
+      paused.current = false;
+      // Size the globe to the free area beside the title card, and keep it centred there.
+      const box = map.getContainer();
+      const free = Math.min(box.clientWidth - insets.left - insets.right, box.clientHeight - insets.top - insets.bottom);
+      const zoom = Math.max(0.3, Math.min(2.3, Math.log2(Math.max(free, 120) / 200)));
+      const c = map.getCenter();
+      const from = firstWorld.current ? [125, 22] : [c.lng, Math.max(-10, Math.min(40, c.lat))];
+      go({ center: from as [number, number], zoom, pitch: 0, bearing: 0, padding: { ...insets } });
+      firstWorld.current = false;
+      map.once('moveend', () => {
+        if (flight !== flightId.current || levelRef.current !== 'world' || paused.current) return;
+        startSpin();
+        // The first visit tours straight away; coming back, it waits a moment.
+        if (!touringRef.current) resumeLater(toured.current ? RESUME_MS : 0);
+      });
       return;
     }
     let bounds: LngLatBoundsLike | null = null;
@@ -258,7 +423,7 @@ export function MapExplorer(props: Props) {
         const [[w, s], [e, n]] = geoBounds(t.country);
         if (e <= w) {
           // Shapes across the date line just get centred.
-          go({ center: [(w + e + 360) / 2, (s + n) / 2], zoom: 2.4, pitch: 0, bearing: 0 });
+          go({ center: [(w + e + 360) / 2, (s + n) / 2], zoom: 2.4, pitch: 0, bearing: 0, padding: NO_PAD });
           return;
         }
         bounds = [
@@ -287,16 +452,17 @@ export function MapExplorer(props: Props) {
     if (!cam || cam.zoom == null || !cam.center) return;
     // Ticker labels are wider than the points they mark; on narrow maps step back a little.
     const narrow = wrap.current!.clientWidth < 700;
-    go({ center: cam.center as Cam['center'], zoom: cam.zoom - (narrow ? 0.45 : 0), pitch, bearing });
+    go({ center: cam.center as Cam['center'], zoom: cam.zoom - (narrow ? 0.45 : 0), pitch, bearing, padding: NO_PAD });
   }
 
   function startSpin() {
     const map = mapRef.current;
     if (!map || prefersReducedMotion()) return;
+    cancelAnimationFrame(spin.current);
     const step = () => {
-      if (levelRef.current !== 'world' || !mapRef.current) return;
+      if (levelRef.current !== 'world' || !mapRef.current || paused.current) return;
       const c = map.getCenter();
-      map.setCenter([c.lng + 0.04, c.lat]);
+      map.setCenter([c.lng + SPIN_DEG_PER_FRAME, c.lat]);
       spin.current = requestAnimationFrame(step);
     };
     spin.current = requestAnimationFrame(step);
@@ -332,8 +498,8 @@ export function MapExplorer(props: Props) {
       const f = e.features?.[0];
       if (!f) return;
       setHover(f, 'fl-world');
-      const isJapan = f.properties.fid === JAPAN_ID;
-      showTip(e, f.properties.name, isJapan ? `Tokyo: ${ATTRACTIONS.length} attractions checked` : 'No attractions yet', true);
+      const d = destinationByWorldId(f.properties.fid);
+      showTip(e, f.properties.name, d?.live ? `Tokyo: ${ATTRACTIONS.length} attractions checked` : d ? 'Coming soon' : 'No attractions yet', true);
     };
     const onPrefMove = (e: Ev) => {
       const f = e.features?.[0];
@@ -408,10 +574,15 @@ export function MapExplorer(props: Props) {
       <div ref={canvasBox} className="map-canvas" role="region" aria-label={`Map of ${placeName}`} />
 
       <div ref={overlay} className="map-overlay">
-        {level === 'world' && (
-          <button type="button" className="map-callout" data-flip="" data-ll="138.5,37.2" onClick={() => handlers.current.onCountry('japan')}>
-            <span className="map-callout-dot" aria-hidden="true" />
-            <span>Japan</span>
+        {level === 'world' && !embed && (
+          <button type="button" className="livepin" data-flip="" data-ll={TOKYO_LL.join(',')} onClick={() => handlers.current.onRegion()} aria-label={`Tokyo, live: ${plural(ATTRACTIONS.length, 'attraction')} checked. Fly in`}>
+            <span className="livepin-photo" aria-hidden="true">
+              <img src={photo('shibuya-sky')} alt="" draggable={false} />
+            </span>
+            <span className="livepin-label" aria-hidden="true">
+              Tokyo
+              <span className="livepin-live">Live</span>
+            </span>
           </button>
         )}
         {showPins &&
@@ -445,6 +616,22 @@ export function MapExplorer(props: Props) {
             );
           })}
       </div>
+
+      {!embed && (
+        <>
+          <svg ref={tether} className="globe-tether" aria-hidden="true">
+            <line />
+            <circle r="5" />
+          </svg>
+          <GlobeCard
+            ref={card}
+            dest={cardDest ?? current}
+            mode={tourOn ? 'tour' : 'pinned'}
+            onOpen={() => cardDest && handlers.current.onCountry(countrySlugOf(cardDest))}
+            onTokyo={() => handlers.current.onRegion()}
+          />
+        </>
+      )}
 
       <div className="map-controls" role="group" aria-label="Map controls">
         <button type="button" onClick={() => zoomBy(1)} aria-label="Zoom in">
@@ -489,88 +676,15 @@ export function MapExplorer(props: Props) {
 
 export default MapExplorer;
 
-/** Recolour the downloaded base style into the app's palette, show English names, and add relief and 3D buildings. */
-function restyle(map: MapLibreMap) {
-  const style = map.getStyle() as StyleSpecification;
-  const vector = Object.entries(style.sources).find(([, s]) => s.type === 'vector')?.[0];
-  let firstSymbol: string | undefined;
-  for (const l of style.layers) {
-    if (l.type === 'symbol' && !firstSymbol) firstSymbol = l.id;
-    if (l.type === 'background') map.setPaintProperty(l.id, 'background-color', C.ground);
-    if (l.type === 'fill' && l.id === 'water') map.setPaintProperty(l.id, 'fill-color', C.water);
-    if (l.type === 'line' && l.id === 'waterway') map.setPaintProperty(l.id, 'line-color', C.water);
-    if (l.type === 'fill' && /park|wood|grass/.test(l.id)) {
-      map.setPaintProperty(l.id, 'fill-color', C.park);
-      map.setPaintProperty(l.id, 'fill-opacity', 0.9);
-    }
-    if (l.type === 'fill' && l.id === 'landuse_residential') map.setPaintProperty(l.id, 'fill-color', '#e7ecef');
-    // Road names, shields and minor place labels crowd the tickers; the map keeps districts, water and stations.
-    if (l.id === 'building' || /^highway-(name|shield)|^road_shield|^label_other$|^airport$/.test(l.id)) map.setLayoutProperty(l.id, 'visibility', 'none');
-    if (l.type === 'line' && /^railway(_transit)?$/.test(l.id)) map.setPaintProperty(l.id, 'line-color', '#9fb3bd');
-    if (l.type === 'line' && l.id === 'boundary_2') map.setPaintProperty(l.id, 'line-color', '#9fb0b8');
-    if (l.type === 'symbol' && l.layout && 'text-field' in l.layout) {
-      map.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name']]);
-      map.setPaintProperty(l.id, 'text-color', l.id.startsWith('label_country') ? '#56636a' : '#3d4a50');
-      map.setPaintProperty(l.id, 'text-halo-color', 'rgba(255,255,255,0.9)');
-    }
-  }
-
-  // Shaded relief from Natural Earth gives the globe and Japan's mountains some depth.
-  if (style.sources.ne2_shaded && map.getLayer('park')) {
-    map.addLayer(
-      {
-        id: 'fl-relief',
-        type: 'raster',
-        source: 'ne2_shaded',
-        maxzoom: 9,
-        paint: {
-          'raster-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.55, 6, 0.4, 9, 0],
-          'raster-saturation': -0.6,
-          'raster-contrast': 0.05,
-        },
-      },
-      'park',
-    );
-  }
-
-  if (vector) {
-    map.addLayer(
-      {
-        id: 'fl-buildings',
-        type: 'fill-extrusion',
-        source: vector,
-        'source-layer': 'building',
-        minzoom: 12.5,
-        paint: {
-          'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 8], 0, '#f6f8f9', 40, '#e4ebef', 150, '#cfdbe1'],
-          'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 14, ['coalesce', ['get', 'render_height'], 8]],
-          'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-          'fill-extrusion-opacity': 0.92,
-        },
-      },
-      firstSymbol,
-    );
-  }
-
-  map.setLight({ anchor: 'viewport', color: '#ffffff', intensity: 0.35, position: [1.3, 200, 35] });
-  map.setSky({
-    'sky-color': '#a9cde0',
-    'horizon-color': '#eef2f4',
-    'fog-color': '#eef2f4',
-    'sky-horizon-blend': 0.6,
-    'horizon-fog-blend': 0.7,
-    'fog-ground-blend': 0.75,
-    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 8, 0],
-  });
-}
-
 /** Countries, prefectures and Tokyo's wards, drawn over the base map so they can be hovered and clicked. */
 function addOurLayers(map: MapLibreMap) {
   const firstSymbol = map.getStyle().layers.find((l) => l.type === 'symbol')?.id;
   map.addSource('fl-world', { type: 'geojson', data: collection(WORLD, (_, i) => i + 1) });
   map.addSource('fl-prefs', { type: 'geojson', data: collection(PREFECTURES, (f) => Number(f.id)) });
   map.addSource('fl-areas', { type: 'geojson', data: collection(TOKYO_AREAS, (f) => Number(f.id), (id) => ({ count: AREA_COUNTS[id] ?? 0 })) });
+  map.addSource('fl-dest', { type: 'geojson', data: DEST_SHAPES });
   const hover = ['boolean', ['feature-state', 'hover'], false];
+  const lit = ['boolean', ['feature-state', 'current'], false];
 
   map.addLayer(
     {
@@ -578,17 +692,36 @@ function addOurLayers(map: MapLibreMap) {
       type: 'fill',
       source: 'fl-world',
       paint: {
-        'fill-color': ['case', ['==', ['get', 'fid'], JAPAN_ID], C.cedar, C.ink],
-        // Japan glows green on the globe and fades as the prefectures take over.
-        'fill-opacity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          2,
-          ['case', ['==', ['get', 'fid'], JAPAN_ID], 0.85, hover, 0.08, 0],
-          4,
-          ['case', ['==', ['get', 'fid'], JAPAN_ID], 0, hover, 0.08, 0],
-        ] as never,
+        'fill-color': C.ink,
+        'fill-opacity': ['case', hover, 0.08, 0] as never,
+      },
+    },
+    firstSymbol,
+  );
+  // Destinations are tinted on the globe (Japan, which is live, stronger); the one on tour is lit.
+  // The tint fades as the camera comes down to a country.
+  map.addLayer(
+    {
+      id: 'fl-dest-fill',
+      type: 'fill',
+      source: 'fl-dest',
+      paint: {
+        'fill-color': C.cedar,
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, ['case', lit, 0.9, ['get', 'live'], 0.6, 0.3], 4.4, ['case', lit, 0.28, 0]] as never,
+        'fill-opacity-transition': { duration: 600 },
+      },
+    },
+    firstSymbol,
+  );
+  map.addLayer(
+    {
+      id: 'fl-dest-line',
+      type: 'line',
+      source: 'fl-dest',
+      paint: {
+        'line-color': C.cedar,
+        'line-width': ['case', lit, 1.8, 0.6] as never,
+        'line-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, 0.8, 4.4, ['case', lit, 0.8, 0]] as never,
       },
     },
     firstSymbol,

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
-import { areaById, TOKYO_PATH } from '../data/places';
+import { areaById, TOKYO_PAGE, WORLD_PATH } from '../data/places';
 import { mustPay, realTime } from '../lib/factors';
 import { duration, plural, yen } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
@@ -41,6 +41,7 @@ export function Wordmark() {
 
 /** "Tokyo, Japan" pill that opens a list of cities, with the rest marked as coming soon. */
 function CityPicker() {
+  const go = useGo();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,7 +72,14 @@ function CityPicker() {
             transition={{ duration: 0.18, ease: EASE_OUT }}
           >
             <p className="city-menu-title">Cities</p>
-            <button type="button" className="city-item is-live" onClick={() => setOpen(false)}>
+            <button
+              type="button"
+              className="city-item is-live"
+              onClick={() => {
+                setOpen(false);
+                go(TOKYO_PAGE);
+              }}
+            >
               Tokyo <span>16 attractions</span>
             </button>
             {SOON.map((c) => (
@@ -90,16 +98,16 @@ export function TopNav({ tone = 'solid' }: { tone?: 'glass' | 'solid' }) {
   const go = useGo();
   const { pathname } = useLocation();
   const { ids, setOpen } = useTrip();
-  const onMap = pathname.startsWith('/map');
+  const onMap = pathname === '/' || pathname.startsWith('/map');
   return (
     <header className={`topnav is-${tone}`}>
       <Wordmark />
       <nav className="topnav-links" aria-label="Main">
-        <a href="/" aria-current={pathname === '/' ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go('/'))}>
+        <a href={WORLD_PATH} aria-current={onMap ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(WORLD_PATH))}>
           Explore
         </a>
-        <a href={TOKYO_PATH} aria-current={onMap ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(TOKYO_PATH))}>
-          Map
+        <a href={TOKYO_PAGE} aria-current={pathname.startsWith('/japan') ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(TOKYO_PAGE))}>
+          Tokyo
         </a>
         <button type="button" onClick={() => setOpen(true)}>
           Saved
@@ -121,16 +129,16 @@ export function BottomTabs() {
   const go = useGo();
   const { pathname } = useLocation();
   const { ids, setOpen } = useTrip();
-  const onMap = pathname.startsWith('/map');
+  const onMap = pathname === '/' || pathname.startsWith('/map');
   return (
     <nav className="tabs" aria-label="Main">
-      <button type="button" aria-current={pathname === '/' ? 'page' : undefined} onClick={() => go('/')}>
-        <Icon name="home" size={20} />
+      <button type="button" aria-current={onMap ? 'page' : undefined} onClick={() => go(WORLD_PATH)}>
+        <Icon name="globe" size={20} />
         Explore
       </button>
-      <button type="button" aria-current={onMap ? 'page' : undefined} onClick={() => go(TOKYO_PATH)}>
-        <Icon name="map" size={20} />
-        Map
+      <button type="button" aria-current={pathname.startsWith('/japan') ? 'page' : undefined} onClick={() => go(TOKYO_PAGE)}>
+        <Icon name="home" size={20} />
+        Tokyo
       </button>
       <button type="button" onClick={() => setOpen(true)}>
         <span className="tabs-icon">
@@ -283,5 +291,26 @@ export function SavedDrawer() {
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+/** Footer shared by every page. */
+export function Footer() {
+  const go = useGo();
+  return (
+    <footer className="footer">
+      <div className="footer-row">
+        <p>A prototype. Attraction details are sample data and haven’t been checked yet.</p>
+        <a
+          href="/credits"
+          onClick={(e) => {
+            e.preventDefault();
+            go('/credits');
+          }}
+        >
+          Photo credits
+        </a>
+      </div>
+    </footer>
   );
 }

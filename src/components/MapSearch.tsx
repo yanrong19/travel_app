@@ -2,12 +2,13 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
 import { AREA_COUNTS, JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, areaById, slug, type MapTarget } from '../data/places';
+import { DESTINATIONS, countrySlugOf, destinationByWorldId } from '../data/destinations';
 import { EASE_OUT } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { plural } from '../lib/format';
 import { Icon } from './Icon';
 
-type Kind = 'country' | 'pref' | 'area' | 'place';
+type Kind = 'city' | 'dest' | 'country' | 'pref' | 'area' | 'place';
 
 interface Item {
   key: string;
@@ -46,7 +47,15 @@ function score(item: Item, q: string) {
   return -1;
 }
 
-const SECTION: Record<Kind, string> = { country: 'Countries', pref: 'Prefectures', area: 'Wards and cities', place: 'Places' };
+const SECTION: Record<Kind, string> = {
+  city: 'Live now',
+  dest: 'Destinations',
+  country: 'All countries',
+  pref: 'Prefectures',
+  area: 'Wards and cities',
+  place: 'Places',
+};
+const KIND_ORDER: Kind[] = ['city', 'dest', 'place', 'pref', 'area', 'country'];
 
 /** Search that changes with the map level: countries, then prefectures, then wards and places. */
 export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, onNotice }: Props) {
@@ -63,22 +72,45 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
 
   const { items, placeholder, emptyText } = useMemo(() => {
     if (level === 'world') {
-      const list: Item[] = WORLD.map((c) => ({
-        key: `c-${c.id}`,
-        kind: 'country' as const,
-        label: c.properties.name,
-        sub: c.id === JAPAN_ID ? `Tokyo: ${plural(ATTRACTIONS.length, 'attraction')} checked` : 'No attractions yet',
-        live: c.id === JAPAN_ID,
-        pick: () => onCountry(slug(c.properties.name)),
-      })).sort((a, b) => Number(b.live) - Number(a.live) || a.label.localeCompare(b.label));
-      return { items: list, placeholder: 'Search countries', emptyText: 'No country by that name.' };
+      // Tokyo first, then the destinations with photos, then every other country.
+      const tokyo: Item = {
+        key: 'tokyo',
+        kind: 'city',
+        label: 'Tokyo',
+        ja: '東京',
+        sub: `Japan · ${plural(ATTRACTIONS.length, 'attraction')} checked`,
+        live: true,
+        img: photo('shibuya-sky'),
+        pick: onRegion,
+      };
+      const dests: Item[] = DESTINATIONS.map((d) => ({
+        key: `d-${d.slug}`,
+        kind: 'dest' as const,
+        label: d.name,
+        ja: d.local,
+        sub: d.live ? 'Country · Tokyo is live' : 'Country · coming soon',
+        live: d.live,
+        img: photo(d.landmarks[0].photo),
+        pick: () => onCountry(countrySlugOf(d)),
+      }));
+      const rest: Item[] = WORLD.filter((c) => !destinationByWorldId(c.id))
+        .map((c) => ({
+          key: `c-${c.id}`,
+          kind: 'country' as const,
+          label: c.properties.name,
+          sub: 'No attractions yet',
+          live: false,
+          pick: () => onCountry(slug(c.properties.name)),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+      return { items: [tokyo, ...dests, ...rest], placeholder: 'Where are you going?', emptyText: 'No country by that name.' };
     }
     if (level === 'country') {
       if (!inJapan) {
         return {
           items: [] as Item[],
           placeholder: `Search regions in ${countryName}`,
-          emptyText: `No regions mapped in ${countryName} yet. Japan is the first country with checked attractions.`,
+          emptyText: `No regions mapped in ${countryName} yet. Tokyo is live meanwhile.`,
         };
       }
       const list: Item[] = PREFECTURES.map((p) => ({
@@ -134,12 +166,13 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
     if (!q) {
       // Before typing: the live entries first, then a handful of the rest.
       if (level === 'region' || level === 'area') return items.filter((i) => i.kind === 'area' ? i.live : true).slice(0, 14);
+      if (level === 'world') return items.filter((i) => i.kind !== 'country');
       return items.slice(0, 12);
     }
     return items
       .map((i) => ({ i, s: score(i, q) }))
       .filter((r) => r.s >= 0)
-      .sort((a, b) => a.s - b.s || Number(b.i.live) - Number(a.i.live))
+      .sort((a, b) => KIND_ORDER.indexOf(a.i.kind) - KIND_ORDER.indexOf(b.i.kind) || a.s - b.s || Number(b.i.live) - Number(a.i.live))
       .map((r) => r.i)
       .slice(0, 30);
   }, [items, q, level]);
@@ -241,8 +274,8 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
               <div className="msearch-empty">
                 <p>{emptyText}</p>
                 {level === 'country' && !inJapan && (
-                  <button type="button" className="text-button" onClick={() => choose({ key: 'jp', kind: 'country', label: 'Japan', sub: '', live: true, pick: () => onCountry('japan') })}>
-                    Go to Japan
+                  <button type="button" className="text-button" onClick={() => choose({ key: 'tokyo', kind: 'city', label: 'Tokyo', sub: '', live: true, pick: onRegion })}>
+                    Explore Tokyo
                   </button>
                 )}
               </div>
@@ -252,7 +285,7 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
                   const heading = i === 0 || results[i - 1].kind !== item.kind;
                   return (
                     <li key={item.key} role="presentation">
-                      {heading && (level === 'region' || level === 'area') && (
+                      {heading && level !== 'country' && (
                         <p className="msearch-section" role="presentation">
                           {SECTION[item.kind]}
                         </p>
@@ -285,7 +318,9 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
                           </span>
                           <span className="msearch-sub">{item.sub}</span>
                         </span>
-                        {item.live && item.kind !== 'place' && <span className="msearch-badge">Mapped</span>}
+                        {item.live && item.kind !== 'place' && (
+                          <span className="msearch-badge">{item.kind === 'city' || item.kind === 'dest' ? 'Live' : 'Mapped'}</span>
+                        )}
                       </div>
                     </li>
                   );
