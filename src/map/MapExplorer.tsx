@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
+import { AttributionControl, Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
 import { C, STYLE_URL, restyle } from './style';
 import { geoBounds } from 'd3-geo';
 import type { Attraction } from '../data/types';
@@ -91,6 +91,12 @@ interface Props {
   embed?: boolean;
   /** A coming-soon country to pin its landmark card to (country level). */
   pinned?: Destination | null;
+  /** The page scrolls on the wheel: the map zooms only with Ctrl + wheel (and trackpad pinch). */
+  wheelScrollsPage?: boolean;
+  /** A plain wheel over the map while `wheelScrollsPage` is on. */
+  onWheelPassThrough?: () => void;
+  /** Where the map's attribution goes instead of the map corner, for when the map can be covered. */
+  attributionHost?: HTMLElement | null;
   onHover: (id: string | null) => void;
   onCountry: (slug: string) => void;
   onRegion: () => void;
@@ -104,7 +110,7 @@ type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: numb
 const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function MapExplorer(props: Props) {
-  const { target, insets, pins, hoverId, selectedId = null, lens = 'any', fitPins = false, embed = false, pinned = null } = props;
+  const { target, insets, pins, hoverId, selectedId = null, lens = 'any', fitPins = false, embed = false, pinned = null, wheelScrollsPage = false, attributionHost = null } = props;
   const wrap = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const tether = useRef<SVGSVGElement>(null);
@@ -151,7 +157,7 @@ export function MapExplorer(props: Props) {
       center: [139.2, 36],
       zoom: embed ? 8 : 1.4,
       maxPitch: 70,
-      attributionControl: { compact: true },
+      attributionControl: false, // added below, so it can live outside the map
       cooperativeGestures: embed,
       fadeDuration: 150,
       renderWorldCopies: false,
@@ -198,6 +204,53 @@ export function MapExplorer(props: Props) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The attribution sits in the map corner, or in `attributionHost` when the page can cover the map.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const control = new AttributionControl({ compact: true });
+    if (!attributionHost) {
+      map.addControl(control, 'bottom-right');
+      return () => {
+        if (mapRef.current) map.removeControl(control); // a removed map has already dropped it
+      };
+    }
+    const el = control.onAdd(map);
+    attributionHost.appendChild(el);
+    return () => {
+      if (mapRef.current) control.onRemove();
+      else el.remove();
+    };
+  }, [attributionHost]);
+
+  // On a scrolling page the wheel belongs to the page; Ctrl + wheel (and pinch) still zoom the map.
+  useEffect(() => {
+    const map = mapRef.current;
+    const el = wrap.current;
+    if (!map || !el || !wheelScrollsPage) return;
+    map.scrollZoom.disable();
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) {
+        handlers.current.onWheelPassThrough?.();
+        return;
+      }
+      e.preventDefault();
+      const box = map.getCanvasContainer();
+      const r = box.getBoundingClientRect();
+      // The page may scale the map down a little as the guides come up.
+      const sx = r.width ? box.clientWidth / r.width : 1;
+      const sy = r.height ? box.clientHeight / r.height : 1;
+      const around = map.unproject([(e.clientX - r.left) * sx, (e.clientY - r.top) * sy]);
+      const dy = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY; // lines (Firefox) to pixels
+      map.easeTo({ zoom: map.getZoom() - dy * 0.01, around, duration: 0 });
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      if (mapRef.current) map.scrollZoom.enable();
+    };
+  }, [wheelScrollsPage]);
 
   // Keep the canvas sized to its box.
   useLayoutEffect(() => {

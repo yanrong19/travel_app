@@ -212,6 +212,7 @@ export function SavedDrawer() {
           />
           <motion.aside
             className="drawer"
+            data-lenis-prevent
             role="dialog"
             aria-modal="true"
             aria-labelledby="saved-title"

@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
 import { AREA_COUNTS, JAPAN_ID, MAP_ROOT, TOKYO_PATH, WORLD_PATH, countryPath, slug, targetFromParams, type MapTarget } from '../data/places';
 import { DESTINATIONS, destinationByWorldId } from '../data/destinations';
+import { REGIONS } from '../data/regions';
 import type { Attraction } from '../data/types';
 import type { Insets } from '../map/camera';
 import { KineticTitle } from '../components/KineticTitle';
@@ -11,16 +12,37 @@ import { BottomTabs, TopNav } from '../components/Chrome';
 import { PanelRow, PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
+import { BAR_H, GuideSheet } from '../components/guides/GuideSheet';
 import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
 import { useGo } from '../lib/transition';
+import { PEEK, useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
 const AREA_TOTAL = Object.keys(AREA_COUNTS).length;
 const SOON = DESTINATIONS.filter((d) => !d.live).length;
 // The map engine is large, so it loads only on this page.
 const MapExplorer = lazy(() => import('../map/MapExplorer'));
+
+/** Phone: room the guide sheet's peek leaves below it for the tab bar. */
+const PHONE_CLEAR = 92;
+/** Phone: where the attraction row sits without a sheet (`.msheet` in styles.css); with one it moves up above the peek. */
+const MSHEET_BOTTOM = 86;
+const WHEEL_HINT = 'Scrolling shows the guides. Use Ctrl + scroll to zoom the map.';
+
+/** The guide sheet's words at the levels that have guides: Japan, Tokyo and a ward. */
+function sheetFor(t: MapTarget) {
+  const cue = 'Scroll for region guides';
+  if (t.level === 'country' && t.country!.id === JAPAN_ID)
+    return { heading: 'Which part of Japan fits you?', barLabel: `Japan · ${REGIONS.length} regions`, cue };
+  if (t.level === 'region') return { heading: 'Which part of Tokyo fits you?', barLabel: `Tokyo · ${AREA_TOTAL} wards`, cue };
+  if (t.level === 'area') {
+    const name = t.area!.properties.name;
+    return { heading: `In ${name}`, barLabel: `${name} · ${plural(AREA_COUNTS[t.area!.id] ?? 0, 'place')}`, cue };
+  }
+  return null;
+}
 
 function titleFor(t: MapTarget) {
   switch (t.level) {
@@ -120,14 +142,38 @@ export default function Explore() {
     return () => window.removeEventListener('keydown', onKey);
   }, [upPath, navigate, selected]);
 
+  // Guides under the map: the page scrolls, the sheet slides over the map.
+  const sheet = sheetFor(target);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const clear = sheet && narrow ? PHONE_CLEAR : 0;
+  const levelKey = `${target.level}:${target.country?.id}:${target.area?.id}`;
+  const { scrollToGuides, scrollToTop, atGuides } = useGuideScroll({ enabled: !!sheet, root: rootRef, barH: BAR_H + clear, levelKey });
+  const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
+
+  // The first plain wheel over the map at the top of the page explains where it went, once.
+  const wheelHinted = useRef(false);
+  const onWheelPassThrough = useCallback(() => {
+    if (wheelHinted.current) return;
+    if (Number(rootRef.current?.style.getPropertyValue('--gp') || 0) > 0) return;
+    wheelHinted.current = true;
+    setNotice(WHEEL_HINT);
+  }, []);
+
   const world = target.level === 'world';
-  const insets: Insets = world
+  const base: Insets = world
     ? narrow
       ? { top: titleBox.bottom + 4, right: 16, bottom: 236, left: 16 }
       : { top: 90, right: 24, bottom: 0, left: titleBox.right + 24 }
     : narrow
       ? { top: listed ? 236 : 210, right: 16, bottom: listed ? 280 : pinned ? 300 : 220, left: 16 }
       : { top: 150, right: listed ? 476 : pinned ? 420 : 40, bottom: listed ? 220 : 240, left: 40 };
+  // The sheet's peek covers the bottom of the map. Above it sit the title card (laptop) or the
+  // attraction row and pin card (phone), so the free area shrinks by the peek.
+  const insets: Insets = !sheet
+    ? base
+    : narrow
+      ? { ...base, bottom: listed ? base.bottom + clear + PEEK + 8 - MSHEET_BOTTOM : Math.max(base.bottom, clear + PEEK + 16) }
+      : { ...base, bottom: base.bottom + PEEK };
 
   const crumbs = [
     { label: 'World', to: WORLD_PATH },
@@ -139,148 +185,168 @@ export default function Explore() {
   const open = (id: string) => go(`/attraction/${id}`);
 
   return (
-    <div className="explore" data-level={target.level}>
-      <Suspense fallback={<div className="map-loading" aria-hidden="true" />}>
-      <MapExplorer
-        target={target}
-        insets={insets}
-        pins={shown}
-        hoverId={hoverId}
-        selectedId={selected}
-        fitPins
-        pinned={pinned}
-        onHover={setHoverId}
-        onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
-        onRegion={() => navigate(TOKYO_PATH)}
-        onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
-        onAttraction={(id) => setSelected(id)}
-        onNotice={setNotice}
-      />
-      </Suspense>
+    <div
+      ref={rootRef}
+      className={`explore ${sheet ? 'has-guides' : ''}`}
+      data-level={target.level}
+      style={{ '--sheet-clear': `${clear}px` } as CSSProperties}
+    >
+      <div className="explore-stage">
+        <Suspense fallback={<div className="map-loading" aria-hidden="true" />}>
+          <MapExplorer
+            target={target}
+            insets={insets}
+            pins={shown}
+            hoverId={hoverId}
+            selectedId={selected}
+            fitPins
+            pinned={pinned}
+            wheelScrollsPage={!!sheet}
+            onWheelPassThrough={onWheelPassThrough}
+            attributionHost={sheet ? attribHost : null}
+            onHover={setHoverId}
+            onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
+            onRegion={() => navigate(TOKYO_PATH)}
+            onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
+            onAttraction={(id) => setSelected(id)}
+            onNotice={setNotice}
+          />
+        </Suspense>
 
-      <TopNav tone="glass" />
+        <TopNav tone="glass" />
 
-      <MapSearch
-        target={target}
-        onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
-        onRegion={() => navigate(TOKYO_PATH)}
-        onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
-        onAttraction={setSelected}
-        onNotice={setNotice}
-      />
-
-      <section ref={titleRef} className="explore-title">
-        {!world && (
-        <nav aria-label="Map level" className="crumbs">
-          <ol>
-            {crumbs.map((c, i) => (
-              <li key={c.to}>
-                {i === crumbs.length - 1 ? (
-                  <span aria-current="page">{c.label}</span>
-                ) : (
-                  <button type="button" onClick={() => navigate(c.to)}>
-                    {c.label}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
-        )}
-        <KineticTitle
-          text={title.text}
-          sub={title.sub}
-          className={`place-title ${world ? 'is-headline' : ''}`}
-          width={world ? 88 : title.text.length > 12 ? 80 : title.text.length > 8 ? 100 : 118}
-          delay={0.3}
+        <MapSearch
+          target={target}
+          onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
+          onRegion={() => navigate(TOKYO_PATH)}
+          onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
+          onAttraction={setSelected}
+          onNotice={setNotice}
         />
-        <p className="explore-line">{title.line}</p>
-        {world && (
-          <p className="explore-note">
-            <span className="live-dot" aria-hidden="true" />
-            Tokyo is live with {plural(ATTRACTIONS.length, 'attraction')}. {SOON} more countries are on the way.
-          </p>
-        )}
-        <div className="explore-actions">
-          {(world || (target.level === 'country' && target.country!.id !== JAPAN_ID && !pinned)) && (
-            <button type="button" className="button" onClick={() => navigate(TOKYO_PATH)}>
-              Explore Tokyo
-            </button>
+
+        <section ref={titleRef} className="explore-title">
+          {!world && (
+          <nav aria-label="Map level" className="crumbs">
+            <ol>
+              {crumbs.map((c, i) => (
+                <li key={c.to}>
+                  {i === crumbs.length - 1 ? (
+                    <span aria-current="page">{c.label}</span>
+                  ) : (
+                    <button type="button" onClick={() => navigate(c.to)}>
+                      {c.label}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
           )}
-          {target.level === 'country' && target.country!.id === JAPAN_ID && (
-            <>
+          <KineticTitle
+            text={title.text}
+            sub={title.sub}
+            className={`place-title ${world ? 'is-headline' : ''}`}
+            width={world ? 88 : title.text.length > 12 ? 80 : title.text.length > 8 ? 100 : 118}
+            delay={0.3}
+          />
+          <p className="explore-line">{title.line}</p>
+          {world && (
+            <p className="explore-note">
+              <span className="live-dot" aria-hidden="true" />
+              Tokyo is live with {plural(ATTRACTIONS.length, 'attraction')}. {SOON} more countries are on the way.
+            </p>
+          )}
+          <div className="explore-actions">
+            {(world || (target.level === 'country' && target.country!.id !== JAPAN_ID && !pinned)) && (
               <button type="button" className="button" onClick={() => navigate(TOKYO_PATH)}>
-                Open Tokyo
+                Explore Tokyo
               </button>
-              <button type="button" className="button is-quiet" onClick={() => go('/japan')}>
-                Japan’s page
-              </button>
-            </>
-          )}
-          {upPath && (
-            <button type="button" className="button is-quiet" onClick={() => navigate(upPath)}>
-              <Icon name="zoomOut" />
-              Zoom out
-            </button>
-          )}
-        </div>
-      </section>
-
-      {listed && !narrow && (
-        <aside className="panel" aria-labelledby="panel-title">
-          <div className="panel-head">
-            <h2 id="panel-title">{target.level === 'area' ? `In ${target.area!.properties.name}` : 'All of Tokyo'}</h2>
-            <p className="panel-scope">{plural(shown.length, 'place')}</p>
-          </div>
-          <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
-          <ul className="plist">
-            {shown.map((a) => (
-              <li key={a.id}>
-                <PanelRow a={a} hot={(selected ?? hoverId) === a.id} onHover={setHoverId} onOpen={open} showArea={target.level === 'region'} />
-              </li>
-            ))}
-            {shown.length === 0 && (
-              <li className="empty-line">
-                No {activeFilter.label.toLowerCase()} attractions here.{' '}
-                <button type="button" className="text-button" onClick={() => setFilter('all')}>
-                  Show all
-                </button>
-              </li>
             )}
-          </ul>
-        </aside>
-      )}
+            {target.level === 'country' && target.country!.id === JAPAN_ID && (
+              <>
+                <button type="button" className="button" onClick={() => navigate(TOKYO_PATH)}>
+                  Open Tokyo
+                </button>
+                <button type="button" className="button is-quiet" onClick={scrollToGuides}>
+                  See region guides
+                </button>
+              </>
+            )}
+            {upPath && (
+              <button type="button" className="button is-quiet" onClick={() => navigate(upPath)}>
+                <Icon name="zoomOut" />
+                Zoom out
+              </button>
+            )}
+          </div>
+        </section>
 
-      {listed && narrow && !picked && (
-        <aside className="msheet" aria-labelledby="msheet-title">
-          <h2 id="msheet-title" className="sr-only">
-            Attractions
-          </h2>
-          <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
-          <ul className="mrow">
-            {shown.map((a) => (
-              <li key={a.id}>
-                <PanelRow a={a} hot={false} onHover={() => {}} onOpen={(id) => setSelected(id)} showArea={target.level === 'region'} axis="inline" />
-              </li>
-            ))}
-          </ul>
-        </aside>
-      )}
-
-      <AnimatePresence>
-        {picked && (
-          <motion.div
-            key={picked.id}
-            className="pincard"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ duration: 0.4, ease: EASE_OUT }}
-          >
-            <PinCard a={picked} onOpen={open} onClose={() => setSelected(null)} />
-          </motion.div>
+        {listed && !narrow && (
+          <aside className="panel" aria-labelledby="panel-title">
+            <div className="panel-head">
+              <h2 id="panel-title">{target.level === 'area' ? `In ${target.area!.properties.name}` : 'All of Tokyo'}</h2>
+              <p className="panel-scope">{plural(shown.length, 'place')}</p>
+            </div>
+            <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
+            <ul className="plist" data-lenis-prevent>
+              {shown.map((a) => (
+                <li key={a.id}>
+                  <PanelRow a={a} hot={(selected ?? hoverId) === a.id} onHover={setHoverId} onOpen={open} showArea={target.level === 'region'} />
+                </li>
+              ))}
+              {shown.length === 0 && (
+                <li className="empty-line">
+                  No {activeFilter.label.toLowerCase()} attractions here.{' '}
+                  <button type="button" className="text-button" onClick={() => setFilter('all')}>
+                    Show all
+                  </button>
+                </li>
+              )}
+            </ul>
+          </aside>
         )}
-      </AnimatePresence>
+
+        {listed && narrow && !picked && (
+          <aside className="msheet" aria-labelledby="msheet-title">
+            <h2 id="msheet-title" className="sr-only">
+              Attractions
+            </h2>
+            <FilterChips scoped={scoped} filter={filter} setFilter={setFilter} />
+            <ul className="mrow">
+              {shown.map((a) => (
+                <li key={a.id}>
+                  <PanelRow a={a} hot={false} onHover={() => {}} onOpen={(id) => setSelected(id)} showArea={target.level === 'region'} axis="inline" />
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+
+        <AnimatePresence>
+          {picked && (
+            <motion.div
+              key={picked.id}
+              className="pincard"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ duration: 0.4, ease: EASE_OUT }}
+            >
+              <PinCard a={picked} onOpen={open} onClose={() => setSelected(null)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {sheet && (
+        <>
+          {/* Above the sheet, so the map's attribution stays readable at every scroll position. */}
+          <div ref={setAttribHost} className="explore-attrib maplibregl-ctrl-bottom-right" />
+          <GuideSheet heading={sheet.heading} cue={sheet.cue} barLabel={sheet.barLabel} atGuides={atGuides} onBackToMap={scrollToTop}>
+            <p className="guides-soon">Region guides coming in the next task</p>
+          </GuideSheet>
+        </>
+      )}
 
       <div className="toast" role="status" data-on={notice ? '1' : ''}>
         {notice}

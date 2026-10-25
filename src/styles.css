@@ -2405,11 +2405,17 @@ h2:focus {
 /* ---------- Map ---------- */
 
 .explore {
+  position: relative;
+  display: flow-root;
+  min-height: 100svh;
+  color: var(--ink);
+}
+/* Everything on the map page that stays put while the guides scroll over it. */
+.explore-stage {
   position: fixed;
   inset: 0;
   overflow: hidden;
   background: #c9dde7;
-  color: var(--ink);
 }
 .explore .topnav {
   position: absolute;
@@ -2617,13 +2623,17 @@ h2:focus {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--float);
-  animation: panel-in 0.6s var(--ease-out) both;
+  /* backwards, not both: once in, the guide scroll owns its opacity. */
+  animation: panel-in 0.6s var(--ease-out) backwards;
 }
 @keyframes panel-in {
   from {
     opacity: 0;
     transform: translateX(28px);
   }
+}
+.panel .chips {
+  flex: none; /* a scroll box, so it would otherwise shrink when the panel is short */
 }
 .panel-head {
   display: flex;
@@ -3764,17 +3774,20 @@ h2:focus {
   color: #fff;
 }
 
-/* MapLibre's own chrome, in our palette. */
-.map .maplibregl-ctrl-attrib {
+/* MapLibre's own chrome, in our palette (also when the attribution sits above the guide sheet). */
+.map .maplibregl-ctrl-attrib,
+.explore-attrib .maplibregl-ctrl-attrib {
   border-radius: 999px;
   background: var(--frost) !important;
   font-family: var(--font);
   font-size: 11px;
 }
-.map .maplibregl-ctrl-attrib a {
+.map .maplibregl-ctrl-attrib a,
+.explore-attrib .maplibregl-ctrl-attrib a {
   color: var(--muted);
 }
-.map .maplibregl-ctrl-attrib-button {
+.map .maplibregl-ctrl-attrib-button,
+.explore-attrib .maplibregl-ctrl-attrib-button {
   border-radius: 999px;
 }
 .map .maplibregl-cooperative-gesture-screen {
@@ -4000,6 +4013,264 @@ h2:focus {
   .explore .map-controls,
   .explore .map-offscreen {
     top: 252px;
+  }
+}
+
+/* ---------- Region guides ---------- */
+/* Japan, Tokyo and ward level: the page scrolls, the map stays fixed in .explore-stage and the
+   guide sheet slides over it. --gp on .explore runs from 0 (top) to 1 (sheet up, bar pinned).
+   --sheet-clear is the extra room the peek leaves under it on phones (the tab bar). */
+
+.explore.has-guides .explore-stage {
+  background: color-mix(in srgb, #c9dde7 calc(100% - 40% * var(--gp, 0)), #000);
+}
+.explore.has-guides .map {
+  filter: brightness(calc(1 - 0.4 * var(--gp, 0)));
+  transform: scale(calc(1 - 0.03 * var(--gp, 0)));
+}
+.explore.has-guides .explore-title,
+.explore.has-guides .panel {
+  opacity: clamp(0, 1 - var(--gp, 0) / 0.4, 1);
+}
+.explore.has-guides .explore-title {
+  translate: 0 calc(-24px * min(1, var(--gp, 0) / 0.4));
+}
+.explore.has-guides .panel {
+  max-height: calc(100% - 96px - 90px - 40px);
+  translate: calc(32px * min(1, var(--gp, 0) / 0.4)) 0;
+}
+@media (min-width: 761px) {
+  .explore.has-guides .explore-title {
+    bottom: calc(90px + 24px);
+  }
+  /* The title card sits higher, so the zoom buttons move up under the search. */
+  .explore.has-guides .map-controls {
+    top: 168px;
+    transform: none;
+  }
+}
+
+.guides {
+  position: relative;
+  z-index: 10;
+  /* Flex, so the bar's negative margin doesn't collapse into this one. */
+  display: flex;
+  flex-direction: column;
+  margin-top: calc(100svh - 90px - var(--sheet-clear, 0px));
+}
+
+/* Rides just above the sheet, fading in near the end, and pins to the top once the sheet is up. */
+.gbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--bar-h);
+  margin-top: calc(-1 * var(--bar-h));
+  padding: 0 calc((100% - var(--page)) / 2); /* lines up with the sheet's content */
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--frost);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  opacity: clamp(0, (var(--gp, 0) - 0.8) / 0.2, 1);
+  pointer-events: none;
+}
+.gbar[data-on='1'] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.gbar:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: -2px;
+}
+.gbar-label {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gbar-end {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.gbar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 16px;
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+.gbar:hover .gbar-back {
+  background: var(--line);
+}
+
+.gsheet {
+  flex: 1;
+  /* Always tall enough for the sheet to come fully up, even with little in it
+     (and with a phone's address bar hidden, when the window is taller than 100svh). */
+  min-height: calc(100vh + 120px);
+  border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
+  background: var(--surface);
+  box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
+}
+/* The strip that peeks above the bottom edge. */
+.gsheet-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: var(--page);
+  min-height: 90px;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+.gsheet-handle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--control);
+  translate: -50% 0;
+}
+.gsheet-intro {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.gsheet-intro h2 {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gsheet-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.gsheet-cue svg {
+  flex: none;
+}
+.gsheet-cue[data-nudge='1'] svg {
+  animation: cue-nudge 1.2s ease-in-out 1;
+}
+@keyframes cue-nudge {
+  0%,
+  60%,
+  100% {
+    translate: 0 0;
+  }
+  20% {
+    translate: 0 5px;
+  }
+  40% {
+    translate: 0 1px;
+  }
+  50% {
+    translate: 0 3px;
+  }
+}
+.gsheet-peek {
+  flex: none;
+  min-width: 0;
+}
+.gsheet-body {
+  width: var(--page);
+  margin: 0 auto;
+  padding: 24px 0 64px;
+}
+.guides-soon {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* MapLibre's attribution, moved above the sheet: it rests just above the peek at the top of the
+   page and ends at the bottom edge (above the tab bar on phones) once the guides are up. */
+.explore > .explore-attrib.maplibregl-ctrl-bottom-right {
+  --attrib-low: 0px;
+  --attrib-rest: calc(90px + var(--sheet-clear, 0px));
+  position: fixed;
+  right: max(4px, calc((100vw - 1240px) / 2 - 10px));
+  bottom: calc(var(--attrib-low) + (1 - var(--gp, 0)) * (var(--attrib-rest) - var(--attrib-low)));
+  z-index: 15;
+  line-height: 20px;
+}
+
+@media (max-width: 760px) {
+  .explore > .explore-attrib.maplibregl-ctrl-bottom-right {
+    --attrib-low: 76px;
+    right: 2px;
+  }
+  /* The sheet runs on below its peek, so the attraction row and pin card move up above it. */
+  .explore.has-guides .msheet,
+  .explore.has-guides .pincard {
+    top: auto; /* the pin card would otherwise keep the laptop top and stretch */
+    bottom: calc(var(--sheet-clear) + 90px + 8px);
+  }
+  .explore.has-guides[data-level='region'] > .explore-attrib.maplibregl-ctrl-bottom-right,
+  .explore.has-guides[data-level='area'] > .explore-attrib.maplibregl-ctrl-bottom-right {
+    --attrib-rest: calc(90px + var(--sheet-clear) + 8px + 188px); /* clears the row or the pin card */
+  }
+  .gsheet-head {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 8px;
+    padding-top: 18px;
+  }
+  .gsheet-intro {
+    gap: 2px;
+  }
+  .gsheet-intro h2 {
+    font-size: 19px;
+    line-height: 24px;
+  }
+  .gsheet-cue {
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .gbar-label {
+    font-size: 14px;
+  }
+  .gbar-back {
+    height: 34px;
+    padding: 0 10px 0 12px;
+    font-size: 13px;
+  }
+  .gsheet-body {
+    padding-bottom: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore.has-guides .map,
+  .explore.has-guides .explore-title,
+  .explore.has-guides .panel {
+    transform: none;
+    translate: none;
   }
 }
 

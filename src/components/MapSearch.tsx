@@ -280,7 +280,7 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
                 )}
               </div>
             ) : (
-              <ul id={listId} role="listbox" aria-label={placeholder} className="msearch-list">
+              <ul id={listId} role="listbox" aria-label={placeholder} className="msearch-list" data-lenis-prevent>
                 {results.map((item, i) => {
                   const heading = i === 0 || results[i - 1].kind !== item.kind;
                   return (
