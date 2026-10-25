@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { AREA_COUNTS, GUIDES_HASH, MAP_ROOT, TOKYO_PATH, areaBySlug, areaPath } from '../data/places';
-import { destinationBySlug, type Destination } from '../data/destinations';
+import { countrySlugOf, destinationBySlug, type Destination } from '../data/destinations';
 import { KineticTitle } from '../components/KineticTitle';
 import { BottomTabs, Footer, TopNav } from '../components/Chrome';
 import { Icon } from '../components/Icon';
@@ -19,8 +19,8 @@ export default function PlacePage() {
   const dest = destinationBySlug(country);
   if (!dest) return <Navigate to="/" replace />;
   if (!dest.live) return <ComingSoon d={dest} />;
-  // Japan: only Tokyo is mapped, so anything deeper that isn't a real ward lands on Tokyo.
-  if (!region || region !== 'tokyo') return <Navigate to={`${MAP_ROOT}/${dest.slug}${GUIDES_HASH}`} replace />;
+  // Japan: only Tokyo is mapped, so another region lands on the country and a bad ward on Tokyo.
+  if (region !== 'tokyo') return <Navigate to={`${MAP_ROOT}/${countrySlugOf(dest)}${GUIDES_HASH}`} replace />;
   if (!area) return <Navigate to={`${TOKYO_PATH}${GUIDES_HASH}`} replace />;
   const ward = areaBySlug(area);
   if (!ward || !AREA_COUNTS[ward.id]) return <Navigate to={`${TOKYO_PATH}${GUIDES_HASH}`} replace />;

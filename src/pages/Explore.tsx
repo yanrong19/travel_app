@@ -73,13 +73,13 @@ function regionCard(r: Region): CardSubject {
 
 /** The guide sheet's words at the levels that have guides: Japan, Tokyo and a ward. */
 function sheetFor(t: MapTarget) {
-  const cue = 'Scroll for region guides';
   if (t.level === 'country' && t.country!.id === JAPAN_ID)
-    return { heading: 'Which part of Japan fits you?', barLabel: `Japan · ${REGIONS.length} regions`, cue };
-  if (t.level === 'region') return { heading: 'Which part of Tokyo fits you?', barLabel: `Tokyo · ${AREA_TOTAL} wards`, cue };
+    return { heading: 'Which part of Japan fits you?', barLabel: `Japan · ${REGIONS.length} regions`, cue: 'Scroll for region guides' };
+  if (t.level === 'region')
+    return { heading: 'Which part of Tokyo fits you?', barLabel: `Tokyo · ${AREA_TOTAL} wards`, cue: 'Scroll for ward guides' };
   if (t.level === 'area') {
     const name = t.area!.properties.name;
-    return { heading: `In ${name}`, barLabel: `${name} · ${plural(AREA_COUNTS[t.area!.id] ?? 0, 'place')}`, cue };
+    return { heading: `In ${name}`, barLabel: `${name} · ${plural(AREA_COUNTS[t.area!.id] ?? 0, 'place')}`, cue: 'Scroll for the full list' };
   }
   return null;
 }
@@ -530,7 +530,12 @@ export default function Explore() {
               ) : undefined
             }
             miniMap={
-              japan ? <MiniMap kind="japan" hot={hotPrefs} /> : tokyo ? <MiniMap kind="tokyo" hot={hotArea ? [Number(hotArea)] : []} /> : undefined
+              japan ? (
+                <MiniMap kind="japan" hot={hotPrefs} />
+              ) : (
+                // Tokyo lights the ward under the pointer; a ward lights itself.
+                <MiniMap kind="tokyo" hot={tokyo ? (hotArea ? [Number(hotArea)] : []) : [Number(target.area!.id)]} />
+              )
             }
           >
             {japan ? (

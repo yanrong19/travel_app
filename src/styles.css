@@ -3858,6 +3858,9 @@ h2:focus {
   flex: 1;
   /* Always tall enough for the sheet to come fully up, even with little in it. */
   min-height: var(--vh, 100vh);
+  /* The phone deck fans its cards out sideways; past the screen edge they would widen the page
+     and a phone would zoom the whole layout out to fit. `clip` keeps the sticky bar working. */
+  overflow-x: clip;
   border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
   background: var(--surface);
   box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
