@@ -2405,10 +2405,23 @@ h2:focus {
 /* ---------- Map ---------- */
 
 .explore {
+  /* The map search's place on laptops, shared with the guide sheet's sticky bar. */
+  --search-left: max(32px, calc((100vw - 1240px) / 2));
+  --search-w: max(300px, min(400px, calc(100vw - 520px)));
   position: relative;
   display: flow-root;
   min-height: 100svh;
   color: var(--ink);
+}
+/* The nav and the search: above the map, and above the guide sheet at every scroll position. */
+.explore-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.explore-chrome > * {
+  pointer-events: auto;
 }
 /* Everything on the map page that stays put while the guides scroll over it. */
 .explore-stage {
@@ -3840,10 +3853,9 @@ h2:focus {
 .msearch {
   position: absolute;
   top: 96px;
-  left: max(32px, calc((100vw - 1240px) / 2));
+  left: var(--search-left);
   z-index: 12;
-  width: min(400px, calc(100vw - 520px));
-  min-width: 300px;
+  width: var(--search-w);
 }
 .msearch-field {
   display: flex;
@@ -4059,34 +4071,48 @@ h2:focus {
   margin-top: calc(100svh - 90px - var(--sheet-clear, 0px));
 }
 
-/* Rides just above the sheet, fading in near the end, and pins to the top once the sheet is up. */
+/* Rides just above the sheet, fading in near the end, and pins once the sheet is up. The frosted
+   backing runs from the top of the window, behind the nav and search, so nothing scrolls visibly
+   between them; the row (the button) sits at --bar-top, level with the search on laptops. */
 .gbar {
   position: sticky;
   top: 0;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  height: var(--bar-h);
-  margin-top: calc(-1 * var(--bar-h));
-  padding: 0 calc((100% - var(--page)) / 2); /* lines up with the sheet's content */
-  border: 0;
+  height: calc(var(--bar-top) + var(--bar-h));
+  margin-top: calc(-1 * (var(--bar-top) + var(--bar-h)));
+  padding-top: var(--bar-top);
   border-bottom: 1px solid var(--line);
   background: var(--frost);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
   opacity: clamp(0, (var(--gp, 0) - 0.8) / 0.2, 1);
   pointer-events: none;
 }
-.gbar[data-on='1'] {
+.gbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  height: var(--bar-h);
+  padding: 0 calc((100% - var(--page)) / 2); /* lines up with the sheet's content */
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+@media (min-width: 761px) {
+  /* The search sits at the row's left end; the label starts after it. */
+  .gbar-row {
+    padding-left: calc(var(--search-left) + var(--search-w) + 24px);
+  }
+}
+.gbar[data-on='1'] .gbar-row {
   pointer-events: auto;
   cursor: pointer;
 }
-.gbar:focus-visible {
+.gbar-row:focus-visible {
   outline: 2px solid var(--cedar);
   outline-offset: -2px;
 }
@@ -4116,7 +4142,7 @@ h2:focus {
   font-weight: 600;
   transition: background-color 0.2s;
 }
-.gbar:hover .gbar-back {
+.gbar-row:hover .gbar-back {
   background: var(--line);
 }
 

@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { prefersReducedMotion } from '../../lib/motion';
 
-/** Height of the sticky bar that pins to the top once the guides are up. */
+/** Height of the sticky bar's row, which pins below the nav and search once the guides are up. */
 export const BAR_H = 56;
+/** Where the bar's row pins: laptop, level with the search (96–148px, centred in the row); phone, under the full-width search (72–120px). */
+export const BAR_TOP = 94;
+export const BAR_TOP_PHONE = 128;
 
 /** Quiet time before the cue's chevron nudges, once. */
 const NUDGE_AFTER_MS = 3000;
@@ -30,8 +33,10 @@ function Chevron({ up = false }: { up?: boolean }) {
 
 /**
  * The sheet that peeks above the bottom of the map and slides over it as the page scrolls.
- * Its first child is the sticky bar: it rides just above the sheet and pins to the top
- * when the sheet is fully up, so it needs the page to scroll by (viewport − peek − bar).
+ * Its first child is the sticky bar: it rides just above the sheet and pins when the sheet is
+ * fully up. Its frosted backing reaches the top of the window, behind the nav and search (which
+ * stay above the sheet), and its row sits at `--bar-top`. So the page must scroll by
+ * (viewport − peek − bar top − BAR_H) for the sheet to come fully up.
  */
 export function GuideSheet({ heading, cue, barLabel, atGuides, onBackToMap, peek, miniMap, children }: Props) {
   const [nudge, setNudge] = useState(false);
@@ -62,23 +67,18 @@ export function GuideSheet({ heading, cue, barLabel, atGuides, onBackToMap, peek
 
   return (
     <section className="guides" aria-labelledby="guides-heading" style={{ '--bar-h': `${BAR_H}px` } as CSSProperties}>
-      <button
-        type="button"
-        className="gbar"
-        data-on={atGuides ? '1' : ''}
-        onClick={onBackToMap}
-        tabIndex={atGuides ? 0 : -1}
-        aria-hidden={!atGuides}
-      >
-        <span className="gbar-label">{barLabel}</span>
-        <span className="gbar-end">
-          {miniMap}
-          <span className="gbar-back">
-            Back to map
-            <Chevron up />
+      <div className="gbar" data-on={atGuides ? '1' : ''}>
+        <button type="button" className="gbar-row" onClick={onBackToMap} tabIndex={atGuides ? 0 : -1} aria-hidden={!atGuides}>
+          <span className="gbar-label">{barLabel}</span>
+          <span className="gbar-end">
+            {miniMap}
+            <span className="gbar-back">
+              Back to map
+              <Chevron up />
+            </span>
           </span>
-        </span>
-      </button>
+        </button>
+      </div>
       <div className="gsheet">
         <header className="gsheet-head">
           <span className="gsheet-handle" aria-hidden="true" />

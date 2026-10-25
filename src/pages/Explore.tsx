@@ -12,7 +12,7 @@ import { BottomTabs, TopNav } from '../components/Chrome';
 import { PanelRow, PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
-import { BAR_H, GuideSheet } from '../components/guides/GuideSheet';
+import { BAR_H, BAR_TOP, BAR_TOP_PHONE, GuideSheet } from '../components/guides/GuideSheet';
 import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
@@ -146,9 +146,20 @@ export default function Explore() {
   const sheet = sheetFor(target);
   const rootRef = useRef<HTMLDivElement>(null);
   const clear = sheet && narrow ? PHONE_CLEAR : 0;
+  const barTop = narrow ? BAR_TOP_PHONE : BAR_TOP;
   const levelKey = `${target.level}:${target.country?.id}:${target.area?.id}`;
-  const { scrollToGuides, scrollToTop, atGuides } = useGuideScroll({ enabled: !!sheet, root: rootRef, barH: BAR_H + clear, levelKey });
+  // Fully up, the sheet starts under the sticky bar, which pins below the nav and search.
+  const { scrollToGuides, scrollToTop, atGuides } = useGuideScroll({ enabled: !!sheet, root: rootRef, barH: barTop + BAR_H + clear, levelKey });
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
+
+  // Browser back and forward must not put the page back where it was scrolled: a level starts at the top.
+  useEffect(() => {
+    const prev = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
+    return () => {
+      history.scrollRestoration = prev;
+    };
+  }, []);
 
   // The first plain wheel over the map at the top of the page explains where it went, once.
   const wheelHinted = useRef(false);
@@ -189,8 +200,21 @@ export default function Explore() {
       ref={rootRef}
       className={`explore ${sheet ? 'has-guides' : ''}`}
       data-level={target.level}
-      style={{ '--sheet-clear': `${clear}px` } as CSSProperties}
+      style={{ '--sheet-clear': `${clear}px`, '--bar-top': `${barTop}px` } as CSSProperties}
     >
+      {/* Above the guide sheet at every scroll position; the sheet's sticky bar pins just below the search. */}
+      <div className="explore-chrome">
+        <TopNav tone="glass" />
+        <MapSearch
+          target={target}
+          onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
+          onRegion={() => navigate(TOKYO_PATH)}
+          onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
+          onAttraction={setSelected}
+          onNotice={setNotice}
+        />
+      </div>
+
       <div className="explore-stage">
         <Suspense fallback={<div className="map-loading" aria-hidden="true" />}>
           <MapExplorer
@@ -212,17 +236,6 @@ export default function Explore() {
             onNotice={setNotice}
           />
         </Suspense>
-
-        <TopNav tone="glass" />
-
-        <MapSearch
-          target={target}
-          onCountry={(s) => navigate(`${MAP_ROOT}/${s}`)}
-          onRegion={() => navigate(TOKYO_PATH)}
-          onArea={(s) => navigate(`${TOKYO_PATH}/${s}`)}
-          onAttraction={setSelected}
-          onNotice={setNotice}
-        />
 
         <section ref={titleRef} className="explore-title">
           {!world && (
