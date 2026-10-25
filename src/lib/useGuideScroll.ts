@@ -51,6 +51,9 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     const l = new Lenis({ autoRaf: true, lerp: 0.11 });
     lenis.current = l;
     let timer: number | undefined;
+    // True while a finger or mouse button is down (covers scrollbar drags), when
+    // no scroll events arrive but the user is still steering the page.
+    let held = false;
 
     const progress = () => guideProgress(l.scroll, window.innerHeight, PEEK, barRef.current);
     const update = () => {
@@ -63,6 +66,7 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     const arm = () => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
+        if (held || l.isTouching) return arm();
         const target = settleTarget(progress());
         if (!target) return;
         const to = target === 'top' ? 0 : window.innerHeight - PEEK - barRef.current;
@@ -71,6 +75,13 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     };
     const onScroll = () => {
       update();
+      arm();
+    };
+    const onDown = () => {
+      held = true;
+    };
+    const onUp = () => {
+      held = false;
       arm();
     };
     const onResize = () => {
@@ -82,9 +93,17 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     update();
     l.on('scroll', onScroll);
     window.addEventListener('resize', onResize);
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('mouseup', onUp); // browsers may skip pointerup after a scrollbar drag
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('mouseup', onUp);
       refresh.current = () => {};
       l.destroy();
       lenis.current = null;
