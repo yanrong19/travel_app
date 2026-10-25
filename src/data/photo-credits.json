@@ -1348,28 +1348,6 @@
   "saved": "2026-10-25T17:17:26.203Z"
  },
  {
-  "file": "photos-src/region-shikoku.jpg",
-  "media": "image",
-  "ref": "commons:19347824",
-  "title": "Iya Kazurabashi-4",
-  "creator": "ume-y",
-  "creatorUrl": null,
-  "date": "2011-05-04",
-  "license": "CC BY 2.0",
-  "licenseCode": "by",
-  "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
-  "creditRequired": true,
-  "page": "https://commons.wikimedia.org/wiki/File:Iya_Kazurabashi-4.jpg",
-  "via": "Wikimedia Commons",
-  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Iya_Kazurabashi-4.jpg/1920px-Iya_Kazurabashi-4.jpg",
-  "width": 1920,
-  "height": 1276,
-  "bytes": 1006133,
-  "credit": "\"Iya Kazurabashi-4\" by ume-y, CC BY 2.0, via Wikimedia Commons",
-  "notes": [],
-  "saved": "2026-10-25T17:17:26.814Z"
- },
- {
   "file": "photos-src/region-kyushu-okinawa.jpg",
   "media": "image",
   "ref": "commons:9072332",
@@ -1390,5 +1368,27 @@
   "credit": "\"Furuzamami beach Okinawa Zamami\" by Hashi photo, CC BY 3.0, via Wikimedia Commons",
   "notes": [],
   "saved": "2026-10-25T17:17:27.426Z"
+ },
+ {
+  "file": "photos-src/region-shikoku.jpg",
+  "media": "image",
+  "ref": "commons:9098730",
+  "title": "Matsuyama Castle Main",
+  "creator": "Urashimataro",
+  "creatorUrl": null,
+  "date": "2009-01-23",
+  "license": "public domain",
+  "licenseCode": "pd",
+  "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "creditRequired": false,
+  "page": "https://commons.wikimedia.org/wiki/File:Matsuyama_Castle_Main.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Matsuyama_Castle_Main.jpg/1920px-Matsuyama_Castle_Main.jpg",
+  "width": 1920,
+  "height": 1278,
+  "bytes": 760143,
+  "credit": "\"Matsuyama Castle Main\" by Urashimataro, public domain, via Wikimedia Commons",
+  "notes": [],
+  "saved": "2026-10-25T17:22:08.775Z"
  }
 ]
