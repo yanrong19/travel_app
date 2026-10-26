@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
 import { AREA_COUNTS, JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, areaById, slug, type MapTarget } from '../data/places';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId } from '../data/destinations';
+import type { Attraction } from '../data/types';
 import { EASE_OUT } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { plural } from '../lib/format';
@@ -30,6 +31,8 @@ interface Props {
   onArea: (slug: string) => void;
   onAttraction: (id: string) => void;
   onNotice: (text: string) => void;
+  /** Trip planning: search only these attractions (the current place's), whatever the map level. */
+  scope?: { name: string; attractions: Attraction[] };
 }
 
 /** Lower case without accents, so "taito" finds Taitō. */
@@ -58,7 +61,7 @@ const SECTION: Record<Kind, string> = {
 const KIND_ORDER: Kind[] = ['city', 'dest', 'place', 'pref', 'area', 'country'];
 
 /** Search that changes with the map level: countries, then prefectures, then wards and places. */
-export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, onNotice }: Props) {
+export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, onNotice, scope: only }: Props) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -71,6 +74,27 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
   const countryName = target.country?.properties.name;
 
   const { items, placeholder, emptyText } = useMemo(() => {
+    if (only) {
+      const places: Item[] = only.attractions.map((a) => {
+        const area = areaById(a.area)?.properties.name ?? '';
+        return {
+          key: `a-${a.id}`,
+          kind: 'place' as const,
+          label: a.name,
+          ja: a.ja,
+          sub: `${a.kind} in ${area}`,
+          also: `${a.kind} ${area}`,
+          live: true,
+          img: photo(a.id),
+          pick: () => onAttraction(a.id),
+        };
+      });
+      return {
+        items: places,
+        placeholder: `Search places in ${only.name}`,
+        emptyText: places.length ? `Nothing in ${only.name} matches that.` : `No checked attractions in ${only.name} yet.`,
+      };
+    }
     if (level === 'world') {
       // Tokyo first, then the destinations with photos, then every other country.
       const tokyo: Item = {
@@ -159,11 +183,12 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
       placeholder: scope ? `Search ${target.area!.properties.name} and other wards` : 'Search Tokyo’s wards and places',
       emptyText: 'Nothing in Tokyo matches that yet.',
     };
-  }, [level, inJapan, countryName, target.area, onCountry, onRegion, onArea, onAttraction, onNotice]);
+  }, [only, level, inJapan, countryName, target.area, onCountry, onRegion, onArea, onAttraction, onNotice]);
 
   const q = norm(query.trim());
   const results = useMemo(() => {
     if (!q) {
+      if (only) return items.slice(0, 14);
       // Before typing: the live entries first, then a handful of the rest.
       if (level === 'region' || level === 'area') return items.filter((i) => i.kind === 'area' ? i.live : true).slice(0, 14);
       if (level === 'world') return items.filter((i) => i.kind !== 'country');
@@ -175,13 +200,13 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
       .sort((a, b) => KIND_ORDER.indexOf(a.i.kind) - KIND_ORDER.indexOf(b.i.kind) || a.s - b.s || Number(b.i.live) - Number(a.i.live))
       .map((r) => r.i)
       .slice(0, 30);
-  }, [items, q, level]);
+  }, [items, q, level, only]);
 
   // A new level means a new list.
   useEffect(() => {
     setQuery('');
     setActive(0);
-  }, [level, target.country?.id, target.area?.id]);
+  }, [level, target.country?.id, target.area?.id, only?.name]);
 
   useEffect(() => setActive(0), [q]);
 
@@ -273,7 +298,7 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
             {results.length === 0 ? (
               <div className="msearch-empty">
                 <p>{emptyText}</p>
-                {level === 'country' && !inJapan && (
+                {!only && level === 'country' && !inJapan && (
                   <button type="button" className="text-button" onClick={() => choose({ key: 'tokyo', kind: 'city', label: 'Tokyo', sub: '', live: true, pick: onRegion })}>
                     Explore Tokyo
                   </button>
@@ -285,7 +310,7 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
                   const heading = i === 0 || results[i - 1].kind !== item.kind;
                   return (
                     <li key={item.key} role="presentation">
-                      {heading && level !== 'country' && (
+                      {heading && level !== 'country' && !only && (
                         <p className="msearch-section" role="presentation">
                           {SECTION[item.kind]}
                         </p>

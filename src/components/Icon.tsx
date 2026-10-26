@@ -30,6 +30,10 @@ const PATHS = {
   target: 'M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM12 3v3M12 18v3M3 12h3M18 12h3M12 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
   grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   alert: 'M12 4 21 19H3L12 4ZM12 10v4M12 16.5h.01',
+  chevronUp: 'M6 15l6-6 6 6',
+  chevronDown: 'M6 9l6 6 6-6',
+  swap: 'M5 8h13l-3.5-3.5M19 16H6l3.5 3.5',
+  sliders: 'M4 7h9M17 7h3M15 5v4M4 17h3M11 17h9M9 15v4',
 } as const;
 
 export type IconName = keyof typeof PATHS;

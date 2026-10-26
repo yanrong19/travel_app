@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { BottomTabs, Footer, TopNav } from '../components/Chrome';
 import { Icon } from '../components/Icon';
@@ -58,6 +59,21 @@ export default function TripsPage() {
   const [deleted, setDeleted] = useState<Trip | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const list = [...trips].sort((a, b) => b.updatedAt - a.updatedAt);
+  // A note passed in by a redirect (an unknown trip id), shown once.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [routeNote, setRouteNote] = useState<string | null>(() => {
+    const n = (location.state as { notice?: unknown } | null)?.notice;
+    return typeof n === 'string' ? n : null;
+  });
+  useEffect(() => {
+    if (!routeNote) return;
+    // Drop it from history, so a refresh or Back doesn't show it again.
+    navigate(location.pathname, { replace: true, state: null });
+    const t = setTimeout(() => setRouteNote(null), 4000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeNote]);
   const credit = creditFor(EMPTY_PHOTO);
 
   useEffect(() => {
@@ -155,6 +171,10 @@ export default function TripsPage() {
         )}
       </main>
 
+      <div className="toast" role="status" data-on={routeNote ? '1' : ''}>
+        {routeNote}
+      </div>
+
       <div className="toast is-action" role="status" data-on={deleted ? '1' : ''}>
         {deleted && (
           <>
@@ -226,28 +246,5 @@ function TripCard({ trip, onOpen, onDelete }: { trip: Trip; onOpen: () => void; 
         </dl>
       </div>
     </article>
-  );
-}
-
-/** Stand-in for the setup and planner pages until they are built. */
-export function TripPlaceholder() {
-  const go = useGo();
-  const narrow = useMedia('(max-width: 760px)');
-  useEffect(() => {
-    document.title = 'Trips · Fitline';
-  }, []);
-  return (
-    <div className="page">
-      <TopNav />
-      <main className="missing">
-        <h1>Coming in the next task</h1>
-        <p>This part of the trip planner isn’t built yet.</p>
-        <button type="button" className="button" onClick={() => go('/trips')}>
-          <Icon name="arrowLeft" />
-          Back to trips
-        </button>
-      </main>
-      {narrow && <BottomTabs />}
-    </div>
   );
 }

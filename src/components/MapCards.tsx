@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { Attraction } from '../data/types';
 import { areaById } from '../data/places';
 import { readings } from '../lib/factors';
@@ -69,8 +69,21 @@ export function PanelRow({
   );
 }
 
-/** The card that slides up when a ticker is tapped. */
-export function PinCard({ a, onOpen, onClose }: { a: Attraction; onOpen: (id: string) => void; onClose: () => void }) {
+/**
+ * The card that slides up when a ticker is tapped. `action` replaces the "Add to trip" button: the
+ * planner passes its own ("Add to Day 2", "Remove from Day 1", "On Day 2: move here").
+ */
+export function PinCard({
+  a,
+  onOpen,
+  onClose,
+  action,
+}: {
+  a: Attraction;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+  action?: ReactNode;
+}) {
   const r = readings(a);
   return (
     <article className="pin-card">
@@ -111,7 +124,7 @@ export function PinCard({ a, onOpen, onClose }: { a: Attraction; onOpen: (id: st
             <Icon name="arrowRight" />
           </button>
           <HeartButton id={a.id} name={a.name} tone="solid" size={40} />
-          <AddToTrip attractionId={a.id} place={{ level: 'area', id: a.area }} />
+          {action ?? <AddToTrip attractionId={a.id} place={{ level: 'area', id: a.area }} />}
         </div>
       </div>
     </article>

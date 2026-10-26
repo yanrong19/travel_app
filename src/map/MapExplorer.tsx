@@ -804,6 +804,8 @@ export function MapExplorer(props: Props) {
 
   const level = target.level;
   const showPins = level === 'region' || level === 'area';
+  // Trip planning passes pins at country level too (Japan or one of its regions covers Tokyo).
+  const showTickers = showPins || (level === 'country' && pins.length > 0);
   const RANK = { good: 1, ok: 2, poor: 3 } as const;
   const placeName = target.area?.properties.name ?? (level === 'world' ? 'the world' : level === 'region' ? 'Tokyo' : target.country?.properties.name);
 
@@ -823,7 +825,7 @@ export function MapExplorer(props: Props) {
             </span>
           </button>
         )}
-        {showPins &&
+        {showTickers &&
           pins.map((a, i) => {
             const rating = lensRating(a, lens);
             const raised = selectedId === a.id || hoverId === a.id;
@@ -975,7 +977,17 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-prefs',
       paint: {
         'fill-color': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], C.cedar, ['any', hover, focus], C.cedar, C.ink] as never,
-        'fill-opacity': ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], ['case', hover, 0.85, 0.7], hover, 0.3, focus, 0.18, 0] as never,
+        // Zoomed in on Tokyo from the country view (a trip planned at Japan level), the solid fill
+        // thins out so the tickers, a trip's coloured stops among them, stay readable on it.
+        'fill-opacity': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          6.5,
+          ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], ['case', hover, 0.85, 0.7], hover, 0.3, focus, 0.18, 0],
+          8.5,
+          ['case', ['==', ['get', 'fid'], TOKYO_PREF_ID], ['case', hover, 0.2, 0.12], hover, 0.15, focus, 0.1, 0],
+        ] as never,
         'fill-opacity-transition': { duration: 180 },
       },
     },
@@ -988,7 +1000,8 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-prefs',
       paint: {
         'line-color': ['case', ['any', hover, focus], C.cedar, '#8fa3ad'] as never,
-        'line-width': ['case', ['any', hover, focus], 1.4, ['interpolate', ['linear'], ['zoom'], 4, 0.5, 9, 1]] as never,
+        // Zoom may only drive a top-level interpolate, so the hover case sits inside its stops.
+        'line-width': ['interpolate', ['linear'], ['zoom'], 4, ['case', ['any', hover, focus], 1.4, 0.5], 9, ['case', ['any', hover, focus], 1.4, 1]] as never,
         'line-opacity': 0.6,
       },
     },

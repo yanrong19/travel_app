@@ -3169,8 +3169,8 @@ h2:focus {
 .ticker.is-other {
   z-index: 2;
 }
-.ticker.is-today:not(.is-compact),
-.ticker.is-other:not(.is-compact) {
+.ticker.is-today:not(.is-compact):not(.is-hot):not(.is-picked):not(:focus-visible),
+.ticker.is-other:not(.is-compact):not(.is-hot):not(.is-picked):not(:focus-visible) {
   z-index: 4;
 }
 .ticker.is-hot,
@@ -5997,5 +5997,639 @@ button.area-card {
   }
   .tset-pill span {
     padding: 0 16px;
+  }
+}
+
+/* ---------- Trip planner (/trips/:id) ---------- */
+/* The map page's frame (.explore) with a top bar for the trip, the search under it and the day
+   panel on the right. The current day's pins are cedar and other days' muted cedar; the day tabs
+   and their stop counts use the same two colours. */
+
+.plan-bar {
+  position: absolute;
+  top: 96px;
+  left: var(--search-left);
+  right: max(24px, calc((100vw - 1240px) / 2));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 60px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--frost);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--float);
+}
+.plan-back {
+  width: 44px;
+  height: 44px;
+}
+.plan-name {
+  flex: none;
+  field-sizing: content;
+  min-width: 6ch;
+  max-width: 300px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.plan-name:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+.plan-name:focus {
+  outline: none;
+  background: var(--surface);
+  border-color: var(--cedar);
+}
+.plan-settings {
+  margin-left: auto;
+}
+
+/* The place switcher: pills for the trip's places, then "+ Add place". */
+.psw {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.psw::-webkit-scrollbar {
+  display: none;
+}
+.psw-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.psw-pill:hover {
+  border-color: var(--control);
+}
+.psw-pill.is-on {
+  background: var(--cedar);
+  border-color: var(--cedar);
+  color: #fff;
+}
+.psw-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding: 0 4px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.psw-pick:last-child {
+  padding-right: 14px;
+}
+.psw-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--cedar);
+}
+.psw-pill.is-on .psw-dot {
+  background: #fff;
+}
+.psw-remove {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 5px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s;
+}
+.psw-remove:hover {
+  opacity: 1;
+  background: var(--raised);
+}
+.psw-pill.is-on .psw-remove:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.psw-add {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px dashed var(--control);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cedar);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.psw-add:hover {
+  border-color: var(--cedar);
+  background: var(--cedar-soft);
+}
+
+/* Scoped to the page's own search and map: the place picker in a sheet has its own. */
+.planner > .explore-chrome > .msearch {
+  top: 172px;
+}
+.planner > .explore-stage .map-offscreen {
+  top: 172px;
+}
+.planner .pincard {
+  top: 240px;
+}
+/* Notes drop below the trip bar instead of covering it. */
+.planner .toast:not(.is-action) {
+  top: 176px;
+}
+.planner .panel {
+  top: 172px;
+  max-height: calc(100% - 196px);
+  padding: 16px 16px 12px;
+  gap: 0;
+}
+
+/* The card's planner action takes a row of its own, as "Add to trip" does elsewhere. */
+.plan-action {
+  display: flex;
+  flex-basis: 100%;
+  contain: inline-size;
+}
+.plan-action .button {
+  flex: 1;
+}
+
+/* ---------- Day list ---------- */
+
+.dl {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dl-tabs {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  margin: 0 -16px;
+  padding: 2px 16px 4px;
+  overflow-x: auto;
+  scroll-padding: 0 16px;
+  scrollbar-width: none;
+}
+.dl-tabs::-webkit-scrollbar {
+  display: none;
+}
+.dl-tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.dl-tab:hover {
+  border-color: var(--control);
+}
+.dl-tab[aria-selected='true'] {
+  background: var(--cedar);
+  border-color: var(--cedar);
+  color: #fff;
+}
+.dl-tab:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.dl-tab-date {
+  font-weight: 500;
+  color: var(--muted);
+  white-space: pre;
+}
+.dl-tab[aria-selected='true'] .dl-tab-date {
+  color: rgba(255, 255, 255, 0.8);
+}
+.dl-tab-count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--c-plan-other);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.dl-tab[aria-selected='true'] .dl-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+.dl-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dl-head h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.dl-head p {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: right;
+}
+.dl-replace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--cedar-soft);
+  color: var(--cedar);
+  font-size: 14px;
+}
+.dl-replace span {
+  flex: 1;
+  min-width: 0;
+}
+.dl-empty {
+  padding: 18px 4px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.plan-empty {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+  font-size: 13px;
+  line-height: 18px;
+}
+.plan-empty svg {
+  flex: none;
+  margin-top: 1px;
+}
+.plan-empty strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+.dl-stops {
+  flex: 1;
+  min-height: 0;
+  margin: 0 -6px;
+  padding: 2px 6px 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dl-travel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 75px;
+  padding: 7px 0 7px 14px;
+  border-left: 2px dotted var(--control);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.dl-stop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: var(--surface);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.dl-stop:hover,
+.dl-stop.is-hot {
+  border-color: var(--cedar);
+}
+.dl-stop.is-replacing {
+  border: 1px dashed var(--cedar);
+  background: var(--cedar-soft);
+}
+.dl-stop-order {
+  flex: none;
+  display: grid;
+  gap: 2px;
+}
+.dl-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.dl-icon:hover:not(:disabled),
+.dl-icon[aria-pressed='true'] {
+  background: var(--raised);
+  color: var(--ink);
+}
+.dl-icon:disabled {
+  opacity: 0.3;
+}
+.dl-stop-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+.dl-stop-photo {
+  position: relative;
+  flex: none;
+}
+.dl-stop-photo img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+.dl-stop-n {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  background: var(--cedar);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.dl-stop-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.dl-stop-text strong,
+.dl-stop-kind {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dl-stop-text strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+.dl-stop-kind {
+  font-size: 13px;
+  color: var(--muted);
+}
+.dl-stop-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ---------- Planner sheets (native dialog) ---------- */
+
+.psheet {
+  --sheet-w: 640px;
+  width: min(var(--sheet-w), calc(100vw - 32px));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  overflow: visible;
+}
+.psheet.is-wide {
+  --sheet-w: 1180px;
+}
+.psheet.is-small {
+  --sheet-w: 460px;
+}
+.psheet::backdrop {
+  background: rgba(10, 18, 20, 0.42);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.psheet-box {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100svh - 48px);
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  background: var(--mist);
+  box-shadow: var(--lift);
+  animation: psheet-in 0.35s var(--ease-out);
+}
+@keyframes psheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+.psheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 8px 24px;
+}
+.psheet-head h2 {
+  font-size: 22px;
+  font-weight: 700;
+}
+.psheet-body {
+  min-height: 0;
+  padding: 8px 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.psheet-foot {
+  display: grid;
+  gap: 10px;
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--line);
+}
+.psheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.psheet .pp-globe {
+  top: 0;
+  height: clamp(380px, calc(100svh - 240px), 640px);
+}
+/* The sheet sits inside the planner page, so undo the map page's placements for its own map. */
+.psheet .pp-globe .maplibregl-ctrl-bottom-right {
+  right: 0;
+  bottom: 0;
+}
+.psheet .pp-globe .map-controls {
+  transform: translateY(-50%);
+}
+.plan-warn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--warn-ink);
+}
+.plan-confirm {
+  display: grid;
+  gap: 22px;
+}
+.plan-confirm p {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psheet-box {
+    animation: none;
+  }
+}
+
+/* Phone: a working layout until the planner's bottom sheet lands. */
+@media (max-width: 760px) {
+  .plan-bar {
+    top: 72px;
+    left: 12px;
+    right: 12px;
+    height: 52px;
+    gap: 6px;
+    padding: 0 4px;
+  }
+  .plan-back {
+    width: 40px;
+    height: 40px;
+  }
+  .plan-name {
+    max-width: 128px;
+    height: 40px;
+    padding: 0 8px;
+    font-size: 16px;
+  }
+  .plan-settings {
+    width: 40px;
+    height: 40px;
+  }
+  .psw-pill,
+  .psw-add {
+    height: 36px;
+  }
+  .planner > .explore-chrome > .msearch {
+    top: 134px;
+  }
+  .planner > .explore-stage .map-offscreen {
+    top: 194px;
+  }
+  .planner .panel {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 86px;
+    width: auto;
+    max-height: 42svh;
+    border-radius: var(--r-lg);
+  }
+  .planner .pincard {
+    top: 192px;
+    bottom: auto;
+  }
+  .planner .toast:not(.is-action) {
+    top: 192px;
+  }
+  .psheet-box {
+    max-height: calc(100svh - 24px);
+  }
+  .psheet .pp-globe {
+    height: 300px;
+  }
+  .psheet-head {
+    padding: 14px 12px 6px 18px;
+  }
+  .psheet-body {
+    padding: 6px 16px 18px;
+  }
+  .psheet-foot {
+    padding: 12px 16px 16px;
   }
 }
