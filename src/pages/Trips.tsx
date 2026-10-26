@@ -20,7 +20,7 @@ const NOTICE_KEY = 'fitline.tripsNoticeDismissed';
 const firstStop = (trip: Trip) => trip.days.find((d) => d.stops.length > 0)?.stops[0] ?? trip.unplanned[0] ?? null;
 
 /** Cover photo id: the first stop's own photo, else the first place's photo. */
-function coverOf(trip: Trip): string | null {
+export function coverOf(trip: Trip): string | null {
   const stop = firstStop(trip);
   if (stop) return stop;
   return trip.places[0] ? placeCover(trip.places[0]) : null;
@@ -37,7 +37,7 @@ function readDismissed() {
 const dayMonth = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 
 /** "12–14 Apr 2027", "28 Apr – 3 May 2027", or "5 days" when the trip has no dates. */
-function tripWhen(trip: Trip): string {
+export function tripWhen(trip: Trip): string {
   const start = dateOf(trip, 0);
   const end = dateOf(trip, trip.days.length - 1);
   if (!start || !end) return plural(trip.days.length, 'day');

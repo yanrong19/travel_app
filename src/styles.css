@@ -5439,3 +5439,553 @@ button.area-card {
     white-space: nowrap;
   }
 }
+
+/* ---------- New trip ---------- */
+
+.tnew {
+  width: var(--page);
+  margin: 36px auto 0;
+}
+.tnew-head {
+  margin-bottom: 28px;
+}
+.tnew-head h1 {
+  margin-top: 18px;
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+}
+.tnew-head h1:focus {
+  outline: none;
+}
+.tnew-lead {
+  max-width: 60ch;
+  margin-top: 8px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.tnew-steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.tnew-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tnew-steps li + li::before {
+  content: '';
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--control);
+}
+.tnew-steps [aria-current='step'] {
+  color: var(--ink);
+}
+.tnew-step-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--control);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+.tnew-steps [aria-current='step'] .tnew-step-mark {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.tnew-steps .is-done .tnew-step-mark {
+  border-color: var(--cedar-soft);
+  background: var(--cedar-soft);
+  color: var(--cedar);
+}
+.tnew-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+.tnew-actions .button:disabled {
+  background: var(--control);
+  color: var(--surface);
+  cursor: not-allowed;
+}
+.tnew-actions-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+.tnew-seed {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--cedar-soft);
+  color: var(--cedar);
+  font-size: 14px;
+}
+.tnew-seed svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+/* Step 1: the place picker. Laptop: a side column beside the globe. Phone: one column. */
+.pp {
+  display: grid;
+  grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.pp-side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.pp-label {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.msearch.is-inline {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 12;
+  width: auto;
+}
+.msearch.is-inline .msearch-field {
+  box-shadow: none;
+  border-color: var(--line);
+  background: var(--surface);
+}
+.msearch.is-inline.is-open .msearch-field,
+.msearch.is-inline .msearch-field:focus-within {
+  border-color: var(--cedar);
+}
+.pp-added {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pp-rchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pp-rchips .rchip {
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.pp-rchips .rchip:not([aria-pressed='true']):hover {
+  border-color: var(--control);
+}
+.pp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 5px 5px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.pp-chip img,
+.pp-chip-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.pp-chip-icon {
+  display: grid;
+  place-items: center;
+  background: var(--raised);
+  color: var(--muted);
+}
+.pp-chip-text {
+  display: grid;
+  min-width: 0;
+}
+.pp-chip-name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pp-chip-sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pp-chip-sub.is-empty {
+  color: var(--warn-ink);
+}
+.pp-chip-remove {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--raised);
+  color: var(--ink);
+  transition: background-color 0.2s;
+}
+.pp-chip-remove:hover {
+  background: var(--line);
+}
+.pp-empty {
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--control);
+  font-size: 14px;
+  color: var(--muted);
+}
+.pp-foot {
+  display: grid;
+  gap: 16px;
+}
+.pp-globe {
+  position: sticky;
+  top: 24px;
+  height: clamp(460px, calc(100svh - 300px), 720px);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: #c9dde7;
+  isolation: isolate;
+}
+.pp-globe .map-controls {
+  left: auto;
+  right: 14px;
+  top: 50%;
+}
+.pp-globe-hint {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: var(--frost);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Step 2: settings beside a preview of the trip's card. */
+.tnew-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+}
+.tnew-card {
+  min-width: 0;
+  padding: 28px;
+  border-radius: var(--r-xl);
+  background: var(--surface);
+}
+.tnew-side {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 20px;
+}
+.tnew-preview {
+  display: grid;
+  gap: 12px;
+}
+.tnew-preview .pp-label {
+  margin: 0;
+}
+.tnew-preview .trip-card-name {
+  margin: 0;
+}
+
+.tset {
+  display: grid;
+  gap: 26px;
+}
+.tset-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.tset-group legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.tset-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.tset-field > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.tset > .tset-field > label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.tset-input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 0.2s;
+}
+.tset-input:hover {
+  border-color: var(--control);
+}
+.tset-input:focus {
+  outline: none;
+  border-color: var(--cedar);
+  box-shadow: 0 0 0 3px var(--cedar-soft);
+}
+.tset-input::placeholder {
+  color: var(--muted);
+}
+.tset-dates {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 168px;
+  gap: 12px;
+}
+.tset-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tset-stepper .tset-input {
+  flex: 1;
+  padding: 0 4px;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.tset-stepper .tset-input::-webkit-inner-spin-button,
+.tset-stepper .tset-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.tset-step {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  transition:
+    transform 0.18s var(--ease-out),
+    border-color 0.2s;
+}
+.tset-step:hover:not(:disabled) {
+  border-color: var(--control);
+}
+.tset-step:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.tset-step:disabled {
+  opacity: 0.4;
+}
+.tset-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tset-pill {
+  position: relative;
+}
+.tset-pill input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.tset-pill span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 42px;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.tset-pill small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.tset-pill:hover input:not(:checked) + span {
+  border-color: var(--control);
+}
+.tset-pill input:checked + span {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.tset-pill input:checked + span small {
+  color: rgba(255, 255, 255, 0.78);
+}
+.tset-pill input:focus-visible + span {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.tset-time {
+  max-width: 200px;
+}
+
+@media (max-width: 1100px) {
+  .tnew-settings {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+@media (max-width: 760px) {
+  .tnew {
+    width: calc(100% - 32px);
+    margin-top: 20px;
+  }
+  .tnew-head {
+    margin-bottom: 20px;
+  }
+  .tnew-head h1 {
+    margin-top: 14px;
+    font-size: 32px;
+    line-height: 36px;
+  }
+  .tnew-lead {
+    font-size: 15px;
+  }
+  /* One column: search, globe, Japan's regions, the picked places, then the button. */
+  .pp {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  .pp-side {
+    display: contents;
+  }
+  .pp-side > .msearch {
+    order: 1;
+  }
+  .pp-globe {
+    order: 2;
+    position: relative;
+    top: auto;
+    height: 340px;
+    border-radius: var(--r-lg);
+  }
+  .pp-regions {
+    order: 3;
+  }
+  .pp-picked {
+    order: 4;
+  }
+  .pp-foot {
+    order: 5;
+  }
+  .pp-globe-hint {
+    left: 10px;
+    top: 10px;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+  .pp-globe .map-controls {
+    right: 10px;
+  }
+  .tnew-actions .button {
+    flex: 1;
+  }
+  .tnew-actions-hint {
+    width: 100%;
+    text-align: center;
+  }
+  .tnew-settings {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .tnew-side {
+    position: static;
+  }
+  .tnew-card {
+    padding: 20px;
+    border-radius: var(--r-lg);
+  }
+  .tset-dates {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .tset-dates > :last-child {
+    grid-column: 1 / -1;
+  }
+  .tset-stepper {
+    max-width: 200px;
+  }
+  .tset-pill span {
+    padding: 0 16px;
+  }
+}
