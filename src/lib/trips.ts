@@ -25,6 +25,9 @@ export interface Trip {
   updatedAt: number;
 }
 
+/** Most days a trip can have. */
+export const MAX_DAYS = 60;
+
 export const PACE_HOURS: Record<Pace, number> = { relaxed: 8, normal: 10, packed: 12 };
 
 const LEVELS: PlaceRef['level'][] = ['country', 'region', 'prefecture', 'area'];
@@ -33,6 +36,9 @@ const WHOS: Who[] = ['solo', 'couple', 'family', 'friends'];
 
 // ---------- creating and dates ----------
 
+/** A whole number of days within 1..MAX_DAYS; anything that isn't a finite number becomes 1. */
+const clampDays = (n: number) => (Number.isFinite(n) ? Math.min(MAX_DAYS, Math.max(1, Math.floor(n))) : 1);
+
 const emptyDay = (): DayPlan => ({ stops: [], wet: [] });
 
 export function newTrip(
@@ -40,7 +46,7 @@ export function newTrip(
   now: number,
   id: string,
 ): Trip {
-  const n = Math.max(1, Math.floor(init.days) || 1);
+  const n = clampDays(init.days);
   return {
     version: 1,
     id,
@@ -108,8 +114,8 @@ const unstop = (days: DayPlan[], id: string) =>
 
 /** Changes the number of days. Stops on removed days go to unplanned; their wet lists are dropped. */
 export function setDays(trip: Trip, n: number, now: number): Trip {
-  const count = Math.max(1, Math.floor(n) || 1);
-  if (count === trip.days.length) return stamp(trip, now, {});
+  const count = clampDays(n);
+  if (count === trip.days.length) return trip;
   if (count > trip.days.length) {
     const extra = Array.from({ length: count - trip.days.length }, emptyDay);
     return stamp(trip, now, { days: [...trip.days, ...extra] });
@@ -186,14 +192,17 @@ export function addPlace(trip: Trip, ref: PlaceRef, now: number): Trip {
 /** Drops a place and the listed attractions (the stops no remaining place covers) from every list. */
 export function removePlace(trip: Trip, ref: PlaceRef, removeStops: string[], now: number): Trip {
   const drop = new Set(removeStops);
-  return stamp(trip, now, {
-    places: trip.places.filter((p) => !(p.level === ref.level && p.id === ref.id)),
-    days: trip.days.map((d) => ({
-      stops: d.stops.filter((x) => !drop.has(x)),
-      wet: d.wet.filter((x) => !drop.has(x)),
-    })),
-    unplanned: trip.unplanned.filter((x) => !drop.has(x)),
-  });
+  const places = trip.places.filter((p) => !(p.level === ref.level && p.id === ref.id));
+  const days = trip.days.map((d) => ({
+    stops: d.stops.filter((x) => !drop.has(x)),
+    wet: d.wet.filter((x) => !drop.has(x)),
+  }));
+  const unplanned = trip.unplanned.filter((x) => !drop.has(x));
+  const same =
+    places.length === trip.places.length &&
+    unplanned.length === trip.unplanned.length &&
+    days.every((d, i) => d.stops.length === trip.days[i].stops.length && d.wet.length === trip.days[i].wet.length);
+  return same ? trip : stamp(trip, now, { places, days, unplanned });
 }
 
 // ---------- queries ----------

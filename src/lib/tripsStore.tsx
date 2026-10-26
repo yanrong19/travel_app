@@ -3,11 +3,35 @@ import { loadTrips, newTrip, serializeTrips, type Trip } from './trips';
 
 // Per-viewer trips, kept in localStorage. Every storage access is wrapped: if storage is
 // unavailable, trips last for this visit only.
-const KEY = 'fitline.trips';
+export const KEY = 'fitline.trips';
+export const BACKUP_KEY = 'fitline.trips.backup';
+
+/**
+ * Reads the stored trips. When the data was partly or wholly unreadable (there is a notice), the raw
+ * text is copied to a backup key first, so the store's first write can't destroy a trip that a
+ * later version could still recover.
+ */
+export function readStored(storage: Pick<Storage, 'getItem' | 'setItem'>): { trips: Trip[]; notice: string | null } {
+  let raw: string | null = null;
+  try {
+    raw = storage.getItem(KEY);
+  } catch {
+    return { trips: [], notice: null };
+  }
+  const result = loadTrips(raw);
+  if (result.notice !== null && raw !== null) {
+    try {
+      storage.setItem(BACKUP_KEY, raw);
+    } catch {
+      /* no room or no storage: nothing more we can do */
+    }
+  }
+  return result;
+}
 
 function read(): { trips: Trip[]; notice: string | null } {
   try {
-    return loadTrips(localStorage.getItem(KEY));
+    return readStored(localStorage);
   } catch {
     return { trips: [], notice: null };
   }

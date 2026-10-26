@@ -9,6 +9,7 @@ import {
   daysBetween,
   endDate,
   loadTrips,
+  MAX_DAYS,
   moveStop,
   newTrip,
   planUnplanned,
@@ -82,7 +83,7 @@ test('addStop takes it out of unplanned', () => {
 
 test('addStop ignores a day that does not exist', () => {
   const t = make();
-  expect(addStop(t, 7, 'a', 2)).toEqual(t);
+  expect(addStop(t, 7, 'a', 2)).toBe(t);
 });
 
 test('addWet does not remove it from the day plan', () => {
@@ -226,4 +227,29 @@ test('loadTrips keeps good trips and drops malformed ones with a notice', () => 
   const r = loadTrips(JSON.stringify({ version: 1, trips: [good, { id: 5 }, null] }));
   expect(r.trips).toEqual([good]);
   expect(r.notice).toEqual(expect.any(String));
+});
+
+test('setDays to the current count is a no-op', () => {
+  const t = make({ days: 3 });
+  expect(setDays(t, 3, 99)).toBe(t);
+  expect(t.updatedAt).toBe(1);
+});
+
+test('removePlace with nothing to remove is a no-op', () => {
+  const t = addStop(make(), 0, 'a', 2);
+  const r = removePlace(t, { level: 'prefecture', id: '27' }, [], 99);
+  expect(r).toBe(t);
+  expect(r.updatedAt).toBe(2);
+  expect(removePlace(t, { level: 'prefecture', id: '27' }, ['not-there'], 99)).toBe(t);
+});
+
+test('day counts are clamped and never throw', () => {
+  expect(MAX_DAYS).toBe(60);
+  for (const bad of [Infinity, -Infinity, NaN, 0, -5]) {
+    expect(newTrip(init({ days: bad }), 1, 'x').days).toHaveLength(1);
+    expect(setDays(make({ days: 3 }), bad, 2).days).toHaveLength(1);
+  }
+  expect(newTrip(init({ days: 1000 }), 1, 'x').days).toHaveLength(MAX_DAYS);
+  expect(setDays(make(), 1000, 2).days).toHaveLength(MAX_DAYS);
+  expect(setDays(make(), 4.9, 2).days).toHaveLength(4);
 });
