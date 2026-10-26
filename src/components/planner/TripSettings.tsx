@@ -35,14 +35,32 @@ export function withStart(v: Dates, start: string): Dates {
   return { ...v, startDate: start, endDate: end };
 }
 
-/** A new end sets the number of days. Without a start, the start is counted back from it. */
-export function withEnd(v: Dates, end: string): Dates {
-  if (!end || !shiftDate(end, 0)) return { ...v, startDate: null, endDate: null };
-  if (!v.startDate) return { ...v, startDate: shiftDate(end, 1 - v.days), endDate: end };
+/** Why a typed end isn't used yet: not a whole date, before the start, past 60 days, or no start to count from. */
+export type EndProblem = 'incomplete' | 'before' | 'tooLong' | 'noStart' | null;
+
+/**
+ * An end as it's typed. The browser reports every segment edit, so "20" typed over "18" passes
+ * through "02", and a year being typed reads as no date at all. Only an end within the start's
+ * 60 days changes anything (it sets the number of days); anything else leaves the dates alone
+ * and is held as pending, with the reason. The start never moves because of the end.
+ */
+export function typeEnd(v: Dates, end: string): { dates: Dates; problem: EndProblem } {
+  if (!end || !shiftDate(end, 0)) return { dates: v, problem: 'incomplete' };
+  if (!v.startDate) return { dates: v, problem: 'noStart' };
   const n = daysBetween(v.startDate, end);
-  // An end before the start, or too far after it: the start follows instead.
-  if (n < 1 || n > MAX_DAYS) return { ...v, startDate: shiftDate(end, 1 - v.days), endDate: end };
-  return { ...v, endDate: end, days: n };
+  if (n < 1) return { dates: v, problem: 'before' };
+  if (n > MAX_DAYS) return { dates: v, problem: 'tooLong' };
+  return { dates: { ...v, endDate: end, days: n }, problem: null };
+}
+
+/**
+ * Leaving the end field with a pending end: an empty field clears both dates (keeping the days);
+ * a whole date without a start counts the start back from it; anything else is dropped.
+ */
+export function leaveEnd(v: Dates, end: string): { dates: Dates; problem: EndProblem } {
+  if (!end) return { dates: { ...v, startDate: null, endDate: null }, problem: null };
+  if (shiftDate(end, 0) && !v.startDate) return { dates: { ...v, startDate: shiftDate(end, 1 - v.days), endDate: end }, problem: null };
+  return typeEnd(v, end);
 }
 
 /** A new number of days moves the end, if there are dates. */
@@ -79,11 +97,56 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
   const [daysText, setDaysText] = useState(String(value.days));
   useEffect(() => setDaysText(String(value.days)), [value.days]);
   const hasDates = !!value.startDate;
+  // A date being typed that isn't usable yet (see typeEnd), shown in its field but not saved.
+  const [startDraft, setStartDraft] = useState<string | null>(null);
+  const [endDraft, setEndDraft] = useState<string | null>(null);
+  const [endNote, setEndNote] = useState<string | null>(null);
+
+  /** Dates changed from anywhere but the end field: whatever was pending there is gone. */
+  const setDates = (d: Partial<TripSettingsValue>) => {
+    setEndDraft(null);
+    setEndNote(null);
+    set(d);
+  };
 
   const typeDays = (text: string) => {
     setDaysText(text);
     const n = Number(text);
-    if (text.trim() && Number.isInteger(n) && n >= 1 && n <= MAX_DAYS) set(withDays(value, n));
+    if (text.trim() && Number.isInteger(n) && n >= 1 && n <= MAX_DAYS) setDates(withDays(value, n));
+  };
+
+  // An empty start is only taken as clearing once the field is left: a year being typed reads as empty too.
+  const typeStart = (text: string) => {
+    if (!text) return setStartDraft('');
+    setStartDraft(null);
+    setDates(withStart(value, text));
+  };
+  const leaveStart = () => {
+    if (startDraft === null) return;
+    setStartDraft(null);
+    setDates(withStart(value, ''));
+  };
+
+  const onEnd = (text: string) => {
+    const r = typeEnd(value, text);
+    if (r.dates !== value) {
+      setEndDraft(null);
+      set(r.dates);
+    } else setEndDraft(text);
+    setEndNote(r.problem === 'before' ? 'End is before start.' : r.problem === 'tooLong' ? `Up to ${MAX_DAYS} days.` : null);
+  };
+  const leaveEndField = () => {
+    if (endDraft === null) return;
+    const r = leaveEnd(value, endDraft);
+    setEndDraft(null);
+    if (r.dates !== value) set(r.dates);
+    setEndNote(
+      r.problem === 'before'
+        ? 'End is before start, so the end date wasn’t changed.'
+        : r.problem === 'tooLong'
+          ? `Up to ${MAX_DAYS} days, so the end date wasn’t changed.`
+          : null,
+    );
   };
 
   return (
@@ -111,8 +174,9 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
               id={`${id}-start`}
               className="tset-input num"
               type="date"
-              value={value.startDate ?? ''}
-              onChange={(e) => set(withStart(value, e.target.value))}
+              value={startDraft ?? value.startDate ?? ''}
+              onChange={(e) => typeStart(e.target.value)}
+              onBlur={leaveStart}
             />
           </div>
           <div className="tset-field">
@@ -121,9 +185,12 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
               id={`${id}-end`}
               className="tset-input num"
               type="date"
-              value={value.endDate ?? ''}
+              value={endDraft ?? value.endDate ?? ''}
               min={value.startDate ?? undefined}
-              onChange={(e) => set(withEnd(value, e.target.value))}
+              max={value.startDate ? (shiftDate(value.startDate, MAX_DAYS - 1) ?? undefined) : undefined}
+              aria-describedby={`${id}-end-note`}
+              onChange={(e) => onEnd(e.target.value)}
+              onBlur={leaveEndField}
             />
           </div>
           <div className="tset-field">
@@ -132,7 +199,7 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
               <button
                 type="button"
                 className="tset-step"
-                onClick={() => set(withDays(value, value.days - 1))}
+                onClick={() => setDates(withDays(value, value.days - 1))}
                 disabled={value.days <= 1}
                 aria-label="One day fewer"
               >
@@ -152,7 +219,7 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
               <button
                 type="button"
                 className="tset-step"
-                onClick={() => set(withDays(value, value.days + 1))}
+                onClick={() => setDates(withDays(value, value.days + 1))}
                 disabled={value.days >= MAX_DAYS}
                 aria-label="One day more"
               >
@@ -161,11 +228,14 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
             </div>
           </div>
         </div>
+        <p id={`${id}-end-note`} className="tset-warn" role="status">
+          {endNote}
+        </p>
         <p className="tset-hint">
           {hasDates ? (
             <>
               The days follow the dates.{' '}
-              <button type="button" className="text-button" onClick={() => set({ startDate: null, endDate: null })}>
+              <button type="button" className="text-button" onClick={() => setDates({ startDate: null, endDate: null })}>
                 Clear dates
               </button>
             </>

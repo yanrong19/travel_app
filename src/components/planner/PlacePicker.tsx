@@ -208,6 +208,7 @@ function PickedChip({ place, onRemove }: { place: PlaceRef; onRemove: () => void
 
 /** Search over every pickable place; picking toggles it in the trip. */
 function PlaceSearch({ picked, onToggle }: { picked: PlaceRef[]; onToggle: (ref: PlaceRef) => void }) {
+  const reduced = useReducedMotion();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -270,7 +271,12 @@ function PlaceSearch({ picked, onToggle }: { picked: PlaceRef[]; onToggle: (ref:
   const activeId = open && results[active] ? `${listId}-${results[active].key}` : undefined;
 
   return (
-    <div ref={box} className={`msearch is-inline ${open ? 'is-open' : ''}`}>
+    <div
+      ref={box}
+      className={`msearch is-inline ${open ? 'is-open' : ''}`}
+      // Tabbing (or any focus move) out of the search closes its list, so it never covers what's below.
+      onBlur={(e) => !box.current?.contains(e.relatedTarget as Node | null) && setOpen(false)}
+    >
       <div className="msearch-field">
         <Icon name="search" size={18} />
         <input
@@ -308,14 +314,22 @@ function PlaceSearch({ picked, onToggle }: { picked: PlaceRef[]; onToggle: (ref:
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.18, ease: EASE_OUT }}
+            transition={{ duration: reduced ? 0 : 0.18, ease: EASE_OUT }}
           >
             {results.length === 0 ? (
               <div className="msearch-empty">
                 <p>No place by that name. Countries without data can be picked on the globe.</p>
               </div>
             ) : (
-              <ul id={listId} role="listbox" aria-label={label} className="msearch-list" data-lenis-prevent>
+              <ul
+                id={listId}
+                role="listbox"
+                aria-label={label}
+                className="msearch-list"
+                // Chrome puts a scrolling box in the tab order, which would keep Tab inside the search.
+                tabIndex={-1}
+                data-lenis-prevent
+              >
                 {results.map((item, i) => {
                   const heading = i === 0 || results[i - 1].ref.level !== item.ref.level;
                   const on = picked.some((p) => sameRef(p, item.ref));

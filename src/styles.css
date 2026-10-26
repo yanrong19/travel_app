@@ -5840,6 +5840,16 @@ button.area-card {
   font-size: 13px;
   color: var(--muted);
 }
+.tset-warn {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warn-ink);
+}
+/* Kept in the page while empty, so screen readers announce what appears in it. */
+.tset-warn:empty {
+  margin: 0;
+}
 .tset-pills {
   display: flex;
   flex-wrap: wrap;

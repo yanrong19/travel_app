@@ -57,6 +57,8 @@ export default function TripNew() {
   // The name follows the first place until it's typed in.
   const [named, setNamed] = useState(false);
   const pushed = useRef(false);
+  // A second click on "Create trip" before the planner opens must not make a second trip.
+  const creating = useRef(false);
   // The step 1 entry's key: once the trip is made, coming back to that entry goes to the trips list.
   const step1Key = useRef(location.key);
 
@@ -106,6 +108,8 @@ export default function TripNew() {
   };
 
   const finish = () => {
+    if (creating.current) return;
+    creating.current = true;
     const name = (named ? settings.name.trim() : '') || defaultName;
     const trip = create({
       name,
