@@ -8,7 +8,7 @@ import { useMedia } from '../lib/useMedia';
 
 const LANDMARKS = DESTINATIONS.flatMap((d) => d.landmarks.map((l) => ({ ...l, country: d.name })));
 const nameOf = (id: string) => {
-  if (id === 'hero') return 'Japan page';
+  if (id === 'hero') return 'Shibuya and Mount Fuji from Roppongi Hills, Tokyo';
   const region = REGIONS.find((r) => r.photo === id && id.startsWith('region-'));
   if (region) return `${region.name}, Japan`;
   const l = LANDMARKS.find((x) => x.photo === id && !ATTRACTIONS.some((a) => a.id === id));

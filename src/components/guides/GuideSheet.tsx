@@ -16,12 +16,23 @@ type Props = {
   barLabel: string;
   atGuides: boolean;
   onBackToMap(): void;
+  /** Keyboard focus came into the guides while the sheet is not fully up: bring it up. */
+  onBodyFocus?(): void;
   /** Sits in the visible strip of the peeking sheet (phone chips, Tokyo filters). */
   peek?: ReactNode;
   /** A small map thumbnail in the sticky bar. */
   miniMap?: ReactNode;
   children: ReactNode;
 };
+
+/** Focus the browser would ring: from the keyboard, or into a text field. */
+function isKeyboardFocus(el: Element) {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    return true;
+  }
+}
 
 function Chevron({ up = false }: { up?: boolean }) {
   return (
@@ -38,7 +49,7 @@ function Chevron({ up = false }: { up?: boolean }) {
  * stay above the sheet), and its row sits at `--bar-top`. So the page must scroll by
  * (viewport − peek − bar top − BAR_H) for the sheet to come fully up.
  */
-export function GuideSheet({ heading, cue, barLabel, atGuides, onBackToMap, peek, miniMap, children }: Props) {
+export function GuideSheet({ heading, cue, barLabel, atGuides, onBackToMap, onBodyFocus, peek, miniMap, children }: Props) {
   const [nudge, setNudge] = useState(false);
   const atGuidesRef = useRef(atGuides);
   atGuidesRef.current = atGuides;
@@ -91,7 +102,17 @@ export function GuideSheet({ heading, cue, barLabel, atGuides, onBackToMap, peek
           </div>
           {peek && <div className="gsheet-peek">{peek}</div>}
         </header>
-        <div className="gsheet-body">{children}</div>
+        {/* Tabbing in from the map can leave the page part-way, where the settle would drop the
+            focused card off screen; so keyboard focus brings the sheet fully up. A mouse click
+            doesn't, as the page moving under the pointer could lose the click. */}
+        <div
+          className="gsheet-body"
+          onFocus={(e) => {
+            if (!atGuides && isKeyboardFocus(e.target)) onBodyFocus?.();
+          }}
+        >
+          {children}
+        </div>
       </div>
     </section>
   );

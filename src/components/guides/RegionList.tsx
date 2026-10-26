@@ -1,5 +1,7 @@
+import type { Ref } from 'react';
 import { REGIONS, prefName, type Region } from '../../data/regions';
 import { TOKYO_PREF_ID } from '../../data/places';
+import { useRevealLit } from '../../lib/listScroll';
 
 const TOKYO = Number(TOKYO_PREF_ID);
 
@@ -13,29 +15,46 @@ export interface Hot {
 export const regionStatus = (r: Region) => (r.live ? 'Live · Tokyo' : 'Coming soon');
 
 interface ListProps {
+  ref?: Ref<HTMLElement>;
   /** The one open row, if any: the accordion shows one region's prefectures at a time. */
   openId: string | null;
   hot: Hot;
+  /** Faded out under the guide sheet: out of the tab order and the pointer's reach. */
+  inert?: boolean;
   onHover(h: Hot): void;
   onToggle(id: string): void;
   onPickPref(code: number): void;
 }
 
 /** The right-hand panel at Japan level: the eight regions, north to south, linked to the map. */
-export function RegionList({ openId, hot, onHover, onToggle, onPickPref }: ListProps) {
+export function RegionList({ ref, openId, hot, inert, onHover, onToggle, onPickPref }: ListProps) {
+  // On a short laptop the last regions sit below the panel's fold: one lit from the map scrolls into view.
+  const lit = hot.pref && hot.region === openId ? `[data-pref="${hot.pref}"]` : hot.region ? `[data-region="${hot.region}"]` : null;
+  const reveal = useRevealLit<HTMLUListElement>(lit);
   return (
-    <aside className="panel" aria-labelledby="panel-title" onPointerLeave={() => onHover({ region: null, pref: null })}>
+    <aside
+      ref={ref}
+      className="panel"
+      aria-labelledby="panel-title"
+      inert={inert}
+      onPointerEnter={reveal.onPointerEnter}
+      onPointerLeave={() => {
+        reveal.onPointerLeave();
+        onHover({ region: null, pref: null });
+      }}
+    >
       <div className="panel-head">
         <h2 id="panel-title">Regions of Japan</h2>
         <p className="panel-scope">{REGIONS.length} regions</p>
       </div>
-      <ul className="rlist" data-lenis-prevent>
+      <ul ref={reveal.list} className="rlist" data-lenis-prevent>
         {REGIONS.map((r) => {
           const open = openId === r.id;
           return (
             <li key={r.id}>
               <button
                 type="button"
+                data-region={r.id}
                 className={`rrow ${hot.region === r.id ? 'is-hot' : ''} ${r.live ? 'is-live' : ''}`}
                 aria-expanded={open}
                 onPointerEnter={() => onHover({ region: r.id, pref: null })}
@@ -64,6 +83,7 @@ export function RegionList({ openId, hot, onHover, onToggle, onPickPref }: ListP
                     <li key={code}>
                       <button
                         type="button"
+                        data-pref={code}
                         className={`rpref ${hot.pref === code ? 'is-hot' : ''}`}
                         onPointerEnter={() => onHover({ region: r.id, pref: code })}
                         onFocus={() => onHover({ region: r.id, pref: code })}

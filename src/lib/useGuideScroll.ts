@@ -10,6 +10,8 @@ const SETTLE_MS = 160;
 const SETTLE_SECONDS = 0.7;
 const AT_START = 0.001;
 const AT_END = 0.999;
+/** Past this progress the title card and the right-hand panel have faded out (styles.css). */
+export const COVERED_AT = 0.4;
 
 /** How far the sheet has slid up: 0 at the top of the page, 1 at the guides offset. */
 export function guideProgress(scrollY: number, viewportH: number, peek: number, barH: number) {
@@ -29,6 +31,8 @@ type Options = {
   root: RefObject<HTMLElement | null>;
   barH: number;
   levelKey: string;
+  /** Stops the page scrolling while something sits over it (the saved drawer). */
+  paused?: boolean;
 };
 
 /**
@@ -38,10 +42,14 @@ type Options = {
  * guides uses the same viewport height as the progress and the settle (on phones the
  * window grows past 100svh when the toolbar retracts).
  */
-export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
+export function useGuideScroll({ enabled, root, barH, levelKey, paused = false }: Options) {
   const [atGuides, setAtGuides] = useState(false);
+  // True once the sheet covers the title card and panel: they are faded out, so they leave the tab order.
+  const [covered, setCovered] = useState(false);
   const lenis = useRef<Lenis | null>(null);
   const barRef = useRef(barH);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   const refresh = useRef<() => void>(() => {});
 
   useLayoutEffect(() => {
@@ -51,8 +59,12 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
 
   useEffect(() => {
     if (!enabled) return;
-    const l = new Lenis({ autoRaf: true, lerp: 0.11 });
+    // Reduced motion: a plain wheel scroll, no smoothing and no settle. Lenis stays for its
+    // scroll events and scrollTo, which it makes immediate under reduced motion.
+    const reduced = prefersReducedMotion();
+    const l = new Lenis({ autoRaf: true, lerp: 0.11, smoothWheel: !reduced });
     lenis.current = l;
+    if (pausedRef.current) l.stop();
     let timer: number | undefined;
     // True while a finger or mouse button is down (covers scrollbar drags), when
     // no scroll events arrive but the user is still steering the page.
@@ -65,17 +77,20 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
       const p = progress();
       root.current?.style.setProperty('--gp', p.toFixed(3));
       setAtGuides(p >= AT_END);
+      setCovered(p >= COVERED_AT);
     };
     // Re-arms on every scroll event, including the ones the settle itself causes,
     // so it only fires once the page has stopped; landing on an end then does nothing.
     const arm = () => {
       window.clearTimeout(timer);
+      if (reduced) return;
       timer = window.setTimeout(() => {
         if (held || l.isTouching) return arm();
+        if (pausedRef.current) return;
         const target = settleTarget(progress());
         if (!target) return;
         const to = target === 'top' ? 0 : window.innerHeight - PEEK - barRef.current;
-        l.scrollTo(to, prefersReducedMotion() ? { immediate: true } : { duration: SETTLE_SECONDS });
+        l.scrollTo(to, { duration: SETTLE_SECONDS });
       }, SETTLE_MS);
     };
     const onScroll = () => {
@@ -117,11 +132,21 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
     };
   }, [enabled, root]);
 
-  // A new level starts at the top of the page, whatever the last one was scrolled to.
+  // Freeze the page behind the saved drawer, as Attraction does behind its sheet.
+  useEffect(() => {
+    if (paused) lenis.current?.stop();
+    else lenis.current?.start();
+  }, [paused]);
+
+  // A new level starts at the top of the page, whatever the last one was scrolled to. On mount
+  // this runs before Lenis exists (it is made in the effect above), so it scrolls the window itself:
+  // the page that linked here may have been scrolled to its bottom.
   useLayoutEffect(() => {
-    lenis.current?.scrollTo(0, { immediate: true });
+    if (lenis.current) lenis.current.scrollTo(0, { immediate: true, force: true });
+    else window.scrollTo(0, 0);
     root.current?.style.setProperty('--gp', '0');
     setAtGuides(false);
+    setCovered(false);
   }, [levelKey, root]);
 
   const scrollTo = useCallback((to: number) => {
@@ -133,5 +158,5 @@ export function useGuideScroll({ enabled, root, barH, levelKey }: Options) {
   );
   const scrollToTop = useCallback(() => scrollTo(0), [scrollTo]);
 
-  return { scrollToGuides, scrollToTop, atGuides };
+  return { scrollToGuides, scrollToTop, atGuides, covered };
 }

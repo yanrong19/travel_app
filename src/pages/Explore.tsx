@@ -36,6 +36,7 @@ import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
 import { useGo } from '../lib/transition';
+import { useTrip } from '../lib/trip';
 import { PEEK, useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
@@ -52,11 +53,18 @@ const MSHEET_BOTTOM = 86;
 const CARD_BOTTOM = 92;
 /** Phone: how tall a region's card runs (one photo beside the text), measured at 390×844. */
 const REGION_CARD_H = 160;
+/** Laptop layout on a short screen (a phone held sideways): matches the rule in styles.css. */
+const SHORT_QUERY = '(min-width: 761px) and (max-height: 520px)';
 const WHEEL_HINT = 'Scrolling shows the guides. Use Ctrl + scroll to zoom the map.';
 const TOKYO_PREF = Number(TOKYO_PREF_ID);
 const NO_HOT: Hot = { region: null, pref: null };
 /** The guides read live regions first, then north to south, which is REGIONS' own order. */
 const GUIDED = [...REGIONS].sort((a, b) => Number(b.live) - Number(a.live));
+
+/** True for a key event from somewhere the user types: an input, textarea, select or editable element. */
+function isTyping(target: EventTarget | null) {
+  return target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'));
+}
 
 /** A region shown on the map's card, in the shape the coming-soon country card already uses. */
 function regionCard(r: Region): CardSubject {
@@ -114,6 +122,8 @@ export default function Explore() {
   const go = useGo();
   const target = useMemo(() => targetFromParams(params.country, params.region, params.area), [params.country, params.region, params.area]);
   const narrow = useMedia('(max-width: 760px)');
+  // A phone held sideways gets the laptop layout with almost no height: see `short` below.
+  const shortScreen = useMedia(SHORT_QUERY);
   const [filter, setFilter] = useState<FilterId>('all');
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -142,6 +152,9 @@ export default function Explore() {
   useEffect(() => {
     document.title = target.level === 'world' ? 'Fitline: know before you go' : `${title.text} · Fitline`;
   }, [target.level, title.text]);
+
+  // Japan's region list: the map's region card keeps clear of it.
+  const panelRef = useRef<HTMLElement>(null);
 
   // On the globe the free area is whatever the title card leaves, so measure it.
   const titleRef = useRef<HTMLElement>(null);
@@ -246,7 +259,9 @@ export default function Explore() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || document.querySelector('.drawer')) return;
+      if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('.drawer')) return;
+      // Escape in a text field belongs to the field (the guides' search box), not to the map.
+      if (isTyping(e.target)) return;
       if (selected) setSelected(null);
       // A framed region is a level of its own: Escape goes back to all of Japan first.
       else if (focused) clearFocus();
@@ -258,12 +273,25 @@ export default function Explore() {
 
   // Guides under the map: the page scrolls, the sheet slides over the map.
   const sheet = sheetFor(target);
+  // Short screen at a guide level: no right-hand panel (the guides below hold the same lists) and
+  // a compact title card (styles.css), so some map is left between the search and the sheet's peek.
+  const short = shortScreen && !!sheet;
   const rootRef = useRef<HTMLDivElement>(null);
   const clear = sheet && narrow ? PHONE_CLEAR : 0;
   const barTop = narrow ? BAR_TOP_PHONE : BAR_TOP;
   const levelKey = `${target.level}:${target.country?.id}:${target.area?.id}`;
   // Fully up, the sheet starts under the sticky bar, which pins below the nav and search.
-  const { scrollToGuides, scrollToTop, atGuides } = useGuideScroll({ enabled: !!sheet, root: rootRef, barH: barTop + BAR_H + clear, levelKey });
+  // The saved drawer's scrim must not scroll (and settle) the page behind it.
+  const { open: drawerOpen } = useTrip();
+  const { scrollToGuides, scrollToTop, atGuides, covered } = useGuideScroll({
+    enabled: !!sheet,
+    root: rootRef,
+    barH: barTop + BAR_H + clear,
+    levelKey,
+    paused: drawerOpen,
+  });
+  // Faded out under the sheet, the title card and the right-hand panel leave the tab order and the pointer.
+  const hidden = !!sheet && covered;
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
 
   // `/map/japan/tokyo#guides` (where the old place-page URLs land) opens on the guides. It waits
@@ -298,13 +326,16 @@ export default function Explore() {
 
   const world = target.level === 'world';
   // Japan keeps the right-hand slot for the region list, so the camera frames it in what is left.
-  const rightPanel = listed || (japan && !narrow);
+  const rightPanel = !short && (listed || (japan && !narrow));
   // Phone: the swipeable attraction row is a ward-level thing; Tokyo's chips live in the sheet's peek.
   const mrow = target.level === 'area';
   const base: Insets = world
     ? narrow
       ? { top: titleBox.bottom + 4, right: 16, bottom: 236, left: 16 }
       : { top: 90, right: 24, bottom: 0, left: titleBox.right + 24 }
+    : short
+      ? // The map is the strip right of the compact title card, between the search and the peek.
+        { top: 140, right: 24, bottom: 0, left: titleBox.right + 16 }
     : narrow
       ? {
           // Japan's title card is tall (three buttons, wrapping), so measure it rather than guess:
@@ -379,6 +410,7 @@ export default function Explore() {
             onWheelPassThrough={onWheelPassThrough}
             attributionHost={sheet ? attribHost : null}
             cardBottom={cardBottom}
+            cardClearOf={panelRef}
             onHover={setHoverId}
             onPrefHover={onPrefHover}
             onAreaHover={setHotArea}
@@ -392,7 +424,7 @@ export default function Explore() {
           />
         </Suspense>
 
-        <section ref={titleRef} className="explore-title">
+        <section ref={titleRef} className="explore-title" inert={hidden}>
           {!world && (
           <nav aria-label="Map level" className="crumbs">
             <ol>
@@ -449,14 +481,14 @@ export default function Explore() {
           </div>
         </section>
 
-        {japan && !narrow && (
-          <RegionList openId={openId} hot={hot} onHover={setHot} onToggle={toggleRegion} onPickPref={pickPref} />
+        {japan && !narrow && !short && (
+          <RegionList ref={panelRef} openId={openId} hot={hot} inert={hidden} onHover={setHot} onToggle={toggleRegion} onPickPref={pickPref} />
         )}
 
-        {tokyo && !narrow && <WardList counts={wardCounts} hot={hotArea} onHover={setHotArea} onPick={pickWard} />}
+        {tokyo && !narrow && !short && <WardList counts={wardCounts} hot={hotArea} inert={hidden} onHover={setHotArea} onPick={pickWard} />}
 
-        {target.level === 'area' && !narrow && (
-          <aside className="panel" aria-labelledby="panel-title">
+        {target.level === 'area' && !narrow && !short && (
+          <aside className="panel" aria-labelledby="panel-title" inert={hidden}>
             <div className="panel-head">
               <h2 id="panel-title">{`In ${target.area!.properties.name}`}</h2>
               <p className="panel-scope">{plural(shown.length, 'place')}</p>
@@ -522,6 +554,7 @@ export default function Explore() {
             barLabel={sheet.barLabel}
             atGuides={atGuides}
             onBackToMap={scrollToTop}
+            onBodyFocus={scrollToGuides}
             peek={
               japan && narrow ? (
                 <RegionChips focusId={focusId} onPick={pickRegion} />

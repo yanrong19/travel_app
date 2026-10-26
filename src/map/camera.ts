@@ -22,6 +22,24 @@ export interface Insets {
 }
 export type Bounds = [[number, number], [number, number]];
 
+/**
+ * Padding the map can frame inside: on a short or narrow screen (a phone held sideways in the
+ * laptop layout) the insets can add up to more than the map, and MapLibre then frames nothing.
+ * Each axis keeps at least `minFree` px free (as fitView does), shrinking that axis' two sides in
+ * proportion; padding that already leaves that much is untouched.
+ */
+export function fitPadding(p: Insets, W: number, H: number, minFree = 80): Insets {
+  const squeeze = (a: number, b: number, len: number): [number, number] => {
+    const room = len - minFree;
+    if (a + b <= room || a + b <= 0) return [a, b];
+    const k = Math.max(0, room) / (a + b);
+    return [a * k, b * k];
+  };
+  const [top, bottom] = squeeze(p.top, p.bottom, H);
+  const [left, right] = squeeze(p.left, p.right, W);
+  return { top, right, bottom, left };
+}
+
 /** Bounds of a feature, ignoring far-flung islands (parts under 2% of the largest). */
 export function mainBounds(f: Feature<Geometry>): Bounds {
   const g = f.geometry;

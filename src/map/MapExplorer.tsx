@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { AttributionControl, Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
 import { C, STYLE_URL, restyle } from './style';
 import { geoBounds } from 'd3-geo';
@@ -14,7 +14,7 @@ import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
 import { GlobeCard, type CardSubject } from '../components/GlobeCard';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
-import type { Insets } from './camera';
+import { fitPadding, type Insets } from './camera';
 
 /** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
 const DWELL_MS = 5000;
@@ -104,6 +104,8 @@ interface Props {
   attributionHost?: HTMLElement | null;
   /** Phone: the room under the docked card, for whatever sits at the bottom of the page. */
   cardBottom?: number;
+  /** Laptop: a panel over the map's right side (Japan's region list) that the card must stay clear of. */
+  cardClearOf?: RefObject<HTMLElement | null>;
   onHover: (id: string | null) => void;
   /** The prefecture under the pointer at country level, so a list can follow the map. */
   onPrefHover?: (code: number | null) => void;
@@ -140,9 +142,12 @@ export function MapExplorer(props: Props) {
     wheelScrollsPage = false,
     attributionHost = null,
     cardBottom = 92,
+    cardClearOf,
   } = props;
   const cardBottomRef = useRef(cardBottom);
   cardBottomRef.current = cardBottom;
+  const clearOfRef = useRef(cardClearOf);
+  clearOfRef.current = cardClearOf;
   const wrap = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const tether = useRef<SVGSVGElement>(null);
@@ -363,9 +368,19 @@ export function MapExplorer(props: Props) {
     } else {
       // Japan's card clears the Tokyo pin's label on the right.
       const gapRight = d.live ? 210 : 70;
-      const right = p.x + gapRight + cw < W - 24;
-      x = right ? p.x + gapRight : p.x - 70 - cw;
-      x = Math.max(Math.max(ins.left - 24, 16), Math.min(W - cw - 24, x));
+      const minX = Math.max(ins.left - 24, 16);
+      // The card's right limit: the map's edge, or a little short of a right-hand panel.
+      const panel = clearOfRef.current?.current?.getBoundingClientRect();
+      const left0 = wrap.current?.getBoundingClientRect().left ?? 0;
+      const edge = panel && panel.width ? Math.min(W - 24, panel.left - left0 - 16) : W - 24;
+      // Short of room on the right, a region's card closes in on its pin before it flips left,
+      // where Japan's title card sits; Japan's own card keeps its gap to clear Tokyo's label.
+      const minGap = d.live ? gapRight : 16;
+      const right = p.x + minGap + cw <= edge;
+      const left = p.x - 70 - cw >= minX;
+      // Neither side has room (a narrow laptop with the panel open): as far right as the panel allows.
+      x = right ? Math.min(p.x + gapRight, edge - cw) : left ? p.x - 70 - cw : edge - cw;
+      x = Math.max(minX, Math.min(edge - cw, x));
       y = Math.max(ins.top - 40, Math.min(H - ch - 24, p.y - ch / 2));
     }
     cardEl.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
@@ -530,8 +545,9 @@ export function MapExplorer(props: Props) {
 
   function padding() {
     const W = wrap.current!.clientWidth;
+    const H = wrap.current!.clientHeight;
     const side = Math.min(70, W * 0.08);
-    return { top: insets.top + 56, bottom: insets.bottom + 12, left: insets.left + side, right: insets.right + side };
+    return fitPadding({ top: insets.top + 56, bottom: insets.bottom + 12, left: insets.left + side, right: insets.right + side }, W, H);
   }
 
   function flyToTarget(duration?: number, all = false, tilt = tilted) {

@@ -4511,6 +4511,24 @@ h2:focus {
   }
 }
 
+/* A phone held sideways gets the laptop layout with about 390px of height: the title card keeps
+   only its crumbs and buttons, and the zoom buttons go (pinch and Ctrl + scroll still zoom), so a
+   strip of map stays between the search and the peek. Explore drops the right-hand panel to match
+   (SHORT_QUERY in Explore.tsx). */
+@media (min-width: 761px) and (max-height: 520px) {
+  .explore.has-guides .explore-title {
+    bottom: calc(90px + 12px);
+    padding: 14px 18px 16px;
+  }
+  .explore.has-guides .explore-title .place-title,
+  .explore.has-guides .explore-title .explore-line {
+    display: none;
+  }
+  .explore.has-guides .map-controls {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .explore.has-guides .map,
   .explore.has-guides .explore-title,
