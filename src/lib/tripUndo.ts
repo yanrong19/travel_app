@@ -5,7 +5,7 @@ import { addStop, dayOf, moveStop, removePlace, replaceStop, type PlaceRef, type
 
 export type Edit = (t: Trip, now: number) => Trip;
 
-type ListField = 'places' | 'days' | 'unplanned';
+type ListField = 'places' | 'days' | 'saved';
 
 /**
  * Puts the listed fields back as they were in `before`, if they still read exactly as the action left
@@ -25,17 +25,16 @@ function restoreIfUnchanged(before: Trip, after: Trip, fields: ListField[]): Edi
 /** A stop removed from a day goes back where it was, unless it has been planned on a day since. */
 export function undoRemoveStop(day: number, id: string, index: number): Edit {
   return (t, now) => {
-    const on = dayOf(t, id);
-    if (on !== null && on !== -1) return t;
+    if (dayOf(t, id) !== null) return t;
     const back = addStop(t, day, id, now);
     const at = back.days[day]?.stops.indexOf(id) ?? -1;
     return at < 0 ? back : moveStop(back, day, at, Math.min(index, at), now);
   };
 }
 
-/** A replace: the day lists and unplanned go back as they were, unless they have changed since. */
+/** A replace: the day lists and saved go back as they were, unless they have changed since. */
 export function undoReplace(before: Trip, day: number, oldId: string, newId: string): Edit {
-  return restoreIfUnchanged(before, replaceStop(before, day, oldId, newId, 0), ['days', 'unplanned']);
+  return restoreIfUnchanged(before, replaceStop(before, day, oldId, newId, 0), ['days', 'saved']);
 }
 
 /** A stop removed from a wet-weather plan goes back where it was, unless it is back in the plan already. */
@@ -48,7 +47,7 @@ export function undoRemoveWet(day: number, id: string, index: number): Edit {
   };
 }
 
-/** A removed place: the places, days and unplanned go back as they were, unless they have changed since. */
+/** A removed place: the places, days and saved go back as they were, unless they have changed since. */
 export function undoRemovePlace(before: Trip, ref: PlaceRef, removeStops: string[]): Edit {
-  return restoreIfUnchanged(before, removePlace(before, ref, removeStops, 0), ['places', 'days', 'unplanned']);
+  return restoreIfUnchanged(before, removePlace(before, ref, removeStops, 0), ['places', 'days', 'saved']);
 }

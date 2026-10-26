@@ -5,12 +5,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { TOKYO_PREF_ID } from '../../data/places';
 import { DAYS, MONTHS, plural } from '../../lib/format';
 import { EASE_OUT, useReducedMotion } from '../../lib/motion';
-import { addPlace, addStop, addUnplanned, dateOf, dayOf, type PlaceRef, type Trip } from '../../lib/trips';
+import { addPlace, addStop, dateOf, dayOf, saveToTrip, type PlaceRef, type Trip } from '../../lib/trips';
 import { coveringPlace, placeLabel } from '../../lib/tripPlaces';
 import { useTrips } from '../../lib/tripsStore';
 import { Icon } from '../Icon';
 
-// The trip and day last added to, for this visit. Day -1 is Unplanned.
+// The trip and day last added to, for this visit. Day -1 is "Save to trip" (no day).
 const LAST_KEY = 'fitline.lastTripDay';
 type Last = { tripId: string; day: number };
 
@@ -31,7 +31,7 @@ function writeLast(v: Last) {
   }
 }
 
-const UNPLANNED = -1;
+const SAVE = -1;
 const DONE_MS = 2600;
 const POP_WIDTH = 320;
 const GAP = 8;
@@ -46,13 +46,13 @@ function dayLabel(trip: Trip, day: number) {
 /** Where the attraction already sits in a trip, in words, or null. */
 function whereIn(trip: Trip, id: string) {
   const at = dayOf(trip, id);
-  if (at === null) return null;
-  return at === UNPLANNED ? 'In Unplanned' : `On Day ${at + 1}`;
+  if (at !== null) return `On Day ${at + 1}`;
+  return trip.saved.includes(id) ? 'Saved' : null;
 }
 
 /**
  * "Add to trip": with no trips it starts a new one seeded with this attraction; otherwise a small
- * popover picks a trip, then a day (or Unplanned). The last-used trip and day come first.
+ * popover picks a trip, then a day (or just saves it to the trip). The last-used trip and day come first.
  */
 export function AddToTrip({ attractionId, place }: { attractionId: string; place: PlaceRef | null }) {
   const { trips, update } = useTrips();
@@ -95,11 +95,11 @@ export function AddToTrip({ attractionId, place }: { attractionId: string; place
     update(trip.id, (t, now) => {
       // A trip whose places don't cover this attraction gains Tokyo, so the stop has a place.
       const next = coveringPlace(t.places, attractionId) ? t : addPlace(t, { level: 'prefecture', id: TOKYO_PREF_ID }, now);
-      return day === UNPLANNED ? addUnplanned(next, attractionId, now) : addStop(next, day, attractionId, now);
+      return day === SAVE ? saveToTrip(next, attractionId, now) : addStop(next, day, attractionId, now);
     });
     writeLast({ tripId: trip.id, day });
     close(true);
-    setDone(day === UNPLANNED ? 'Added to Unplanned' : `Added to Day ${day + 1}`);
+    setDone(day === SAVE ? 'Saved to trip' : `Added to Day ${day + 1}`);
     window.clearTimeout(doneTimer.current);
     doneTimer.current = window.setTimeout(() => setDone(null), DONE_MS);
   };
@@ -253,7 +253,7 @@ function DayStep({
   onPick: (day: number) => void;
 }) {
   const at = dayOf(trip, attractionId);
-  const options = [...trip.days.map((_, i) => i), UNPLANNED];
+  const options = [...trip.days.map((_, i) => i), SAVE];
   if (lastDay !== null && options.includes(lastDay)) options.splice(0, 0, ...options.splice(options.indexOf(lastDay), 1));
 
   return (
@@ -266,30 +266,29 @@ function DayStep({
       </div>
       <ul className="att-list">
         {options.map((day) => {
-          const here = at === day;
-          // Unplanned only takes attractions that aren't on a day yet.
-          const blocked = day === UNPLANNED && at !== null && at !== UNPLANNED;
-          const n = day === UNPLANNED ? trip.unplanned.length : trip.days[day].stops.length;
+          // Saving works whether or not it is on a day: the trip's Saved list is a shortlist.
+          const here = day === SAVE ? trip.saved.includes(attractionId) : at === day;
+          const n = day === SAVE ? 0 : trip.days[day].stops.length;
           const count = n ? plural(n, 'stop') : 'Nothing planned yet';
           const note = here
-            ? 'Already here'
-            : blocked
-              ? `Already on Day ${(at ?? 0) + 1}`
-              : day === UNPLANNED
-                ? 'Decide the day later'
-                : at !== null && at !== UNPLANNED
-                  ? `${count} · moves from Day ${at + 1}`
-                  : count;
+            ? day === SAVE
+              ? 'Already saved'
+              : 'Already here'
+            : day === SAVE
+              ? 'Decide the day later'
+              : at !== null
+                ? `${count} · moves from Day ${at + 1}`
+                : count;
           return (
             <li key={day}>
-              <button type="button" className="att-item" disabled={here || blocked} onClick={() => onPick(day)}>
+              <button type="button" className="att-item" disabled={here} onClick={() => onPick(day)}>
                 <span className="att-item-text">
-                  <strong>{day === UNPLANNED ? 'Unplanned' : dayLabel(trip, day)}</strong>
+                  <strong>{day === SAVE ? 'Save to trip' : dayLabel(trip, day)}</strong>
                   <span>{note}</span>
                 </span>
                 {here ? (
                   <Icon name="check" size={16} />
-                ) : blocked ? null : day === lastDay ? (
+                ) : day === lastDay ? (
                   <span className="att-tag">Last used</span>
                 ) : (
                   <Icon name="plus" size={16} />

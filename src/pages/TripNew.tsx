@@ -9,7 +9,7 @@ import { PlacePicker } from '../components/planner/PlacePicker';
 import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
-import { addUnplanned, newTrip, type PlaceRef } from '../lib/trips';
+import { newTrip, saveToTrip, type PlaceRef } from '../lib/trips';
 import { placeLabel } from '../lib/tripPlaces';
 import { useTrips } from '../lib/tripsStore';
 import { useMedia } from '../lib/useMedia';
@@ -50,7 +50,7 @@ export default function TripNew() {
   const reduced = useReducedMotion();
 
   const state = location.state as NewTripState;
-  // Read once: the seed pre-picks its place (Tokyo when it has none) and waits in Unplanned.
+  // Read once: the seed pre-picks its place (Tokyo when it has none) and waits in the trip's Saved list.
   const [seed] = useState(() => readSeed(location.state));
   const [places, setPlaces] = useState<PlaceRef[]>(() => (seed ? [seed.place ?? TOKYO] : []));
   const [settings, setSettings] = useState<TripSettingsValue>(INITIAL);
@@ -120,7 +120,7 @@ export default function TripNew() {
       pace: settings.pace,
       dayStart: settings.dayStart,
     });
-    if (seed) update(trip.id, (t, now) => addUnplanned(t, seed.attractionId, now));
+    if (seed) update(trip.id, (t, now) => saveToTrip(t, seed.attractionId, now));
     try {
       // A page opened straight from its URL has the key "default", which a later visit would share.
       if (step1Key.current !== 'default') sessionStorage.setItem(DONE_KEY, step1Key.current);
@@ -137,14 +137,14 @@ export default function TripNew() {
       0,
       'preview',
     );
-    return seed ? addUnplanned(t, seed.attractionId, 0) : t;
+    return seed ? saveToTrip(t, seed.attractionId, 0) : t;
   }, [named, settings, defaultName, places, seed]);
 
   const seedNote = seedName && (
     <p className="tnew-seed">
       <Icon name="check" size={15} />
       <span>
-        <strong>{seedName}</strong> will wait in Unplanned, ready to drop into a day.
+        <strong>{seedName}</strong> will wait in the trip’s Saved list, ready to drop into a day.
       </span>
     </p>
   );

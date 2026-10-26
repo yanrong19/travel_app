@@ -17,8 +17,8 @@ const EMPTY_PHOTO = 'hero';
 // Dismissing the unreadable-data note lasts for this visit (the store's notice is fixed at load).
 const NOTICE_KEY = 'fitline.tripsNoticeDismissed';
 
-/** The first planned stop across the days, else the first unplanned attraction. */
-const firstStop = (trip: Trip) => trip.days.find((d) => d.stops.length > 0)?.stops[0] ?? trip.unplanned[0] ?? null;
+/** The first planned stop across the days, else the first attraction saved to the trip. */
+const firstStop = (trip: Trip) => trip.days.find((d) => d.stops.length > 0)?.stops[0] ?? trip.saved[0] ?? null;
 
 /** Cover photo id: the first stop's own photo, else the first place's photo. */
 export function coverOf(trip: Trip): string | null {

@@ -2,7 +2,6 @@ import { expect, test } from 'vitest';
 import {
   addPlace,
   addStop,
-  addUnplanned,
   addWet,
   dateOf,
   dayOf,
@@ -12,13 +11,14 @@ import {
   MAX_DAYS,
   moveStop,
   newTrip,
-  planUnplanned,
   removePlace,
   removeStop,
   removeWet,
   replaceStop,
+  saveToTrip,
   serializeTrips,
   setDays,
+  unsaveFromTrip,
   type Trip,
 } from './trips';
 
@@ -44,7 +44,7 @@ test('newTrip makes one empty DayPlan per day', () =>
 
 test('newTrip fills defaults and stamps times', () => {
   const t = newTrip(init(), 5, 'abc');
-  expect(t).toMatchObject({ version: 1, id: 'abc', unplanned: [], dayStart: '09:00', createdAt: 5, updatedAt: 5 });
+  expect(t).toMatchObject({ version: 1, id: 'abc', saved: [], dayStart: '09:00', createdAt: 5, updatedAt: 5 });
 });
 
 test('daysBetween is inclusive', () => expect(daysBetween('2027-04-10', '2027-04-14')).toBe(5));
@@ -75,9 +75,9 @@ test('addStop moves from another day', () => {
   expect(t.days[2].stops).toEqual(['a']);
 });
 
-test('addStop takes it out of unplanned', () => {
-  const t = addStop(addUnplanned(make(), 'a', 2), 1, 'a', 3);
-  expect(t.unplanned).toEqual([]);
+test('planning from saved keeps the id in saved', () => {
+  const t = addStop(saveToTrip(make(), 'a', 2), 1, 'a', 3);
+  expect(t.saved).toEqual(['a']);
   expect(t.days[1].stops).toEqual(['a']);
 });
 
@@ -109,11 +109,17 @@ test('replaceStop keeps the position', () => {
   expect(replaceStop(t, 0, 'b', 'd', 3).days[0].stops).toEqual(['a', 'd', 'c']);
 });
 
-test('replaceStop parks the replaced stop in unplanned and takes the new one out', () => {
-  let t = addUnplanned(addStop(make(), 0, 'a', 2), 'd', 2);
+test('replaceStop sends the replaced stop to saved and keeps the new one in saved', () => {
+  let t = saveToTrip(addStop(make(), 0, 'a', 2), 'd', 2);
   t = replaceStop(t, 0, 'a', 'd', 3);
   expect(t.days[0].stops).toEqual(['d']);
-  expect(t.unplanned).toEqual(['a']);
+  expect(t.saved).toEqual(['d', 'a']);
+});
+
+test('replaceStop does not duplicate a replaced stop already in saved', () => {
+  let t = saveToTrip(addStop(make(), 0, 'a', 2), 'a', 2);
+  t = replaceStop(t, 0, 'a', 'd', 3);
+  expect(t.saved).toEqual(['a']);
 });
 
 test('replaceStop pulls the new stop out of its old place', () => {
@@ -130,23 +136,31 @@ test('moveStop reorders', () => {
   expect(moveStop(t, 0, 2, 0, 3).days[0].stops).toEqual(['c', 'a', 'b']);
 });
 
-test('planUnplanned moves a stop from unplanned onto a day', () => {
-  const t = planUnplanned(addUnplanned(make(), 'a', 2), 'a', 1, 3);
-  expect(t.unplanned).toEqual([]);
-  expect(t.days[1].stops).toEqual(['a']);
+test('saveToTrip adds once; saving again returns the same object', () => {
+  const t = saveToTrip(make(), 'a', 2);
+  expect(t.saved).toEqual(['a']);
+  expect(t.updatedAt).toBe(2);
+  expect(saveToTrip(t, 'a', 3)).toBe(t);
 });
 
-test('addUnplanned adds once and leaves planned stops alone', () => {
-  const t = addUnplanned(addUnplanned(make(), 'a', 2), 'a', 3);
-  expect(t.unplanned).toEqual(['a']);
-  const planned = addStop(make(), 0, 'b', 2);
-  expect(addUnplanned(planned, 'b', 3).unplanned).toEqual([]);
+test('saveToTrip also saves a stop that is already on a day', () => {
+  const t = saveToTrip(addStop(make(), 0, 'b', 2), 'b', 3);
+  expect(t.saved).toEqual(['b']);
+  expect(t.days[0].stops).toEqual(['b']);
 });
 
-test('dayOf finds the day, -1 for unplanned, null otherwise', () => {
-  const t = addUnplanned(addStop(make(), 2, 'a', 2), 'u', 2);
+test('unsaveFromTrip removes it, and is a no-op when it is not saved', () => {
+  const t = saveToTrip(saveToTrip(make(), 'a', 2), 'b', 2);
+  const r = unsaveFromTrip(t, 'a', 3);
+  expect(r.saved).toEqual(['b']);
+  expect(r.updatedAt).toBe(3);
+  expect(unsaveFromTrip(r, 'a', 4)).toBe(r);
+});
+
+test('dayOf finds the day, null when it is not on a day (even if saved)', () => {
+  const t = saveToTrip(addStop(make(), 2, 'a', 2), 'u', 2);
   expect(dayOf(t, 'a')).toBe(2);
-  expect(dayOf(t, 'u')).toBe(-1);
+  expect(dayOf(t, 'u')).toBeNull();
   expect(dayOf(t, 'zzz')).toBeNull();
 });
 
@@ -156,7 +170,13 @@ test('setDays keeps stops from removed days', () => {
   t = addWet(t, 4, 'x', 2);
   const s = setDays(t, 3, 3);
   expect(s.days).toHaveLength(3);
-  expect(s.unplanned).toEqual(['y', 'x']);
+  expect(s.saved).toEqual(['y', 'x']);
+});
+
+test('setDays sends stops from removed days to saved without duplicates', () => {
+  let t = saveToTrip(make({ days: 5 }), 'x', 2);
+  t = addStop(addStop(t, 4, 'x', 2), 3, 'y', 2);
+  expect(setDays(t, 3, 3).saved).toEqual(['x', 'y']);
 });
 
 test('setDays grows with empty days', () => {
@@ -178,16 +198,16 @@ test('removePlace drops the place and the listed stops', () => {
   let t = make();
   t = addStop(addStop(t, 0, 'a', 2), 1, 'b', 2);
   t = addWet(t, 1, 'b', 2);
-  t = addUnplanned(t, 'c', 2);
+  t = saveToTrip(saveToTrip(t, 'c', 2), 'a', 2);
   const r = removePlace(t, { level: 'prefecture', id: '13' }, ['b', 'c'], 3);
   expect(r.places).toEqual([]);
   expect(r.days[0].stops).toEqual(['a']);
   expect(r.days[1]).toEqual({ stops: [], wet: [] });
-  expect(r.unplanned).toEqual([]);
+  expect(r.saved).toEqual(['a']);
 });
 
 test('operations never mutate their input', () => {
-  const t = addWet(addUnplanned(addStop(make({ days: 4 }), 0, 'a', 2), 'u', 2), 0, 'a', 2);
+  const t = addWet(saveToTrip(addStop(make({ days: 4 }), 0, 'a', 2), 'u', 2), 0, 'a', 2);
   const before = JSON.stringify(t);
   addStop(t, 1, 'a', 3);
   removeStop(t, 0, 'a', 3);
@@ -195,8 +215,9 @@ test('operations never mutate their input', () => {
   replaceStop(t, 0, 'a', 'z', 3);
   addWet(t, 1, 'q', 3);
   removeWet(t, 0, 'a', 3);
-  addUnplanned(t, 'n', 3);
-  planUnplanned(t, 'u', 2, 3);
+  saveToTrip(t, 'n', 3);
+  unsaveFromTrip(t, 'u', 3);
+  addStop(t, 2, 'u', 3);
   addPlace(t, { level: 'country', id: 'jp' }, 3);
   removePlace(t, { level: 'prefecture', id: '13' }, ['a'], 3);
   setDays(t, 1, 3);
@@ -207,7 +228,7 @@ test('operations stamp updatedAt from now', () => {
   const t = make();
   expect(addStop(t, 0, 'a', 99).updatedAt).toBe(99);
   expect(addWet(t, 0, 'a', 98).updatedAt).toBe(98);
-  expect(addUnplanned(t, 'a', 97).updatedAt).toBe(97);
+  expect(saveToTrip(t, 'a', 97).updatedAt).toBe(97);
   expect(setDays(t, 4, 96).updatedAt).toBe(96);
   expect(addPlace(t, { level: 'country', id: 'jp' }, 95).updatedAt).toBe(95);
   expect(removePlace(t, { level: 'prefecture', id: '13' }, [], 94).updatedAt).toBe(94);
@@ -279,12 +300,38 @@ test('loadTrips prunes attraction ids the data no longer has', () => {
   let t = addStop(addStop(make(), 0, 'a', 2), 0, 'gone', 2);
   t = addStop(t, 0, 'b', 2);
   t = addWet(addWet(t, 1, 'gone', 2), 1, 'b', 2);
-  t = addUnplanned(addUnplanned(t, 'gone2', 2), 'a2', 2);
+  t = saveToTrip(saveToTrip(t, 'gone2', 2), 'a2', 2);
   const known = (id: string) => !id.startsWith('gone');
   const [r] = loadTrips(serializeTrips([t]), known).trips;
   expect(r.days[0].stops).toEqual(['a', 'b']);
   expect(r.days[1].wet).toEqual(['b']);
-  expect(r.unplanned).toEqual(['a2']);
+  expect(r.saved).toEqual(['a2']);
   // Without a list of known ids nothing is pruned.
   expect(loadTrips(serializeTrips([t])).trips).toEqual([t]);
+});
+
+/** A trip as an older build wrote it: `unplanned` instead of `saved`. */
+const oldShape = (t: Trip, unplanned: string[]) => {
+  const { saved: _saved, ...rest } = t;
+  return { ...rest, unplanned };
+};
+
+test('loadTrips migrates a version-1 trip that still has unplanned', () => {
+  const t = addStop(make(), 0, 'a', 2);
+  const r = loadTrips(JSON.stringify({ version: 1, trips: [oldShape(t, ['u1', 'u2'])] }));
+  expect(r.notice).toBeNull();
+  expect(r.trips).toEqual([{ ...t, saved: ['u1', 'u2'] }]);
+  expect('unplanned' in r.trips[0]).toBe(false);
+});
+
+test('loadTrips prunes unknown ids from a migrated unplanned list', () => {
+  const raw = JSON.stringify({ version: 1, trips: [oldShape(make(), ['ok', 'gone'])] });
+  expect(loadTrips(raw, (id) => id !== 'gone').trips[0].saved).toEqual(['ok']);
+});
+
+test('loadTrips prefers saved when a trip has both fields, and drops one with neither', () => {
+  const t = saveToTrip(make(), 's', 2);
+  expect(loadTrips(JSON.stringify({ version: 1, trips: [{ ...t, unplanned: ['u'] }] })).trips).toEqual([t]);
+  const { saved: _saved, ...neither } = make();
+  expect(loadTrips(JSON.stringify({ version: 1, trips: [neither] })).trips).toEqual([]);
 });

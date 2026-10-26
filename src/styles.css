@@ -6643,7 +6643,7 @@ button.area-card {
   color: var(--hue);
 }
 
-/* ---------- Trays (Unplanned, Saved) ---------- */
+/* ---------- Trays (the trip's Saved list) ---------- */
 
 .trays {
   flex: none;

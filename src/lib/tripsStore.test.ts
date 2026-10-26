@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { BACKUP_KEY, KEY, readStored, tripsSync } from './tripsStore';
-import { addStop, newTrip, serializeTrips } from './trips';
+import { addStop, newTrip, serializeTrips, type Trip } from './trips';
 
 function fake(initial: Record<string, string> = {}) {
   const m = new Map(Object.entries(initial));
@@ -104,4 +104,22 @@ test('a failed write or an unreadable storage is reported', () => {
   expect(tripsSync({ getItem: boom, setItem: () => {} }).initial.failed).toBe(true);
   expect(tripsSync(null).initial.failed).toBe(true);
   expect(tripsSync(null).save([tripA])).toBe(true);
+});
+
+/** Trips as an older build wrote them: `unplanned` instead of `saved`. */
+const oldRaw = (trips: Trip[], unplanned: string[]) =>
+  JSON.stringify({ version: 1, trips: trips.map(({ saved: _saved, ...rest }) => ({ ...rest, unplanned })) });
+
+test('older trips with unplanned are migrated to saved on read, with no backup', () => {
+  const s = fake({ [KEY]: oldRaw([tripA], ['senso-ji']) });
+  const r = readStored(s);
+  expect(r.trips).toEqual([{ ...tripA, saved: ['senso-ji'] }]);
+  expect(r.notice).toBeNull();
+  expect(s.m.has(BACKUP_KEY)).toBe(false);
+});
+
+test('a storage event with older trips is migrated too', () => {
+  const sync = tripsSync(fake(), (id) => id !== 'gone');
+  const next = sync.receive({ key: KEY, newValue: oldRaw([tripB], ['senso-ji', 'gone']) });
+  expect(next).toEqual([{ ...tripB, saved: ['senso-ji'] }]);
 });

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { addPlace, addStop, addUnplanned, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop } from './trips';
+import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip } from './trips';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace } from './tripUndo';
 
 const base = () => {
@@ -16,11 +16,11 @@ test('undoRemoveStop puts the stop back at its index', () => {
   expect(r.updatedAt).toBe(3);
 });
 
-test('undoRemoveStop takes it back out of unplanned', () => {
-  const t = addUnplanned(removeStop(base(), 0, 'b', 2), 'b', 2);
+test('undoRemoveStop puts it back on its day and leaves it in saved', () => {
+  const t = saveToTrip(removeStop(base(), 0, 'b', 2), 'b', 2);
   const r = undoRemoveStop(0, 'b', 1)(t, 3);
   expect(r.days[0].stops).toEqual(['a', 'b', 'c']);
-  expect(r.unplanned).toEqual([]);
+  expect(r.saved).toEqual(['b']);
 });
 
 test('undoRemoveStop is a no-op once the stop is planned on a day again', () => {
@@ -33,12 +33,21 @@ test('undoRemoveStop goes to the end when the day got shorter', () => {
   expect(undoRemoveStop(0, 'c', 2)(t, 3).days[0].stops).toEqual(['b', 'c']);
 });
 
+test('undoReplace takes the replaced stop back out of saved', () => {
+  const before = base();
+  const t = replaceStop(before, 0, 'b', 'x', 2);
+  expect(t.saved).toEqual(['b']);
+  const r = undoReplace(before, 0, 'b', 'x')(t, 3);
+  expect(r.days).toEqual(before.days);
+  expect(r.saved).toEqual([]);
+});
+
 test('undoReplace restores the lists as they were', () => {
-  const before = addUnplanned(base(), 'x', 1);
+  const before = saveToTrip(base(), 'x', 1);
   const t = replaceStop(before, 0, 'b', 'x', 2);
   const r = undoReplace(before, 0, 'b', 'x')(t, 3);
   expect(r.days).toEqual(before.days);
-  expect(r.unplanned).toEqual(before.unplanned);
+  expect(r.saved).toEqual(before.saved);
   expect(r.updatedAt).toBe(3);
 });
 
@@ -63,12 +72,12 @@ test('undoRemoveWet puts it back at its index, and is a no-op if it is back alre
   expect(undoRemoveWet(1, 'q', 1)(again, 3)).toBe(again);
 });
 
-test('undoRemovePlace restores the places, days and unplanned', () => {
+test('undoRemovePlace restores the places, days and saved', () => {
   let before = addPlace(base(), osaka, 1);
-  before = addWet(addUnplanned(before, 'u', 1), 1, 'b', 1);
+  before = addWet(saveToTrip(before, 'u', 1), 1, 'b', 1);
   const t = removePlace(before, osaka, ['b', 'u'], 2);
   const r = undoRemovePlace(before, osaka, ['b', 'u'])(t, 3);
-  expect([r.places, r.days, r.unplanned]).toEqual([before.places, before.days, before.unplanned]);
+  expect([r.places, r.days, r.saved]).toEqual([before.places, before.days, before.saved]);
   expect(r.updatedAt).toBe(3);
 });
 

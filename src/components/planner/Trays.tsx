@@ -1,6 +1,5 @@
 import { useId, useState } from 'react';
 import { isRainProof } from '../../lib/factors';
-import { useSaved } from '../../lib/saved';
 import { photo } from '../../lib/photos';
 import { dayOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
@@ -18,27 +17,18 @@ interface Props {
   wet?: boolean;
 }
 
-/** Two collapsible trays under the day: attractions parked in Unplanned, and the hearted ones. */
+/**
+ * The collapsible tray under the day: the trip's own Saved list. (The global hearted list is kept out
+ * of the planner for now; the planner's redesign decides where it goes.)
+ */
 export function Trays({ trip, day, onPlan, replacing = null, wet = false }: Props) {
-  const saved = useSaved();
   return (
     <div className="trays">
       <Tray
-        title="Unplanned"
-        ids={trip.unplanned}
-        empty="Nothing waiting. “Add to trip” on an attraction parks it here."
-        startOpen={trip.unplanned.length > 0}
-        trip={trip}
-        day={day}
-        onPlan={onPlan}
-        replacing={replacing}
-        wet={wet}
-      />
-      <Tray
         title="Saved"
-        ids={saved.ids}
-        empty="Heart an attraction to keep it here."
-        startOpen={false}
+        ids={trip.saved}
+        empty="Nothing saved for this trip yet. “Add to trip” on an attraction can save it here."
+        startOpen={trip.saved.length > 0}
         trip={trip}
         day={day}
         onPlan={onPlan}
@@ -99,11 +89,11 @@ function Tray({
                     note = 'Being replaced';
                     noteIcon = 'swap';
                   } else if (on === day) note = `Already on Day ${day + 1}`;
-                  action = note ? null : { label: on !== null && on >= 0 ? `On Day ${on + 1} · use as replacement` : 'Use as replacement', icon: 'swap' };
+                  action = note ? null : { label: on !== null ? `On Day ${on + 1} · use as replacement` : 'Use as replacement', icon: 'swap' };
                 } else if (on === day) {
                   action = null;
                   note = `On Day ${day + 1}`;
-                } else if (on !== null && on >= 0) action = { label: `On Day ${on + 1}: move here`, icon: 'arrowRight' };
+                } else if (on !== null) action = { label: `On Day ${on + 1}: move here`, icon: 'arrowRight' };
                 else action = { label: `Add to Day ${day + 1}`, icon: 'plus' };
                 return (
                   <li key={a.id} className={`tray-item ${off ? 'is-off' : ''}`}>

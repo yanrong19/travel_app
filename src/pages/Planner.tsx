@@ -28,7 +28,6 @@ import {
   dayOf,
   endDate,
   moveStop,
-  planUnplanned,
   removePlace,
   removeStop,
   removeWet,
@@ -208,12 +207,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
       const undoIt = undoReplace(trip, d, old, sid);
       edit((t, now) => replaceStop(t, d, old, sid, now));
       offerUndo({
-        text: `${nameOf(sid)} replaces ${nameOf(old)} on Day ${d + 1} · ${nameOf(old)} moved to Unplanned`,
+        text: `${nameOf(sid)} replaces ${nameOf(old)} on Day ${d + 1} · ${nameOf(old)} moved to Saved`,
         run: () => edit(undoIt),
       });
       return;
     }
-    edit((t, now) => (t.unplanned.includes(sid) ? planUnplanned(t, sid, day, now) : addStop(t, day, sid, now)));
+    edit((t, now) => addStop(t, day, sid, now));
   };
 
   // ---- the wet-weather plan ----
@@ -274,13 +273,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
       if (on === target.day) {
         label = `Already on Day ${on + 1}`;
         disabled = quiet = true;
-      } else label = on !== null && on >= 0 ? `On Day ${on + 1} · use as replacement` : 'Use as replacement';
+      } else label = on !== null ? `On Day ${on + 1} · use as replacement` : 'Use as replacement';
     } else if (on === day) {
       label = `Remove from Day ${day + 1}`;
       icon = 'close';
       quiet = true;
       run = () => removeFromDay(day, sid, trip.days[day].stops.indexOf(sid));
-    } else if (on !== null && on >= 0) {
+    } else if (on !== null) {
       label = `On Day ${on + 1}: move here`;
       icon = 'arrowRight';
     } else label = `Add to Day ${day + 1}`;
@@ -295,7 +294,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   };
 
   // ---- places ----
-  const allIds = (t: Trip) => [...new Set([...t.days.flatMap((d) => [...d.stops, ...d.wet]), ...t.unplanned])];
+  const allIds = (t: Trip) => [...new Set([...t.days.flatMap((d) => [...d.stops, ...d.wet]), ...t.saved])];
 
   const askRemovePlace = (ref: PlaceRef) => {
     if (trip.places.length <= 1) return setNotice('A trip needs at least one place.');
@@ -314,7 +313,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     setConfirm(null);
     offerUndo({
       text: `Removed ${placeLabel(ref).name}${ids.length ? ` and ${plural(ids.length, 'stop')}` : ''}`,
-      // The places, days and unplanned as they were, unless they have changed since; the map goes back too.
+      // The places, days and saved as they were, unless they have changed since; the map goes back too.
       run: () => {
         edit(undoIt);
         setPlaceIdx(was);
@@ -357,7 +356,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       const same = name === n.name && v.startDate === n.startDate && v.who === n.who && v.pace === n.pace && v.dayStart === n.dayStart;
       return same ? n : { ...n, name, startDate: v.startDate, who: v.who, pace: v.pace, dayStart: v.dayStart, updatedAt: now };
     });
-    if (dropped) setNotice(`${plural(dropped, 'stop')} moved to Unplanned.`);
+    if (dropped) setNotice(`${plural(dropped, 'stop')} moved to Saved.`);
     setSheet(null);
   };
 
@@ -600,7 +599,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               <p className="plan-warn" role="status">
                 <Icon name="alert" size={16} />
                 {dropped > 0
-                  ? `${plural(dropped, 'stop')} after Day ${draft.days} will move to Unplanned${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
+                  ? `${plural(dropped, 'stop')} after Day ${draft.days} will move to Saved${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
                   : `The wet-weather plans after Day ${draft.days} will be removed.`}
               </p>
             )}
