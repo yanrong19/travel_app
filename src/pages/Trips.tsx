@@ -51,7 +51,7 @@ export function tripWhen(trip: Trip): string {
 const stopCount = (trip: Trip) => trip.days.reduce((n, d) => n + d.stops.length, 0);
 
 export default function TripsPage() {
-  const { trips, remove, restore, notice } = useTrips();
+  const { trips, remove, restore, notice, saveFailed } = useTrips();
   const [noticeOff, setNoticeOff] = useState(readDismissed);
   const go = useGo();
   const narrow = useMedia('(max-width: 760px)');
@@ -110,6 +110,12 @@ export default function TripsPage() {
     <div className="page">
       <TopNav />
       <main className="trips">
+        {saveFailed && (
+          <p className="save-failed" role="alert">
+            <Icon name="alert" size={18} />
+            Trips can’t be saved in this browser.
+          </p>
+        )}
         {notice && !noticeOff && (
           <div className="trips-notice" role="status">
             <Icon name="alert" size={18} />

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { BACKUP_KEY, KEY, readStored } from './tripsStore';
-import { newTrip, serializeTrips } from './trips';
+import { BACKUP_KEY, KEY, readStored, tripsSync } from './tripsStore';
+import { addStop, newTrip, serializeTrips } from './trips';
 
 function fake(initial: Record<string, string> = {}) {
   const m = new Map(Object.entries(initial));
@@ -36,7 +36,7 @@ test('clean or missing data makes no backup', () => {
   readStored(clean);
   expect(clean.m.has(BACKUP_KEY)).toBe(false);
   const empty = fake();
-  expect(readStored(empty)).toEqual({ trips: [], notice: null });
+  expect(readStored(empty)).toEqual({ trips: [], notice: null, failed: false });
   expect(empty.m.size).toBe(0);
 });
 
@@ -44,6 +44,64 @@ test('a storage that throws gives an empty list, not a crash', () => {
   const boom = () => {
     throw new Error('blocked');
   };
-  expect(readStored({ getItem: boom, setItem: boom })).toEqual({ trips: [], notice: null });
+  expect(readStored({ getItem: boom, setItem: boom })).toEqual({ trips: [], notice: null, failed: true });
   expect(readStored({ getItem: () => '{nope', setItem: boom }).trips).toEqual([]);
+});
+
+// ---------- the store's persistence (what TripsProvider runs on) ----------
+
+function counting(initial: Record<string, string> = {}) {
+  const s = fake(initial);
+  const writes: string[] = [];
+  const setItem = (k: string, v: string) => {
+    writes.push(k);
+    s.setItem(k, v);
+  };
+  return { ...s, writes, setItem };
+}
+const tripA = newTrip({ name: 'A', places: [], startDate: null, days: 1, who: 'solo', pace: 'normal' }, 1, 'a');
+const tripB = newTrip({ name: 'B', places: [], startDate: null, days: 2, who: 'solo', pace: 'normal' }, 2, 'b');
+
+test('no write until the first change', () => {
+  const s = counting({ [KEY]: serializeTrips([tripA]) });
+  const sync = tripsSync(s);
+  expect(sync.initial.trips).toEqual([tripA]);
+  expect(sync.save(sync.initial.trips)).toBe(false);
+  expect(s.writes).toEqual([]);
+  expect(sync.save([...sync.initial.trips, tripB])).toBe(false);
+  expect(s.writes).toEqual([KEY]);
+  expect(s.m.get(KEY)).toBe(serializeTrips([tripA, tripB]));
+});
+
+test('a storage event from another tab is taken in and not written back', () => {
+  const s = counting({ [KEY]: serializeTrips([tripA]) });
+  const sync = tripsSync(s);
+  const raw = serializeTrips([tripA, tripB]);
+  s.m.set(KEY, raw); // the other tab's write
+  const next = sync.receive({ key: KEY, newValue: raw });
+  expect(next).toEqual([tripA, tripB]);
+  expect(sync.save(next!)).toBe(false);
+  expect(s.writes).toEqual([]);
+  // Other keys, a cleared storage and unreadable data are ignored.
+  expect(sync.receive({ key: 'fitline.saved', newValue: '[]' })).toBeNull();
+  expect(sync.receive({ key: null, newValue: null })).toBeNull();
+  expect(sync.receive({ key: KEY, newValue: '{nope' })).toBeNull();
+});
+
+test('a storage event drops attraction ids the data no longer has', () => {
+  const sync = tripsSync(fake(), (id) => id !== 'gone');
+  const t = addStop(addStop(tripA, 0, 'senso-ji', 3), 0, 'gone', 3);
+  expect(sync.receive({ key: KEY, newValue: serializeTrips([t]) })![0].days[0].stops).toEqual(['senso-ji']);
+});
+
+test('a failed write or an unreadable storage is reported', () => {
+  const boom = () => {
+    throw new Error('blocked');
+  };
+  const sync = tripsSync({ ...fake(), setItem: boom });
+  expect(sync.initial.failed).toBe(false);
+  expect(sync.save([tripA])).toBe(true);
+  expect(tripsSync({ getItem: boom, setItem: () => {} }).initial.failed).toBe(true);
+  expect(tripsSync(null).initial.failed).toBe(true);
+  expect(tripsSync(null).save([tripA])).toBe(true);
 });

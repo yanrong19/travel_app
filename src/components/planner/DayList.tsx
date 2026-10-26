@@ -45,19 +45,23 @@ interface Props {
   note?: ReactNode;
   /** Shown under the stops, in the same scroll (the day summary, the trays). */
   after?: ReactNode;
-  /** Stops to flag as poor in rain (on a likely-wet day, the summary's rain-sensitive stops). */
+  /** Stops to flag for rain (on a likely-wet day, the summary's rain-sensitive stops), worded from their rain rating. */
   rainFlags?: string[];
   /** Shown under the tabs, outside the tab panel (the phone sheet's one-line summary). */
   peek?: ReactNode;
+  /** Shown above the tabs, whatever the day (trips can't be saved). */
+  banner?: ReactNode;
 }
 
 /** Day tabs, then the day's stops in order with their planned times and the travel between them. */
-export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note, after, rainFlags = [], peek }: Props) {
+export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note, after, rainFlags = [], peek, banner }: Props) {
   const id = useId();
   const tabs = useRef<HTMLDivElement>(null);
   const plan = trip.days[day];
   const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), trip.dayStart), [plan, trip.dayStart]);
   const date = dateOf(trip, day);
+  // Positions in the day's own list: the timed list skips ids the data doesn't have, so its indices can differ.
+  const rawIndex = (sid: string) => plan?.stops.indexOf(sid) ?? -1;
   const replacingName = replacing ? byId.get(replacing)?.name : null;
   // Each day's rain chance, from the place of its first stop (or the trip's first place).
   const rain = useMemo(() => trip.days.map((_, i) => getRainChance(dayPlace(trip, i), dateOf(trip, i))), [trip]);
@@ -78,6 +82,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
 
   return (
     <div className="dl">
+      {banner}
       <div className="dl-top">
         <div ref={tabs} className="dl-tabs" role="tablist" aria-label="Days" onKeyDown={onTabKey}>
           {trip.days.map((d, i) => {
@@ -162,7 +167,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
                     <button
                       type="button"
                       className="dl-icon"
-                      onClick={() => onMove(day, i, i - 1)}
+                      onClick={() => onMove(day, rawIndex(s.a.id), rawIndex(timed[i - 1].a.id))}
                       disabled={i === 0}
                       aria-label={`Move ${s.a.name} up`}
                     >
@@ -171,7 +176,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
                     <button
                       type="button"
                       className="dl-icon"
-                      onClick={() => onMove(day, i, i + 1)}
+                      onClick={() => onMove(day, rawIndex(s.a.id), rawIndex(timed[i + 1].a.id))}
                       disabled={i === timed.length - 1}
                       aria-label={`Move ${s.a.name} down`}
                     >
@@ -195,7 +200,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
                       {rainFlags.includes(s.a.id) && (
                         <span className="dl-stop-rain num">
                           <Icon name="rain" size={13} />
-                          Poor in rain · {s.a.conditions.covered}% covered
+                          {s.a.conditions.weather.rain === 'poor' ? 'Poor in rain' : 'Mostly open-air'} · {s.a.conditions.covered}% covered
                         </span>
                       )}
                     </span>
@@ -214,7 +219,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
                     <button
                       type="button"
                       className="dl-icon"
-                      onClick={() => onRemove(day, s.a.id, i)}
+                      onClick={() => onRemove(day, s.a.id, rawIndex(s.a.id))}
                       aria-label={`Remove ${s.a.name} from Day ${day + 1}`}
                       title="Remove"
                     >

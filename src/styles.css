@@ -6340,6 +6340,27 @@ button.area-card {
   flex: none;
   margin-top: 1px;
 }
+/* Trips can't be saved in this browser (storage blocked or full): a strip that stays, on /trips and in the planner. */
+.save-failed {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.save-failed svg {
+  flex: none;
+}
+.trips > .save-failed {
+  margin-bottom: 20px;
+}
 .plan-empty strong {
   display: block;
   margin-bottom: 2px;
@@ -7073,6 +7094,13 @@ button.area-card {
     top: 188px;
     left: 0;
     right: 0;
+    /* The row spans the map: only the pills and buttons take touches, the gaps go to the map. */
+    pointer-events: none;
+  }
+  .plan-places .psw-pill,
+  .plan-places .psw-add,
+  .plan-places button {
+    pointer-events: auto;
   }
   .plan-places .psw {
     padding: 2px 12px 12px;

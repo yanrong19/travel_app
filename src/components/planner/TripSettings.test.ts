@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { leaveEnd, shiftDate, typeEnd, withDays, withStart } from './TripSettings';
+import { leaveEnd, leaveStart, shiftDate, typeEnd, typeStart, withDays, withStart } from './TripSettings';
 
 const none = { startDate: null, endDate: null, days: 5 };
 
@@ -55,4 +55,18 @@ test('clearing either date clears both and keeps the number of days', () => {
   const v = withDays(withStart(none, '2027-04-12'), 8);
   expect(withStart(v, '')).toEqual({ startDate: null, endDate: null, days: 8 });
   expect(leaveEnd(v, '').dates).toEqual({ startDate: null, endDate: null, days: 8 });
+});
+
+test('a two-digit year is still being typed: held as a draft, the dates stay put', () => {
+  const v = withStart(none, '2027-04-12');
+  // The date input reports "0027-04-18" while "27" is typed into the year.
+  expect(shiftDate('0027-04-18', 0)).toBeNull();
+  expect(shiftDate('0999-04-18', 1)).toBeNull();
+  expect(typeStart(v, '0027-04-18')).toEqual({ dates: v, draft: '0027-04-18' });
+  expect(typeStart(v, '')).toEqual({ dates: v, draft: '' });
+  expect(typeStart(v, '2027-02-30')).toEqual({ dates: v, draft: '2027-02-30' });
+  expect(typeStart(v, '2028-04-18')).toEqual({ dates: withStart(v, '2028-04-18'), draft: null });
+  // Leaving the field: a partial year is dropped, an empty field clears the dates.
+  expect(leaveStart(v, '0027-04-18')).toBe(v);
+  expect(leaveStart(v, '')).toEqual({ startDate: null, endDate: null, days: 5 });
 });

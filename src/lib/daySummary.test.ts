@@ -173,7 +173,7 @@ test('line for one stop is "A <effort> <setting> day"', () => {
 });
 
 test('line keeps the hard part instead of averaging it away', () => {
-  expect(summarizeDay([takao, teamlab], opts({ pace: 'packed' })).line).toBe('Big outdoor morning, easy city evening');
+  expect(summarizeDay([takao, teamlab], opts({ pace: 'packed' })).line).toBe('Big outdoor morning, easy city afternoon'); // Takao to teamLab is now about 2 h 10, not 3 h 55
 });
 
 test('line says long and packed when over budget or more than 4 stops', () => {

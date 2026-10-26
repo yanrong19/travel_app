@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Navigate, useParams } from 'react-router';
+import { Navigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
 import { BottomTabs, TopNav } from '../components/Chrome';
@@ -40,6 +40,7 @@ import {
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
+import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace } from '../lib/tripUndo';
 import { useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
@@ -61,6 +62,12 @@ const SHEET_CLEAR = 92;
 const SHEET_TOP = 240;
 const INSETS_PHONE: Insets = { top: SHEET_TOP, right: 16, bottom: PEEK_PHONE + SHEET_CLEAR + 16, left: 16 };
 
+/** A 1-based position from the URL (`?day=3`) as a 0-based index; 0 when missing or not a whole number. */
+const indexParam = (v: string | null) => {
+  const n = Number(v);
+  return v !== null && Number.isInteger(n) && n >= 1 ? n - 1 : 0;
+};
+
 /** True for a key event from somewhere the user types. */
 const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || t.matches('input, textarea, select'));
 
@@ -77,14 +84,31 @@ type Undo = { text: string; run: () => void };
 type Confirm = { ref: PlaceRef; ids: string[] };
 
 function PlannerPage({ trip }: { trip: Trip }) {
-  const { update } = useTrips();
+  const { update, saveFailed } = useTrips();
   const go = useGo();
   const narrow = useMedia('(max-width: 760px)');
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
 
-  const [dayIdx, setDayIdx] = useState(0);
-  const [placeIdx, setPlaceIdx] = useState(0);
+  // The day and place shown live in the URL (?day=3&place=2, 1-based), so Back from an attraction
+  // page comes back to them. Written with replace: switching days isn't a step in history.
+  const [params, setParams] = useSearchParams();
+  const dayIdx = indexParam(params.get('day'));
+  const placeIdx = indexParam(params.get('place'));
+  const setParam = useCallback(
+    (key: 'day' | 'place', index: number) =>
+      setParams(
+        (p) => {
+          const q = new URLSearchParams(p);
+          q.set(key, String(index + 1));
+          return q;
+        },
+        { replace: true, preventScrollReset: true },
+      ),
+    [setParams],
+  );
+  const setDayIdx = useCallback((d: number) => setParam('day', d), [setParam]);
+  const setPlaceIdx = useCallback((i: number) => setParam('place', i), [setParam]);
   const [selected, setSelected] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [replace, setReplace] = useState<{ day: number; id: string } | null>(null);
@@ -101,7 +125,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const pi = Math.min(placeIdx, Math.max(0, trip.places.length - 1));
   useEffect(() => {
     if (dayIdx !== day) setDayIdx(day);
-  }, [dayIdx, day]);
+  }, [dayIdx, day, setDayIdx]);
   const place = trip.places[pi] ?? null;
   const placeKey = place ? `${place.level}:${place.id}` : '';
   const placeName = place ? placeLabel(place).name : 'this trip';
@@ -172,14 +196,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (replace?.id === sid) setReplace(null);
     offerUndo({
       text: `Removed ${nameOf(sid)} from Day ${d + 1}`,
-      // Back where it was, unless it has been planned somewhere since.
-      run: () =>
-        edit((t, now) => {
-          if (dayOf(t, sid) !== null && dayOf(t, sid) !== -1) return t;
-          const back = addStop(t, d, sid, now);
-          const at = back.days[d]?.stops.indexOf(sid) ?? -1;
-          return at < 0 ? back : moveStop(back, d, at, Math.min(index, at), now);
-        }),
+      run: () => edit(undoRemoveStop(d, sid, index)),
     });
   };
 
@@ -188,14 +205,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (replace) setReplace(null);
     if (target && sid !== target.id) {
       const { day: d, id: old } = target;
-      const before = { days: trip.days, unplanned: trip.unplanned };
-      const after = replaceStop(trip, d, old, sid, 0);
-      const same = (t: Trip) => JSON.stringify([t.days, t.unplanned]) === JSON.stringify([after.days, after.unplanned]);
+      const undoIt = undoReplace(trip, d, old, sid);
       edit((t, now) => replaceStop(t, d, old, sid, now));
       offerUndo({
         text: `${nameOf(sid)} replaces ${nameOf(old)} on Day ${d + 1} · ${nameOf(old)} moved to Unplanned`,
-        // Back to the lists as they were, unless they have changed since.
-        run: () => edit((t, now) => (same(t) ? { ...t, days: before.days, unplanned: before.unplanned, updatedAt: now } : t)),
+        run: () => edit(undoIt),
       });
       return;
     }
@@ -214,14 +228,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     edit((t, now) => removeWet(t, d, sid, now));
     offerUndo({
       text: `Removed ${nameOf(sid)} from Day ${d + 1}’s wet-weather plan`,
-      // Back where it was, unless it is back in the plan already.
-      run: () =>
-        edit((t, now) => {
-          const wet = t.days[d]?.wet;
-          if (!wet || wet.includes(sid)) return t;
-          const days = t.days.map((x, i) => (i === d ? { ...x, wet: [...wet.slice(0, index), sid, ...wet.slice(index)] } : x));
-          return { ...t, days, updatedAt: now };
-        }),
+      run: () => edit(undoRemoveWet(d, sid, index)),
     });
   };
 
@@ -300,10 +307,19 @@ function PlannerPage({ trip }: { trip: Trip }) {
 
   const dropPlace = (ref: PlaceRef, ids: string[]) => {
     const at = trip.places.findIndex((p) => sameRef(p, ref));
+    const undoIt = undoRemovePlace(trip, ref, ids);
+    const was = pi;
     edit((t, now) => removePlace(t, ref, ids, now));
     if (at >= 0 && at < pi) setPlaceIdx(pi - 1);
     setConfirm(null);
-    setNotice(`Removed ${placeLabel(ref).name}${ids.length ? ` and ${plural(ids.length, 'stop')}` : ''}.`);
+    offerUndo({
+      text: `Removed ${placeLabel(ref).name}${ids.length ? ` and ${plural(ids.length, 'stop')}` : ''}`,
+      // The places, days and unplanned as they were, unless they have changed since; the map goes back too.
+      run: () => {
+        edit(undoIt);
+        setPlaceIdx(was);
+      },
+    });
   };
 
   /** The place picker's changes: new places join the trip (and the map goes there); a removed one asks first. */
@@ -331,6 +347,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     setSheet('settings');
   };
   const dropped = draft ? trip.days.slice(draft.days).reduce((n, d) => n + d.stops.length, 0) : 0;
+  const droppedWet = draft ? trip.days.slice(draft.days).some((d) => d.wet.length > 0) : false;
   const saveSettings = () => {
     if (!draft) return;
     const v = draft;
@@ -400,6 +417,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const days = (
     <DayList
       trip={trip}
+      banner={
+        saveFailed && (
+          <p className="save-failed" role="alert">
+            <Icon name="alert" size={16} />
+            Trips can’t be saved in this browser.
+          </p>
+        )
+      }
       day={day}
       onDay={setDayIdx}
       onRemove={removeFromDay}
@@ -571,10 +596,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
         onClose={() => setSheet(null)}
         footer={
           <>
-            {dropped > 0 && draft && (
+            {(dropped > 0 || droppedWet) && draft && (
               <p className="plan-warn" role="status">
                 <Icon name="alert" size={16} />
-                {plural(dropped, 'stop')} after Day {draft.days} will move to Unplanned.
+                {dropped > 0
+                  ? `${plural(dropped, 'stop')} after Day ${draft.days} will move to Unplanned${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
+                  : `The wet-weather plans after Day ${draft.days} will be removed.`}
               </p>
             )}
             <div className="psheet-actions">

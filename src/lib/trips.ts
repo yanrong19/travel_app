@@ -63,11 +63,15 @@ export function newTrip(
   };
 }
 
-/** Parses 'YYYY-MM-DD' as a local calendar date (no time-zone shift). Null if it isn't one. */
-function parseDate(s: string): Date | null {
+/**
+ * Parses 'YYYY-MM-DD' as a local calendar date (no time-zone shift). Null if it isn't one, or its year
+ * is below 1000 (a date input reports "0027-…" while a year is still being typed).
+ */
+export function parseDate(s: string): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
   if (!m) return null;
   const y = +m[1];
+  if (y < 1000) return null;
   const mo = +m[2];
   const d = +m[3];
   const date = new Date(y, mo - 1, d);
@@ -236,6 +240,7 @@ function isDayPlan(v: unknown): v is DayPlan {
   return !!d && typeof d === 'object' && isStrings(d.stops) && isStrings(d.wet);
 }
 
+/** The structure a trip can't be read without. Dates, times and attraction ids are repaired instead (see repair). */
 function isTrip(v: unknown): v is Trip {
   const t = v as Trip | null;
   return (
@@ -246,21 +251,36 @@ function isTrip(v: unknown): v is Trip {
     typeof t.name === 'string' &&
     Array.isArray(t.places) &&
     t.places.every(isPlaceRef) &&
-    (t.startDate === null || (typeof t.startDate === 'string' && parseDate(t.startDate) !== null)) &&
     Array.isArray(t.days) &&
     t.days.length >= 1 &&
     t.days.every(isDayPlan) &&
     isStrings(t.unplanned) &&
     WHOS.includes(t.who) &&
     PACES.includes(t.pace) &&
-    typeof t.dayStart === 'string' &&
     isNum(t.createdAt) &&
     isNum(t.updatedAt)
   );
 }
 
-/** Reads what serializeTrips wrote. Never throws: bad data gives fewer trips and a notice. */
-export function loadTrips(raw: string | null): { trips: Trip[]; notice: string | null } {
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * Fixes what can be fixed without losing the trip: an unreadable start date becomes no date, an
+ * unreadable day start becomes 09:00, and attraction ids the data no longer has are dropped.
+ */
+function repair(t: Trip, isKnown?: (id: string) => boolean): Trip {
+  const startDate = typeof t.startDate === 'string' && parseDate(t.startDate) ? t.startDate : null;
+  const dayStart = typeof t.dayStart === 'string' && HHMM.test(t.dayStart) ? t.dayStart : '09:00';
+  const keep = (list: string[]) => (isKnown ? list.filter(isKnown) : list);
+  const days = t.days.map((d) => ({ stops: keep(d.stops), wet: keep(d.wet) }));
+  return { ...t, startDate, dayStart, days, unplanned: keep(t.unplanned) };
+}
+
+/**
+ * Reads what serializeTrips wrote. Never throws: bad data gives fewer trips and a notice. With
+ * `isKnown`, attraction ids it rejects are pruned (the data has dropped them).
+ */
+export function loadTrips(raw: string | null, isKnown?: (id: string) => boolean): { trips: Trip[]; notice: string | null } {
   if (raw === null) return { trips: [], notice: null };
   let data: unknown;
   try {
@@ -272,7 +292,7 @@ export function loadTrips(raw: string | null): { trips: Trip[]; notice: string |
   if (!d || typeof d !== 'object' || d.version !== 1 || !Array.isArray(d.trips)) {
     return { trips: [], notice: "Your saved trips are in a format this version doesn't know, so you're starting fresh." };
   }
-  const trips = d.trips.filter(isTrip);
+  const trips = d.trips.filter(isTrip).map((t) => repair(t, isKnown));
   const lost = d.trips.length - trips.length;
   return {
     trips,

@@ -260,3 +260,31 @@ test('day counts are clamped and never throw', () => {
   expect(setDays(make(), 1000, 2).days).toHaveLength(MAX_DAYS);
   expect(setDays(make(), 4.9, 2).days).toHaveLength(4);
 });
+
+test('loadTrips repairs an unreadable start date or day start instead of dropping the trip', () => {
+  const good = addStop(make({ startDate: '2027-04-10' }), 0, 'a', 2);
+  const raw = (o: object) => JSON.stringify({ version: 1, trips: [{ ...good, ...o }] });
+  for (const startDate of ['0027-04-18', '0999-01-01', '2027-02-30', 'soon', 5]) {
+    expect(loadTrips(raw({ startDate }))).toEqual({ trips: [{ ...good, startDate: null }], notice: null });
+  }
+  for (const dayStart of ['24:00', '9:00', '09:60', '', 900, null]) {
+    expect(loadTrips(raw({ dayStart }))).toEqual({ trips: [{ ...good, dayStart: '09:00' }], notice: null });
+  }
+  expect(loadTrips(raw({ dayStart: '23:59' })).trips[0].dayStart).toBe('23:59');
+  // Structural damage still drops the trip.
+  expect(loadTrips(raw({ days: [] })).trips).toEqual([]);
+});
+
+test('loadTrips prunes attraction ids the data no longer has', () => {
+  let t = addStop(addStop(make(), 0, 'a', 2), 0, 'gone', 2);
+  t = addStop(t, 0, 'b', 2);
+  t = addWet(addWet(t, 1, 'gone', 2), 1, 'b', 2);
+  t = addUnplanned(addUnplanned(t, 'gone2', 2), 'a2', 2);
+  const known = (id: string) => !id.startsWith('gone');
+  const [r] = loadTrips(serializeTrips([t]), known).trips;
+  expect(r.days[0].stops).toEqual(['a', 'b']);
+  expect(r.days[1].wet).toEqual(['b']);
+  expect(r.unplanned).toEqual(['a2']);
+  // Without a list of known ids nothing is pruned.
+  expect(loadTrips(serializeTrips([t])).trips).toEqual([t]);
+});

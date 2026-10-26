@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { MAX_DAYS, PACE_HOURS, daysBetween, type Pace, type Who } from '../../lib/trips';
+import { MAX_DAYS, PACE_HOURS, daysBetween, parseDate, type Pace, type Who } from '../../lib/trips';
 import { Icon } from '../Icon';
 
 export interface TripSettingsValue {
@@ -16,12 +16,15 @@ export interface TripSettingsValue {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** 'YYYY-MM-DD' plus n calendar days, or null when it isn't a date. */
+/**
+ * 'YYYY-MM-DD' plus n calendar days, or null when it isn't a date. A year below 1000 isn't one: the
+ * date input reports "0027-…" while a year is being typed, and Date would read 27 as 1927.
+ */
 export function shiftDate(date: string, n: number): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (!m) return null;
+  if (!m || +m[1] < 1000) return null;
   const d = new Date(+m[1], +m[2] - 1, +m[3] + n);
-  if (Number.isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime()) || d.getFullYear() < 1000) return null;
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
@@ -33,6 +36,20 @@ export function withStart(v: Dates, start: string): Dates {
   const end = start ? shiftDate(start, v.days - 1) : null;
   if (!start || !end) return { ...v, startDate: null, endDate: null };
   return { ...v, startDate: start, endDate: end };
+}
+
+/**
+ * A start as it's typed. Only a whole date that reads back as itself (see parseDate) moves the dates;
+ * anything else (empty, a year still being typed, 30 Feb) is held as a draft in the field.
+ */
+export function typeStart(v: Dates, start: string): { dates: Dates; draft: string | null } {
+  if (!parseDate(start)) return { dates: v, draft: start };
+  return { dates: withStart(v, start), draft: null };
+}
+
+/** Leaving the start field with a draft: an empty field clears both dates; a partial one is dropped. */
+export function leaveStart(v: Dates, draft: string): Dates {
+  return draft === '' ? withStart(v, '') : v;
 }
 
 /** Why a typed end isn't used yet: not a whole date, before the start, past 60 days, or no start to count from. */
@@ -115,16 +132,18 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
     if (text.trim() && Number.isInteger(n) && n >= 1 && n <= MAX_DAYS) setDates(withDays(value, n));
   };
 
-  // An empty start is only taken as clearing once the field is left: a year being typed reads as empty too.
-  const typeStart = (text: string) => {
-    if (!text) return setStartDraft('');
-    setStartDraft(null);
-    setDates(withStart(value, text));
+  // A start that isn't a whole date yet stays in its field as a draft (see typeStart). An empty one is
+  // only taken as clearing once the field is left: a year being typed can read as empty too.
+  const onStart = (text: string) => {
+    const r = typeStart(value, text);
+    setStartDraft(r.draft);
+    if (r.dates !== value) setDates(r.dates);
   };
-  const leaveStart = () => {
+  const leaveStartField = () => {
     if (startDraft === null) return;
+    const next = leaveStart(value, startDraft);
     setStartDraft(null);
-    setDates(withStart(value, ''));
+    if (next !== value) setDates(next);
   };
 
   const onEnd = (text: string) => {
@@ -175,8 +194,8 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
               className="tset-input num"
               type="date"
               value={startDraft ?? value.startDate ?? ''}
-              onChange={(e) => typeStart(e.target.value)}
-              onBlur={leaveStart}
+              onChange={(e) => onStart(e.target.value)}
+              onBlur={leaveStartField}
             />
           </div>
           <div className="tset-field">

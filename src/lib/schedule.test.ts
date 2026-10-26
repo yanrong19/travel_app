@@ -5,10 +5,17 @@ import { dayLengthMin, schedule, travelMin, visitMin } from './schedule';
 const sensoji = attractionById('senso-ji')!;
 const sky = attractionById('shibuya-sky')!;
 
-test('travelMin rounds up to 5 and uses ×1.4 at 18 km/h', () => {
-  // Sensō-ji to Shibuya: 9.77 km × 1.4 ÷ 18 km/h = 45.6 min, rounded up to 50.
-  expect(travelMin([139.7966, 35.7148], [139.6993, 35.6764])).toBe(50);
+test('travelMin walks short hops: ×1.3 at 4.5 km/h, rounded up to 5', () => {
+  // 1.5 km apart (0.01349° of latitude): 1.5 × 1.3 ÷ 4.5 km/h = 26 min, rounded up to 30.
+  expect(travelMin([139.7, 35.7], [139.7, 35.71349])).toBe(30);
   expect(travelMin([139.7, 35.7], [139.7, 35.7])).toBe(0);
+});
+
+test('travelMin takes the train past 2 km: 15 min + ×1.3 at 35 km/h, rounded up to 5', () => {
+  // Sensō-ji to Shibuya: 15 + 9.77 km × 1.3 ÷ 35 km/h = 36.8 min, rounded up to 40.
+  expect(travelMin([139.7966, 35.7148], [139.6993, 35.6764])).toBe(40);
+  // Mount Takao to teamLab Planets: 15 + 49.4 km × 1.3 ÷ 35 km/h = 125.1 min, rounded up to 130.
+  expect(travelMin(attractionById('mount-takao')!.lonlat, attractionById('teamlab-planets')!.lonlat)).toBe(130);
 });
 
 test('visitMin is the visit midpoint plus the queue midpoint', () => {

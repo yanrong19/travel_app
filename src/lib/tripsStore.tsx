@@ -1,24 +1,31 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { ATTRACTIONS } from '../data/attractions';
 import { loadTrips, newTrip, serializeTrips, type Trip } from './trips';
 
 // Per-viewer trips, kept in localStorage. Every storage access is wrapped: if storage is
-// unavailable, trips last for this visit only.
+// unavailable, trips last for this visit only, and the store says so (saveFailed).
 export const KEY = 'fitline.trips';
 export const BACKUP_KEY = 'fitline.trips.backup';
+
+type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
+type Loaded = { trips: Trip[]; notice: string | null; failed: boolean };
+
+const KNOWN = new Set(ATTRACTIONS.map((a) => a.id));
+const isKnown = (id: string) => KNOWN.has(id);
 
 /**
  * Reads the stored trips. When the data was partly or wholly unreadable (there is a notice), the raw
  * text is copied to a backup key first, so the store's first write can't destroy a trip that a
- * later version could still recover.
+ * later version could still recover. `failed` is set when storage itself can't be read.
  */
-export function readStored(storage: Pick<Storage, 'getItem' | 'setItem'>): { trips: Trip[]; notice: string | null } {
+export function readStored(storage: StorageLike, known?: (id: string) => boolean): Loaded {
   let raw: string | null = null;
   try {
     raw = storage.getItem(KEY);
   } catch {
-    return { trips: [], notice: null };
+    return { trips: [], notice: null, failed: true };
   }
-  const result = loadTrips(raw);
+  const result = loadTrips(raw, known);
   if (result.notice !== null && raw !== null) {
     try {
       storage.setItem(BACKUP_KEY, raw);
@@ -26,14 +33,52 @@ export function readStored(storage: Pick<Storage, 'getItem' | 'setItem'>): { tri
       /* no room or no storage: nothing more we can do */
     }
   }
-  return result;
+  return { ...result, failed: false };
 }
 
-function read(): { trips: Trip[]; notice: string | null } {
+/**
+ * The store's persistence, apart from React so it can be tested with a fake storage. It never writes
+ * the list storage already holds: neither the one read at the start (so unreadable data isn't
+ * overwritten just by opening the app) nor one taken in from another tab (so it isn't written back).
+ */
+export function tripsSync(storage: StorageLike | null, known?: (id: string) => boolean) {
+  const initial: Loaded = storage ? readStored(storage, known) : { trips: [], notice: null, failed: true };
+  let held = initial.trips;
+  let failed = initial.failed;
+  return {
+    initial,
+    /** Writes the list unless storage already holds it. Returns whether saving has failed. */
+    save(trips: Trip[]): boolean {
+      if (trips === held) return failed;
+      try {
+        if (!storage) throw new Error('no storage');
+        storage.setItem(KEY, serializeTrips(trips));
+        held = trips;
+        failed = false;
+      } catch {
+        failed = true; // storage unavailable or full: trips last for this visit only
+      }
+      return failed;
+    },
+    /**
+     * Another tab changed storage. Returns the trips it now holds, or null when the change isn't to
+     * the trips (another key, or storage cleared) or can't be read (then this tab keeps its own).
+     */
+    receive(e: { key: string | null; newValue: string | null }): Trip[] | null {
+      if (e.key !== KEY || e.newValue === null) return null;
+      const r = loadTrips(e.newValue, known);
+      if (r.notice !== null) return null;
+      held = r.trips;
+      return r.trips;
+    },
+  };
+}
+
+function localStore(): Storage | null {
   try {
-    return readStored(localStorage);
+    return localStorage;
   } catch {
-    return { trips: [], notice: null };
+    return null;
   }
 }
 
@@ -57,24 +102,30 @@ interface TripsState {
   /** Puts a removed trip back (undo). Replaces a trip with the same id. */
   restore: (trip: Trip) => void;
   notice: string | null;
+  /** True when trips can't be saved in this browser (storage blocked or full): they last for this visit only. */
+  saveFailed: boolean;
 }
 
 const Ctx = createContext<TripsState | null>(null);
 
 export function TripsProvider({ children }: { children: ReactNode }) {
-  const [initial] = useState(read);
+  const [sync] = useState(() => tripsSync(localStore(), isKnown));
+  const initial = sync.initial;
   const [trips, setTrips] = useState<Trip[]>(initial.trips);
-  // Until the first change, leave storage alone, so unreadable data isn't overwritten just by opening the app.
-  const untouched = useRef(initial.trips);
+  const [saveFailed, setSaveFailed] = useState(initial.failed);
 
+  // Until the first change, storage is left alone (see tripsSync).
+  useEffect(() => setSaveFailed(sync.save(trips)), [sync, trips]);
+
+  // Another tab saved its trips: take them in, so this tab's next save doesn't overwrite them.
   useEffect(() => {
-    if (trips === untouched.current) return;
-    try {
-      localStorage.setItem(KEY, serializeTrips(trips));
-    } catch {
-      /* storage unavailable or full: trips last for this visit only */
-    }
-  }, [trips]);
+    const onStorage = (e: StorageEvent) => {
+      const next = sync.receive(e);
+      if (next) setTrips(next);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [sync]);
 
   const create = useCallback((init: TripInit) => {
     const trip = newTrip(init, Date.now(), makeId());
@@ -95,8 +146,8 @@ export function TripsProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<TripsState>(
-    () => ({ trips, get: (id) => trips.find((t) => t.id === id), create, update, remove, restore, notice: initial.notice }),
-    [trips, create, update, remove, restore, initial.notice],
+    () => ({ trips, get: (id) => trips.find((t) => t.id === id), create, update, remove, restore, notice: initial.notice, saveFailed }),
+    [trips, create, update, remove, restore, initial.notice, saveFailed],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
