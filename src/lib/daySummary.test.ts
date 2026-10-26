@@ -115,7 +115,8 @@ test('summary without dates skips date checks', () => {
 });
 
 test('over budget is flagged', () => {
-  const relaxed = summarizeDay([takao, teamlab], opts({ pace: 'relaxed' }));
+  // Takao and teamLab alone fill a relaxed day exactly (480 min with the train); Sensō-ji tips it over.
+  const relaxed = summarizeDay([takao, teamlab, get('senso-ji')], opts({ pace: 'relaxed' }));
   expect(relaxed.logistics.budgetMin).toBe(480);
   expect(relaxed.logistics.usedMin).toBeGreaterThan(480);
   expect(relaxed.flags.some((f) => f.factor === 'logistics' && /over/i.test(f.text))).toBe(true);
@@ -173,11 +174,11 @@ test('line for one stop is "A <effort> <setting> day"', () => {
 });
 
 test('line keeps the hard part instead of averaging it away', () => {
-  expect(summarizeDay([takao, teamlab], opts({ pace: 'packed' })).line).toBe('Big outdoor morning, easy city afternoon'); // Takao to teamLab is now about 2 h 10, not 3 h 55
+  expect(summarizeDay([takao, teamlab], opts({ pace: 'packed' })).line).toBe('Big outdoor morning, easy city afternoon'); // Takao to teamLab is now about 1 h 40, not 3 h 55
 });
 
 test('line says long and packed when over budget or more than 4 stops', () => {
-  expect(summarizeDay([takao, teamlab], opts({ pace: 'relaxed' })).line).toMatch(/^A long, packed day/);
+  expect(summarizeDay([takao, teamlab, get('senso-ji')], opts({ pace: 'relaxed' })).line).toMatch(/^A long, packed day/);
   const five = [get('senso-ji'), get('tokyo-skytree'), get('kiyosumi-gardens'), get('ryogoku-sumo'), teamlab];
   const s = summarizeDay(five, opts({ pace: 'packed' }));
   expect(s.line).toMatch(/^A long, packed day/);

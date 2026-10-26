@@ -113,7 +113,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 **Stop list.**
 - Each stop shows photo, name, kind, its planned start time and duration.
 - Times are derived: day start time, then each stop's visit time (the midpoint of `logistics.visitMin`) plus queue (midpoint of `logistics.queueMin`), plus travel between stops.
-- Travel estimate: straight-line distance between `lonlat` points, in two bands. Up to 2 km: walking, distance × 1.3 at 4.5 km/h. Over 2 km: train, 15 min fixed transfer plus distance × 1.3 at 35 km/h. Rounded up to 5 minutes. Shown between stops as "≈ 25 min". (Revised in the final review: the single × 1.4 at 18 km/h formula was far off for long hops.)
+- Travel estimate: straight-line distance between `lonlat` points, in two bands. Up to 2 km: walking, distance × 1.3 at 4.5 km/h. Over 2 km: train, 15 min fixed transfer plus distance at 35 km/h. Rounded up to 5 minutes. Shown between stops as "≈ 25 min". (Revised in the final review: the single × 1.4 at 18 km/h formula was far off for long hops.)
 - Actions per stop:
   - move up and move down (drag to reorder on desktop is optional for the builder)
   - remove (with an undo toast)
@@ -207,7 +207,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 
 - Only Tokyo has attractions; other picked places show "No checked attractions yet" rather than getting new mock data sets.
 - Settings beyond dates: name, who's going, pace (relaxed 8 h, normal 10 h, packed 12 h), day start time.
-- Travel estimate: up to 2 km, walking (× 1.3 at 4.5 km/h); over 2 km, train (15 min + × 1.3 at 35 km/h); rounded up to 5 min.
+- Travel estimate: up to 2 km, walking (× 1.3 at 4.5 km/h); over 2 km, train (15 min + distance at 35 km/h); rounded up to 5 min.
 - Likely wet = rain chance ≥ 50%.
 - The wet-weather list only accepts rain-proof attractions (existing `isRainProof`).
 - Hearts become a tray inside the planner; "Add to trip" from the attraction page and PinCard.
