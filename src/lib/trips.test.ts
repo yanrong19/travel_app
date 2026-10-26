@@ -109,6 +109,13 @@ test('replaceStop keeps the position', () => {
   expect(replaceStop(t, 0, 'b', 'd', 3).days[0].stops).toEqual(['a', 'd', 'c']);
 });
 
+test('replaceStop parks the replaced stop in unplanned and takes the new one out', () => {
+  let t = addUnplanned(addStop(make(), 0, 'a', 2), 'd', 2);
+  t = replaceStop(t, 0, 'a', 'd', 3);
+  expect(t.days[0].stops).toEqual(['d']);
+  expect(t.unplanned).toEqual(['a']);
+});
+
 test('replaceStop pulls the new stop out of its old place', () => {
   let t = addStop(addStop(make(), 0, 'a', 2), 1, 'd', 2);
   t = replaceStop(t, 0, 'a', 'd', 3);

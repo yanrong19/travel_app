@@ -169,8 +169,16 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const addToDay = (sid: string) => {
     if (replace) setReplace(null);
     if (target && sid !== target.id) {
-      edit((t, now) => replaceStop(t, target.day, target.id, sid, now));
-      setNotice(`${nameOf(sid)} replaces ${nameOf(target.id)} on Day ${target.day + 1}.`);
+      const { day: d, id: old } = target;
+      const before = { days: trip.days, unplanned: trip.unplanned };
+      const after = replaceStop(trip, d, old, sid, 0);
+      const same = (t: Trip) => JSON.stringify([t.days, t.unplanned]) === JSON.stringify([after.days, after.unplanned]);
+      edit((t, now) => replaceStop(t, d, old, sid, now));
+      offerUndo({
+        text: `${nameOf(sid)} replaces ${nameOf(old)} on Day ${d + 1} · ${nameOf(old)} moved to Unplanned`,
+        // Back to the lists as they were, unless they have changed since.
+        run: () => edit((t, now) => (same(t) ? { ...t, days: before.days, unplanned: before.unplanned, updatedAt: now } : t)),
+      });
       return;
     }
     edit((t, now) => (t.unplanned.includes(sid) ? planUnplanned(t, sid, day, now) : addStop(t, day, sid, now)));
@@ -182,10 +190,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
     let icon: 'plus' | 'close' | 'arrowRight' | 'swap' = 'plus';
     let run = () => addToDay(sid);
     let quiet = false;
+    let disabled = false;
     const on = dayOf(trip, sid);
     if (target && sid !== target.id) {
-      label = 'Use as replacement';
       icon = 'swap';
+      if (on === target.day) {
+        label = `Already on Day ${on + 1}`;
+        disabled = quiet = true;
+      } else label = on !== null && on >= 0 ? `On Day ${on + 1} · use as replacement` : 'Use as replacement';
     } else if (on === day) {
       label = `Remove from Day ${day + 1}`;
       icon = 'close';
@@ -197,7 +209,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     } else label = `Add to Day ${day + 1}`;
     return (
       <div className="plan-action">
-        <button type="button" className={`button is-compact ${quiet ? 'is-quiet' : ''}`} onClick={run}>
+        <button type="button" className={`button is-compact ${quiet ? 'is-quiet' : ''}`} onClick={run} disabled={disabled}>
           <Icon name={icon} />
           {label}
         </button>

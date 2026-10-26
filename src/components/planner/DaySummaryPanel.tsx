@@ -3,7 +3,7 @@ import { ATTRACTIONS } from '../../data/attractions';
 import { lineById, type LineId } from '../../data/lines';
 import { EFFORT_LABELS } from '../../lib/factors';
 import { duration, yen } from '../../lib/format';
-import type { DaySummary, Flag as DayFlag } from '../../lib/daySummary';
+import type { CashLevel, DaySummary, Flag as DayFlag } from '../../lib/daySummary';
 import { Icon } from '../Icon';
 import { Station } from '../Station';
 
@@ -11,6 +11,9 @@ const nameOf = new Map(ATTRACTIONS.map((a) => [a.id, a.name]));
 
 /** "5 h 20", "45 min", "10 h": the minutes go unnamed once there are hours, to keep a row on one line. */
 const hm = (min: number) => (min >= 60 ? duration(min).replace(/ min$/, '') : duration(min));
+
+/** As the attraction page's Cost section words it, in lower case mid-line. */
+const CASH_PHRASE: Record<CashLevel, string> = { 'cash-only': 'cash only', 'mostly-cash': 'carry some cash', cards: 'card OK' };
 
 const LOCAL_PHRASE: Record<string, string> = { Local: 'mostly local', Touristy: 'mostly touristy', Mixed: 'touristy and local mixed' };
 
@@ -35,6 +38,7 @@ function Row({ line, text, flags, children }: { line: LineId; text: ReactNode; f
             {flags.map((f, i) => (
               <li key={i}>
                 <Icon name="alert" size={14} />
+                <span className="sr-only">Warning: </span>
                 {f.text}
               </li>
             ))}
@@ -77,6 +81,13 @@ export function DaySummaryPanel({ summary }: { summary: DaySummary }) {
             </>
           }
         >
+          <ol className="sr-only">
+            {effort.perStop.map((s, i) => (
+              <li key={s.id}>
+                Stop {i + 1}, {nameOf.get(s.id) ?? 'unknown'}: {EFFORT_LABELS[s.level - 1]}
+              </li>
+            ))}
+          </ol>
           <div className="ds-bars" aria-hidden="true">
             {effort.perStop.map((s, i) => (
               <span
@@ -132,7 +143,7 @@ export function DaySummaryPanel({ summary }: { summary: DaySummary }) {
             <>
               <strong className="num">{cost.min === cost.max ? yen(cost.min) : `${yen(cost.min)} – ${yen(cost.max)}`}</strong>
               {' · '}
-              {cost.cashOnly ? 'cash only' : 'card OK'}
+              {CASH_PHRASE[cost.cash]}
             </>
           }
         />

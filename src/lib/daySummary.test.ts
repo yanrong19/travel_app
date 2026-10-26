@@ -153,7 +153,7 @@ test('a stop rated poor for who is going gets a vibe flag', () => {
 test('cost range runs from mustPay to withExtras; cash-only flagged', () => {
   const s = summarizeDay([takao, teamlab], opts());
   // Takao: train 800 (+ cable car 950, soba 1200 optional). teamLab: 3,800 + 700 transport.
-  expect(s.cost).toEqual({ min: 5300, max: 7450, cashOnly: false });
+  expect(s.cost).toEqual({ min: 5300, max: 7450, cashOnly: false, cash: 'mostly-cash' });
   expect(s.flags.some((f) => f.factor === 'cost')).toBe(false);
   const cash = summarizeDay([yanaka], opts({ dayStart: '10:00' }));
   expect(cash.cost.cashOnly).toBe(true);
@@ -193,4 +193,12 @@ test('line stays under 60 characters', () => {
       expect(line.length, line).toBeLessThan(60);
     }
   }
+});
+
+test('cash level: the most cash-bound stop decides', () => {
+  expect(summarizeDay([teamlab], opts()).cost.cash).toBe('cards');
+  // Mount Takao is mostly cash, so the day needs some cash even with teamLab's cards.
+  expect(summarizeDay([teamlab, takao], opts()).cost.cash).toBe('mostly-cash');
+  expect(summarizeDay([takao, yanaka], opts()).cost.cash).toBe('cash-only');
+  expect(summarizeDay([], opts()).cost.cash).toBe('cards');
 });

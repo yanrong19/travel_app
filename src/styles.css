@@ -6193,6 +6193,12 @@ button.area-card {
 }
 .plan-action .button {
   flex: 1;
+  /* Long labels ("On Day 2 · use as replacement") wrap inside the card instead of running past it. */
+  min-width: 0;
+  padding: 0 16px;
+  white-space: normal;
+  line-height: 18px;
+  text-align: center;
 }
 
 /* ---------- Day list ---------- */

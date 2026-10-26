@@ -6,6 +6,9 @@ import { DAYS_LONG, duration } from './format';
 import { dayLengthMin, schedule, type ScheduledStop } from './schedule';
 import type { Pace, Who } from './trips';
 
+/** How much cash the day needs: the most cash-bound stop decides. */
+export type CashLevel = 'cash-only' | 'mostly-cash' | 'cards';
+
 export type Flag = { factor: 'effort' | 'conditions' | 'vibe' | 'logistics' | 'cost'; text: string; stopId?: string };
 
 export interface DaySummary {
@@ -15,7 +18,7 @@ export interface DaySummary {
   conditions: { text: string; rainSensitive: string[] };
   vibe: { naturePct: number; cityPct: number; localWord: string };
   logistics: { usedMin: number; travelMin: number; budgetMin: number };
-  cost: { min: number; max: number; cashOnly: boolean };
+  cost: { min: number; max: number; cashOnly: boolean; cash: CashLevel };
   flags: Flag[];
 }
 
@@ -128,7 +131,7 @@ export function summarizeDay(
       conditions: { text: '', rainSensitive: [] },
       vibe: { naturePct: 0, cityPct: 0, localWord: '' },
       logistics: { usedMin: 0, travelMin: 0, budgetMin },
-      cost: { min: 0, max: 0, cashOnly: false },
+      cost: { min: 0, max: 0, cashOnly: false, cash: 'cards' },
       flags: [],
     };
   }
@@ -184,6 +187,7 @@ export function summarizeDay(
 
   // Cost
   const cashOnly = stops.some((a) => a.cost.cash === 'cash-only');
+  const cash: CashLevel = cashOnly ? 'cash-only' : stops.some((a) => a.cost.cash === 'mostly-cash') ? 'mostly-cash' : 'cards';
   for (const a of stops) if (a.cost.cash === 'cash-only') flag('cost', 'Cash only', a);
 
   const packed = stops.length > MAX_STOPS || usedMin > budgetMin;
@@ -198,7 +202,7 @@ export function summarizeDay(
     conditions: { text: conditionsText, rainSensitive },
     vibe: { naturePct, cityPct: 100 - naturePct, localWord: localWord(weighted(plan, (a) => a.vibe.local)) },
     logistics: { usedMin, travelMin, budgetMin },
-    cost: { min: stops.reduce((s, a) => s + mustPay(a), 0), max: stops.reduce((s, a) => s + withExtras(a), 0), cashOnly },
+    cost: { min: stops.reduce((s, a) => s + mustPay(a), 0), max: stops.reduce((s, a) => s + withExtras(a), 0), cashOnly, cash },
     flags,
   };
 }

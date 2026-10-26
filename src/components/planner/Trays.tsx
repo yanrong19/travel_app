@@ -78,8 +78,10 @@ function Tray({
                 let action: { label: string; icon: 'plus' | 'swap' | 'arrowRight' } | null;
                 let note: string | null = null;
                 if (replacing) {
-                  action = a.id === replacing ? null : { label: 'Use as replacement', icon: 'swap' };
-                  if (!action) note = 'Being replaced';
+                  // Replace mode works on the current day: an item already on it can't stand in.
+                  if (a.id === replacing) note = 'Being replaced';
+                  else if (on === day) note = `Already on Day ${day + 1}`;
+                  action = note ? null : { label: on !== null && on >= 0 ? `On Day ${on + 1} · use as replacement` : 'Use as replacement', icon: 'swap' };
                 } else if (on === day) {
                   action = null;
                   note = `On Day ${day + 1}`;
@@ -104,7 +106,7 @@ function Tray({
                       </button>
                     ) : (
                       <span className="tray-note">
-                        <Icon name={replacing ? 'swap' : 'check'} size={14} />
+                        <Icon name={a.id === replacing ? 'swap' : 'check'} size={14} />
                         {note}
                       </span>
                     )}

@@ -158,7 +158,10 @@ export function replaceStop(trip: Trip, day: number, oldId: string, newId: strin
   const pos = cleaned[day].stops.indexOf(oldId);
   const stops = cleaned[day].stops.slice();
   stops[pos] = newId;
-  return stamp(trip, now, { days: withDay(cleaned, day, { stops }), unplanned: without(trip.unplanned, newId) });
+  // The replaced stop waits in unplanned, so a replace never loses anything.
+  const unplanned = without(trip.unplanned, newId);
+  if (!unplanned.includes(oldId)) unplanned.push(oldId);
+  return stamp(trip, now, { days: withDay(cleaned, day, { stops }), unplanned });
 }
 
 /** Adds to a day's wet-weather list. Never touches the day's stops. */
