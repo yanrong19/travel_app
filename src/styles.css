@@ -5165,6 +5165,35 @@ button.area-card {
   text-decoration: underline;
 }
 
+/* Unreadable saved trips: a quiet, dismissible note above the list. */
+.trips-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--r-md);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+.trips-notice > svg {
+  flex: none;
+}
+.trips-notice p {
+  flex: 1;
+}
+.trips-notice .icon-button {
+  width: 36px;
+  height: 36px;
+  color: var(--warn-ink);
+}
+.trips-notice .icon-button:hover {
+  background: rgba(135, 74, 0, 0.08);
+}
+
 /* Undo toast: sits low and takes clicks. */
 .toast.is-action {
   display: flex;

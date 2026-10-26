@@ -1,33 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { attractionById } from '../data/attractions';
 import { BottomTabs, Footer, TopNav } from '../components/Chrome';
 import { Icon } from '../components/Icon';
 import { MONTHS, plural } from '../lib/format';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { creditFor, photo } from '../lib/photos';
 import { useGo } from '../lib/transition';
-import { dateOf, type PlaceRef, type Trip } from '../lib/trips';
+import { dateOf, type Trip } from '../lib/trips';
 import { placeCover, placeLabel } from '../lib/tripPlaces';
 import { useTrips } from '../lib/tripsStore';
 import { useMedia } from '../lib/useMedia';
 
 const UNDO_MS = 6000;
 const EMPTY_PHOTO = 'hero';
+// Dismissing the unreadable-data note lasts for this visit (the store's notice is fixed at load).
+const NOTICE_KEY = 'fitline.tripsNoticeDismissed';
 
-/** The first stop across the trip's days, if any. */
-const firstStop = (trip: Trip) => trip.days.find((d) => d.stops.length > 0)?.stops[0] ?? null;
+/** The first planned stop across the days, else the first unplanned attraction. */
+const firstStop = (trip: Trip) => trip.days.find((d) => d.stops.length > 0)?.stops[0] ?? trip.unplanned[0] ?? null;
 
-/** Cover photo: the first stop's place, else the trip's places in order. */
+/** Cover photo id: the first stop's own photo, else the first place's photo. */
 function coverOf(trip: Trip): string | null {
   const stop = firstStop(trip);
-  const area = stop ? attractionById(stop)?.area : undefined;
-  const refs: PlaceRef[] = [...(area ? [{ level: 'area' as const, id: area }] : []), ...trip.places];
-  for (const ref of refs) {
-    const id = placeCover(ref);
-    if (id) return id;
+  if (stop) return stop;
+  return trip.places[0] ? placeCover(trip.places[0]) : null;
+}
+
+function readDismissed() {
+  try {
+    return sessionStorage.getItem(NOTICE_KEY) === '1';
+  } catch {
+    return false;
   }
-  return null;
 }
 
 const dayMonth = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -46,7 +50,8 @@ function tripWhen(trip: Trip): string {
 const stopCount = (trip: Trip) => trip.days.reduce((n, d) => n + d.stops.length, 0);
 
 export default function TripsPage() {
-  const { trips, remove, restore } = useTrips();
+  const { trips, remove, restore, notice } = useTrips();
+  const [noticeOff, setNoticeOff] = useState(readDismissed);
   const go = useGo();
   const narrow = useMedia('(max-width: 760px)');
   const reduced = useReducedMotion();
@@ -69,6 +74,15 @@ export default function TripsPage() {
     timer.current = window.setTimeout(() => setDeleted(null), UNDO_MS);
   };
 
+  const dismissNotice = () => {
+    setNoticeOff(true);
+    try {
+      sessionStorage.setItem(NOTICE_KEY, '1');
+    } catch {
+      /* no storage: the note comes back on the next visit to this page */
+    }
+  };
+
   const undo = () => {
     if (!deleted) return;
     restore(deleted);
@@ -80,6 +94,17 @@ export default function TripsPage() {
     <div className="page">
       <TopNav />
       <main className="trips">
+        {notice && !noticeOff && (
+          <div className="trips-notice" role="status">
+            <Icon name="alert" size={18} />
+            <p>
+              {notice} A copy of the old data is kept in this browser.
+            </p>
+            <button type="button" className="icon-button" onClick={dismissNotice} aria-label="Dismiss this note">
+              <Icon name="close" size={16} />
+            </button>
+          </div>
+        )}
         {list.length === 0 ? (
           <section className="trips-empty" aria-labelledby="trips-empty-title">
             <img src={photo(EMPTY_PHOTO, 1600)} alt="" />
