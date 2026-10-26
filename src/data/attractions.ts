@@ -65,7 +65,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Flat and paved. The crush along Nakamise is the tiring part.',
     },
     vibe: {
-      local: 15, energy: 80,
+      local: 15, energy: 80, nature: 15,
       crowds: { weekday: sensojiWk, weekend: busier(sensojiWk, 1.3) },
       suits: { solo: 'good', couple: 'good', family: 'good', friends: 'good' },
       onlyHere: 'only-tokyo', onlyHereNote: 'Founded in 645, it is the city’s oldest temple.',
@@ -113,7 +113,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'You wade knee-deep through water. Wear trousers that roll above the knee.',
     },
     vibe: {
-      local: 10, energy: 55,
+      local: 10, energy: 55, nature: 3,
       crowds: { weekday: teamlabWk, weekend: busier(teamlabWk, 1.25) },
       suits: { solo: 'ok', couple: 'good', family: 'good', friends: 'good' },
       onlyHere: 'only-tokyo', onlyHereNote: 'This permanent show exists only in Toyosu.',
@@ -155,7 +155,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Long gravel paths. Ten minutes on foot from the gate to the shrine.',
     },
     vibe: {
-      local: 40, energy: 25,
+      local: 40, energy: 25, nature: 75,
       crowds: { weekday: meijiWk, weekend: busier(meijiWk, 1.45) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'ok' },
       onlyHere: 'only-japan', onlyHereNote: 'Shinto wedding processions cross the courtyard most weekends.',
@@ -203,7 +203,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Bags, hats and tripods go into lockers before the rooftop.',
     },
     vibe: {
-      local: 15, energy: 50,
+      local: 15, energy: 50, nature: 5,
       crowds: { weekday: skyWk, weekend: busier(skyWk, 1.15) },
       suits: { solo: 'ok', couple: 'good', family: 'ok', friends: 'good' },
       onlyHere: 'common', onlyHereNote: 'Most big cities have a sky deck. This one is open-air.',
@@ -247,7 +247,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'You stand and eat in the street. There are few places to sit.',
     },
     vibe: {
-      local: 35, energy: 85,
+      local: 35, energy: 85, nature: 5,
       crowds: { weekday: tsukijiWk, weekend: busier(tsukijiWk, 1.2) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'good' },
       onlyHere: 'only-tokyo', onlyHereNote: 'The retail half of the old fish market, still trading after the wholesale move.',
@@ -293,7 +293,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'About 400 m of climbing on foot. The cable car cuts it in half.',
     },
     vibe: {
-      local: 70, energy: 45,
+      local: 70, energy: 45, nature: 95,
       crowds: { weekday: takaoWk, weekend: busier(takaoWk, 2.1) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'good' },
       onlyHere: 'only-japan', onlyHereNote: 'A sacred mountain with a temple run by yamabushi monks.',
@@ -339,7 +339,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'The Yūyake Dandan steps at the top are the only climb.',
     },
     vibe: {
-      local: 75, energy: 40,
+      local: 75, energy: 40, nature: 8,
       crowds: { weekday: yanakaWk, weekend: busier(yanakaWk, 1.5) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'ok' },
       onlyHere: 'only-tokyo', onlyHereNote: 'Its wooden houses are pre-war, rare in central Tokyo.',
@@ -386,7 +386,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Big galleries. Museum fatigue sets in after about two hours.',
     },
     vibe: {
-      local: 55, energy: 15,
+      local: 55, energy: 15, nature: 12,
       crowds: { weekday: tnmWk, weekend: busier(tnmWk, 1.6) },
       suits: { solo: 'good', couple: 'ok', family: 'ok', friends: 'ok' },
       onlyHere: 'only-japan', onlyHereNote: 'The collection holds 89 National Treasures.',
@@ -433,7 +433,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Many bars sit up near-vertical stairs.',
     },
     vibe: {
-      local: 50, energy: 70,
+      local: 50, energy: 70, nature: 2,
       crowds: { weekday: gaiWk, weekend: busier(gaiWk, 1.5) },
       suits: { solo: 'good', couple: 'ok', family: 'poor', friends: 'good' },
       onlyHere: 'only-tokyo', onlyHereNote: 'Post-war wooden bar rows that outlived Shinjuku’s redevelopment.',
@@ -479,7 +479,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Spiral staircases inside, plus one lift.',
     },
     vibe: {
-      local: 30, energy: 40,
+      local: 30, energy: 40, nature: 35,
       crowds: { weekday: ghibliWk, weekend: busier(ghibliWk, 1.25) },
       suits: { solo: 'ok', couple: 'good', family: 'good', friends: 'good' },
       onlyHere: 'only-tokyo', onlyHereNote: 'Films in its Saturn Theater are shown nowhere else.',
@@ -526,7 +526,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Steps down into the ravine, then stone paths beside the stream.',
     },
     vibe: {
-      local: 90, energy: 10,
+      local: 90, energy: 10, nature: 85,
       crowds: { weekday: todorokiWk, weekend: busier(todorokiWk, 1.8) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'ok' },
       onlyHere: 'common', onlyHereNote: 'Ravine walks are common in Japan. One inside the city is not.',
@@ -570,7 +570,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Box seats are floor cushions. Knees complain after an hour.',
     },
     vibe: {
-      local: 60, energy: 75,
+      local: 60, energy: 75, nature: 3,
       crowds: { weekday: sumoWk, weekend: busier(sumoWk, 1.1) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'good' },
       onlyHere: 'only-japan', onlyHereNote: 'Professional sumo rarely tours abroad.',
@@ -616,7 +616,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Easy, flat wandering.',
     },
     vibe: {
-      local: 80, energy: 55,
+      local: 80, energy: 55, nature: 5,
       crowds: { weekday: shimoWk, weekend: busier(shimoWk, 1.45) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'good' },
       onlyHere: 'common', onlyHereNote: 'Most big cities have a vintage district.',
@@ -660,7 +660,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Four floors of narrow corridors.',
     },
     vibe: {
-      local: 65, energy: 50,
+      local: 65, energy: 50, nature: 2,
       crowds: { weekday: nakanoWk, weekend: busier(nakanoWk, 1.5) },
       suits: { solo: 'good', couple: 'ok', family: 'ok', friends: 'good' },
       onlyHere: 'only-japan', onlyHereNote: 'Collector culture at this scale is hard to find outside Japan.',
@@ -704,7 +704,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Stepping stones run along the pond edge and are uneven underfoot.',
     },
     vibe: {
-      local: 70, energy: 5,
+      local: 70, energy: 5, nature: 70,
       crowds: { weekday: kiyosumiWk, weekend: busier(kiyosumiWk, 1.9) },
       suits: { solo: 'good', couple: 'good', family: 'ok', friends: 'ok' },
       onlyHere: 'only-japan', onlyHereNote: 'A classic kaiyū-shiki stroll garden.',
@@ -749,7 +749,7 @@ export const ATTRACTIONS: Attraction[] = [
       note: 'Lifts all the way up.',
     },
     vibe: {
-      local: 15, energy: 45,
+      local: 15, energy: 45, nature: 5,
       crowds: { weekday: skytreeWk, weekend: busier(skytreeWk, 1.3) },
       suits: { solo: 'ok', couple: 'good', family: 'good', friends: 'ok' },
       onlyHere: 'common', onlyHereNote: 'Most big cities have a tower. This is the tallest in Japan.',

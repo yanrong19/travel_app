@@ -4,13 +4,13 @@ import AttractionPage from './pages/Attraction';
 import Credits from './pages/Credits';
 import PlacePage from './pages/Place';
 import { TransitionProvider } from './lib/transition';
-import { TripProvider } from './lib/trip';
+import { SavedProvider } from './lib/saved';
 import { SavedDrawer } from './components/Chrome';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <TripProvider>
+      <SavedProvider>
         <TransitionProvider>
           <Routes>
             {/* The globe and the map are one page: one layout route, so the map is not rebuilt between levels. */}
@@ -26,7 +26,7 @@ export default function App() {
           </Routes>
           <SavedDrawer />
         </TransitionProvider>
-      </TripProvider>
+      </SavedProvider>
     </BrowserRouter>
   );
 }

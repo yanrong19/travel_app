@@ -21,7 +21,7 @@ import { clock, duration, durationRange, plural, yen } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
 import { photo, photoSet, creditFor } from '../lib/photos';
 import { MORPH_NAME, useGo } from '../lib/transition';
-import { useTrip } from '../lib/trip';
+import { useSaved } from '../lib/saved';
 import { useMedia } from '../lib/useMedia';
 
 const TOKYO_STATION: [number, number] = [139.7671, 35.6812];
@@ -69,7 +69,7 @@ function chipNote(a: A, line: LineId) {
 
 function Detail({ a }: { a: A }) {
   const go = useGo();
-  const trip = useTrip();
+  const trip = useSaved();
   const reduced = useReducedMotion();
   const narrow = useMedia('(max-width: 760px)');
   const lenis = useRef<Lenis | null>(null);

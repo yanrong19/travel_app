@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { CROWD_START_HOUR, type Attraction } from '../../data/types';
 import { clock } from '../../lib/format';
-import { localWord } from '../../lib/factors';
+import { localWord, natureWord } from '../../lib/factors';
 import { EASE_OUT } from '../../lib/motion';
 import { Card, FactorSection, Note, RATING_WORD, RatingMark, Scale } from './parts';
 
@@ -52,14 +52,19 @@ export function Vibe({ a, weekend }: { a: Attraction; weekend: boolean }) {
         <Scale value={v.energy} left="Calm" right="Lively" label="Calm to lively" />
       </Card>
 
-      <Card title="Can you do it at home?" span={3}>
-        <p className="big-word">{ONLY_WORD[v.onlyHere]}</p>
-        <Note>{v.onlyHereNote}</Note>
+      <Card title="City or nature" span={3}>
+        <p className="big-word">{natureWord(v.nature)}</p>
+        <Scale value={v.nature} left="City" right="Nature" label="City to nature" />
       </Card>
 
       <Card title="Photo or experience" span={3}>
         <p className="big-word">{v.photo >= 70 ? 'Built for photos' : v.photo >= 40 ? 'Some of each' : 'About being there'}</p>
         <Scale value={v.photo} left="The experience" right="The photo" label="Experience to photo" />
+      </Card>
+
+      <Card title="Can you do it at home?" span={3}>
+        <p className="big-word">{ONLY_WORD[v.onlyHere]}</p>
+        <Note>{v.onlyHereNote}</Note>
       </Card>
     </FactorSection>
   );

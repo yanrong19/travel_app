@@ -8,7 +8,7 @@ import { duration, plural, yen } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { useGo } from '../lib/transition';
-import { useTrip } from '../lib/trip';
+import { useSaved } from '../lib/saved';
 import { Icon } from './Icon';
 
 const SOON = ['Kyoto', 'Osaka', 'Seoul', 'Taipei', 'Singapore'];
@@ -105,7 +105,7 @@ function navHere(pathname: string) {
 export function TopNav({ tone = 'solid' }: { tone?: 'glass' | 'solid' }) {
   const go = useGo();
   const { pathname } = useLocation();
-  const { ids, setOpen } = useTrip();
+  const { ids, setOpen } = useSaved();
   const { world, tokyo } = navHere(pathname);
   return (
     <header className={`topnav is-${tone}`}>
@@ -136,7 +136,7 @@ export function TopNav({ tone = 'solid' }: { tone?: 'glass' | 'solid' }) {
 export function BottomTabs() {
   const go = useGo();
   const { pathname } = useLocation();
-  const { ids, setOpen } = useTrip();
+  const { ids, setOpen } = useSaved();
   const { world, tokyo } = navHere(pathname);
   return (
     <nav className="tabs" aria-label="Main">
@@ -161,7 +161,7 @@ export function BottomTabs() {
 
 /** Heart toggle used on cards and pages. */
 export function HeartButton({ id, name, tone = 'glass', size = 40 }: { id: string; name: string; tone?: 'glass' | 'solid'; size?: number }) {
-  const { has, toggle } = useTrip();
+  const { has, toggle } = useSaved();
   const saved = has(id);
   return (
     <motion.button
@@ -194,7 +194,7 @@ export function HeartButton({ id, name, tone = 'glass', size = 40 }: { id: strin
 }
 
 export function SavedDrawer() {
-  const { ids, open, setOpen, remove } = useTrip();
+  const { ids, open, setOpen, remove } = useSaved();
   const go = useGo();
   const items = ids.map((id) => ATTRACTIONS.find((a) => a.id === id)).filter(Boolean) as typeof ATTRACTIONS;
   const time = items.reduce<[number, number]>(

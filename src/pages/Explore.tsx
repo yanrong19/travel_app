@@ -36,7 +36,7 @@ import { FILTERS, type FilterId } from '../lib/factors';
 import { plural } from '../lib/format';
 import { EASE_OUT } from '../lib/motion';
 import { useGo } from '../lib/transition';
-import { useTrip } from '../lib/trip';
+import { useSaved } from '../lib/saved';
 import { PEEK, useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
@@ -282,7 +282,7 @@ export default function Explore() {
   const levelKey = `${target.level}:${target.country?.id}:${target.area?.id}`;
   // Fully up, the sheet starts under the sticky bar, which pins below the nav and search.
   // The saved drawer's scrim must not scroll (and settle) the page behind it.
-  const { open: drawerOpen } = useTrip();
+  const { open: drawerOpen } = useSaved();
   const { scrollToGuides, scrollToTop, atGuides, covered } = useGuideScroll({
     enabled: !!sheet,
     root: rootRef,

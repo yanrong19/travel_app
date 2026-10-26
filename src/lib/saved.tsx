@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-// Per-viewer trip list. Kept in localStorage as a convenience only.
+// Per-viewer saved list (the hearted attractions). Kept in localStorage as a convenience only.
+// The key keeps its old name so existing hearts survive the rename.
 const KEY = 'fitline.trip';
 
 function load(): string[] {
@@ -12,7 +13,7 @@ function load(): string[] {
   }
 }
 
-interface TripState {
+interface SavedState {
   ids: string[];
   has: (id: string) => boolean;
   toggle: (id: string) => void;
@@ -21,9 +22,9 @@ interface TripState {
   setOpen: (o: boolean) => void;
 }
 
-const Ctx = createContext<TripState | null>(null);
+const Ctx = createContext<SavedState | null>(null);
 
-export function TripProvider({ children }: { children: ReactNode }) {
+export function SavedProvider({ children }: { children: ReactNode }) {
   const [ids, setIds] = useState<string[]>(load);
   const [open, setOpen] = useState(false);
 
@@ -31,7 +32,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(KEY, JSON.stringify(ids));
     } catch {
-      /* storage unavailable: the trip lasts for this visit only */
+      /* storage unavailable: saved items last for this visit only */
     }
   }, [ids]);
 
@@ -41,8 +42,8 @@ export function TripProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export function useTrip() {
+export function useSaved() {
   const v = useContext(Ctx);
-  if (!v) throw new Error('useTrip needs TripProvider');
+  if (!v) throw new Error('useSaved needs SavedProvider');
   return v;
 }

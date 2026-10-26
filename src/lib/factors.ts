@@ -24,6 +24,12 @@ export function localWord(n: number) {
   return 'Touristy';
 }
 
+export function natureWord(n: number) {
+  if (n >= 65) return 'Nature';
+  if (n >= 35) return 'Green and built';
+  return 'City';
+}
+
 /** One short reading per line, shown under each station. */
 export function readings(a: Attraction): Record<LineId, string> {
   const w = a.conditions.weather;
