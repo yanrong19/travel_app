@@ -188,6 +188,8 @@ export function MapExplorer(props: Props) {
   hotAreaRef.current = hotArea;
   const focusKey = (focusPrefs ?? []).join(',');
   const litKey = (litCountries ?? []).join(',');
+  // Planning mode: countries are being picked, so no destination is tinted stronger than another.
+  const planning = litCountries !== undefined;
   const toneKey = tones ? Object.entries(tones).map(([id, t]) => `${id}:${t}`).sort().join(',') : '';
 
   // The tour: one destination lit at a time while the globe turns.
@@ -470,6 +472,17 @@ export function MapExplorer(props: Props) {
     if (tour && ready && levelRef.current === 'world') resumeLater(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tour]);
+
+  // ---- Planning mode: every destination gets the same low tint (Japan isn't stronger) ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !planning || !map.getSource('fl-dest')) return;
+    const set = (plan: boolean) => DEST_SHAPES.features.forEach((f) => map.setFeatureState({ source: 'fl-dest', id: f.id }, { plan }));
+    set(true);
+    return () => {
+      if (mapRef.current) set(false);
+    };
+  }, [planning, ready]);
 
   // ---- Countries lit as picked: destinations on `fl-dest`, the rest on `fl-world` ----
   useEffect(() => {
@@ -908,8 +921,9 @@ function addOurLayers(map: MapLibreMap) {
   map.addSource('fl-dest', { type: 'geojson', data: DEST_SHAPES });
   const hover = ['boolean', ['feature-state', 'hover'], false];
   const lit = ['boolean', ['feature-state', 'current'], false];
-  // A country picked for a trip.
+  // A country picked for a trip, and planning mode (countries are being picked, all tinted alike).
   const picked = ['boolean', ['feature-state', 'picked'], false];
+  const plan = ['boolean', ['feature-state', 'plan'], false];
   // A region of Japan the list has opened: its prefectures stay lit while the camera holds them.
   const focus = ['boolean', ['feature-state', 'focus'], false];
 
@@ -920,13 +934,14 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-world',
       paint: {
         'fill-color': ['case', picked, C.cedar, C.ink] as never,
-        'fill-opacity': ['case', picked, ['case', hover, 0.58, 0.5], hover, 0.08, 0] as never,
+        // Picked countries match picked destinations (0.75).
+        'fill-opacity': ['case', picked, ['case', hover, 0.83, 0.75], hover, 0.08, 0] as never,
       },
     },
     firstSymbol,
   );
-  // Destinations are tinted on the globe (Japan, which is live, stronger); the one on tour is lit.
-  // The tint fades as the camera comes down to a country.
+  // Destinations are tinted on the globe (Japan, which is live, stronger, except in planning mode);
+  // the one on tour is lit. The tint fades as the camera comes down to a country.
   map.addLayer(
     {
       id: 'fl-dest-fill',
@@ -934,7 +949,7 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-dest',
       paint: {
         'fill-color': C.cedar,
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, ['case', lit, 0.9, picked, 0.75, ['get', 'live'], 0.6, 0.3], 4.4, ['case', picked, 0.75, lit, 0.28, 0]] as never,
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, ['case', lit, 0.9, picked, 0.75, plan, 0.3, ['get', 'live'], 0.6, 0.3], 4.4, ['case', picked, 0.75, lit, 0.28, 0]] as never,
         'fill-opacity-transition': { duration: 600 },
       },
     },
