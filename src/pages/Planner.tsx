@@ -7,19 +7,24 @@ import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
 import { DayList, stopsOf } from '../components/planner/DayList';
+import { DaySummaryPanel } from '../components/planner/DaySummaryPanel';
 import { PlacePicker } from '../components/planner/PlacePicker';
 import { PlaceSwitcher } from '../components/planner/PlaceSwitcher';
 import { Sheet } from '../components/planner/Sheet';
 import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
+import { Trays } from '../components/planner/Trays';
+import { summarizeDay } from '../lib/daySummary';
 import { plural } from '../lib/format';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
   addPlace,
   addStop,
+  dateOf,
   dayOf,
   endDate,
   moveStop,
+  planUnplanned,
   removePlace,
   removeStop,
   replaceStop,
@@ -76,8 +81,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const undoTimer = useRef<number | undefined>(undefined);
 
   // The trip can shrink under the page (fewer days, a place removed): stay on one that exists.
+  // The clamp is written back, so a trip that shrinks and grows again doesn't jump to an old day.
   const day = Math.min(dayIdx, trip.days.length - 1);
   const pi = Math.min(placeIdx, Math.max(0, trip.places.length - 1));
+  useEffect(() => {
+    if (dayIdx !== day) setDayIdx(day);
+  }, [dayIdx, day]);
   const place = trip.places[pi] ?? null;
   const placeKey = place ? `${place.level}:${place.id}` : '';
   const placeName = place ? placeLabel(place).name : 'this trip';
@@ -103,6 +112,21 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // A new place or day closes the card; a new day leaves replace mode.
   useEffect(() => setSelected(null), [placeKey]);
   useEffect(() => setReplace(null), [day]);
+
+  // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
+  const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
+  useEffect(() => {
+    if (replace && !target) setReplace(null);
+  }, [replace, target]);
+
+  const plan = trip.days[day];
+  const date = dateOf(trip, day);
+  const summary = useMemo(
+    () => summarizeDay(stopsOf(plan?.stops ?? []), { dayStart: trip.dayStart, pace: trip.pace, date, who: trip.who }),
+    // A Date is new every render; its time stands in for it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plan, trip.dayStart, trip.pace, trip.who, date?.getTime()],
+  );
 
   // ---- toasts ----
   useEffect(() => {
@@ -141,14 +165,15 @@ function PlannerPage({ trip }: { trip: Trip }) {
     });
   };
 
+  /** Adds to the current day, or in replace mode swaps the attraction into the replaced stop's place. */
   const addToDay = (sid: string) => {
-    if (replace) {
-      edit((t, now) => replaceStop(t, replace.day, replace.id, sid, now));
-      setNotice(`${nameOf(sid)} replaces ${nameOf(replace.id)} on Day ${replace.day + 1}.`);
-      setReplace(null);
+    if (replace) setReplace(null);
+    if (target && sid !== target.id) {
+      edit((t, now) => replaceStop(t, target.day, target.id, sid, now));
+      setNotice(`${nameOf(sid)} replaces ${nameOf(target.id)} on Day ${target.day + 1}.`);
       return;
     }
-    edit((t, now) => addStop(t, day, sid, now));
+    edit((t, now) => (t.unplanned.includes(sid) ? planUnplanned(t, sid, day, now) : addStop(t, day, sid, now)));
   };
 
   /** The card's own action for the attraction it shows. */
@@ -158,7 +183,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     let run = () => addToDay(sid);
     let quiet = false;
     const on = dayOf(trip, sid);
-    if (replace && sid !== replace.id) {
+    if (target && sid !== target.id) {
       label = 'Use as replacement';
       icon = 'swap';
     } else if (on === day) {
@@ -343,8 +368,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onOpen={setSelected}
             hotId={selected ?? hoverId}
             onHover={setHoverId}
-            replacing={replace?.id ?? null}
+            replacing={target?.id ?? null}
             onCancelReplace={() => setReplace(null)}
+            after={
+              <>
+                <DaySummaryPanel summary={summary} />
+                <Trays trip={trip} day={day} onPlan={addToDay} replacing={target?.id ?? null} />
+              </>
+            }
             note={
               empty && (
                 <div className="plan-empty" role="status">

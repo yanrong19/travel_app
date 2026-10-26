@@ -6277,6 +6277,12 @@ button.area-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* The stops, summary and trays scroll as one, edge to edge of the panel. */
+  margin: 0 -16px -12px;
+  padding: 0 16px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 .dl-head {
   display: flex;
@@ -6294,6 +6300,10 @@ button.area-card {
   text-align: right;
 }
 .dl-replace {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -6306,11 +6316,6 @@ button.area-card {
 .dl-replace span {
   flex: 1;
   min-width: 0;
-}
-.dl-empty {
-  padding: 18px 4px;
-  font-size: 14px;
-  color: var(--muted);
 }
 .plan-empty {
   display: flex;
@@ -6333,12 +6338,9 @@ button.area-card {
   font-size: 14px;
 }
 .dl-stops {
-  flex: 1;
-  min-height: 0;
+  flex: none;
   margin: 0 -6px;
-  padding: 2px 6px 6px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  padding: 2px 6px 0;
 }
 .dl-travel {
   display: flex;
@@ -6461,6 +6463,294 @@ button.area-card {
   margin-top: 3px;
   font-size: 12px;
   font-weight: 600;
+}
+
+/* ---------- Day summary ---------- */
+
+.ds {
+  flex: none;
+  padding: 16px 16px 6px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.ds.is-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed var(--control);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ds-line {
+  margin-bottom: 4px;
+  font-size: 17px;
+  line-height: 23px;
+  font-weight: 700;
+  text-wrap: balance;
+}
+.ds-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+.ds-row + .ds-row {
+  border-top: 1px solid var(--rule);
+}
+.ds-row > .station {
+  margin-top: 1px;
+}
+.ds-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding-top: 4px;
+}
+.ds-name {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  /* The row's line ink (set per row). */
+  color: var(--ink);
+}
+.ds-text {
+  margin: -4px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.ds-text strong {
+  font-weight: 700;
+}
+/* Effort: one bar per stop, in order; the hardest in the line colour. */
+.ds-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+}
+.ds-bars span {
+  width: 14px;
+  min-height: 4px;
+  border-radius: 3px;
+  background: var(--track);
+}
+.ds-bars span.is-hardest {
+  background: var(--hue);
+}
+/* Vibe: the day's time split between nature and city. */
+.ds-split {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+}
+.ds-split span {
+  flex-basis: 0;
+  border-radius: 999px;
+}
+.ds-split .is-nature {
+  background: var(--hue);
+}
+.ds-split .is-city {
+  background: var(--track);
+}
+/* Logistics: the day used against its budget, travel shaded within. */
+.ds-budget {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--soft);
+}
+.ds-budget-used {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--track);
+  overflow: hidden;
+}
+.ds-budget-travel {
+  display: block;
+  height: 100%;
+  background: var(--hue);
+}
+.ds-budget-end {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ink);
+}
+.ds-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-flags li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.ds-flags svg {
+  flex: none;
+  color: var(--hue);
+}
+
+/* ---------- Trays (Unplanned, Saved) ---------- */
+
+.trays {
+  flex: none;
+  display: grid;
+  gap: 8px;
+}
+.tray {
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.tray h3 {
+  margin: 0;
+}
+.tray-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+}
+.tray-head:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: -2px;
+}
+.tray-head > span:first-child {
+  flex: 1;
+}
+.tray-count {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+.tray-head svg {
+  color: var(--muted);
+  transition: transform 0.25s var(--ease-out);
+}
+.tray.is-open .tray-head svg {
+  transform: rotate(180deg);
+}
+.tray-empty {
+  padding: 0 16px 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tray-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 8px 8px;
+  list-style: none;
+}
+.tray-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: var(--r-sm);
+}
+.tray-item:hover {
+  background: var(--raised);
+}
+.tray-item img {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.tray-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.tray-text strong,
+.tray-text span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tray-text strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+.tray-text span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.tray-add,
+.tray-note {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tray-add {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--cedar);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.tray-add:hover {
+  border-color: var(--cedar);
+  background: var(--cedar-soft);
+}
+.tray-add.is-replace {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.tray-add.is-replace:hover {
+  background: var(--cedar-hover);
+}
+.tray-note {
+  padding: 0 4px;
+  color: var(--muted);
 }
 
 /* ---------- Planner sheets (native dialog) ---------- */

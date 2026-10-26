@@ -261,7 +261,9 @@ function PlaceSearch({ picked, onToggle }: { picked: PlaceRef[]; onToggle: (ref:
       e.preventDefault();
       if (open) choose(results[active]);
       else setOpen(true);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === 'Escape' && (query || open)) {
+      // Handled here: the sheet around the picker mustn't close on the same press.
+      e.preventDefault();
       e.stopPropagation();
       if (query) setQuery('');
       else setOpen(false);

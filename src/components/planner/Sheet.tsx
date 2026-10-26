@@ -38,6 +38,8 @@ export function Sheet({ open, title, onClose, children, footer, size = 'medium' 
         if (document.activeElement?.getAttribute('aria-expanded') === 'true') return;
         onClose();
       }}
+      // The browser can close the dialog itself (Chrome lets a repeated Escape through): keep React in step.
+      onClose={() => open && onClose()}
       // A click on the backdrop lands on the dialog itself.
       onClick={(e) => e.target === ref.current && onClose()}
     >

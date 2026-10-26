@@ -41,10 +41,12 @@ interface Props {
   onCancelReplace?: () => void;
   /** Shown above the stops (e.g. a place with no checked attractions). */
   note?: ReactNode;
+  /** Shown under the stops, in the same scroll (the day summary, the trays). */
+  after?: ReactNode;
 }
 
 /** Day tabs, then the day's stops in order with their planned times and the travel between them. */
-export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note }: Props) {
+export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note, after }: Props) {
   const id = useId();
   const tabs = useRef<HTMLDivElement>(null);
   const plan = trip.days[day];
@@ -95,7 +97,7 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
         })}
       </div>
 
-      <div className="dl-panel" role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${day}`}>
+      <div className="dl-panel" role="tabpanel" data-lenis-prevent id={`${id}-panel`} aria-labelledby={`${id}-tab-${day}`}>
         <div className="dl-head">
           <h2>{`Day ${day + 1}`}</h2>
           <p className="num">
@@ -119,10 +121,8 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
 
         {note}
 
-        {timed.length === 0 ? (
-          <p className="dl-empty">No stops on Day {day + 1} yet. Click a pin on the map, or search, to add one.</p>
-        ) : (
-          <ol className="dl-stops" data-lenis-prevent>
+        {timed.length > 0 && (
+          <ol className="dl-stops">
             {timed.map((s, i) => (
               <li key={s.a.id}>
                 {i > 0 && (
@@ -199,6 +199,8 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
             ))}
           </ol>
         )}
+
+        {after}
       </div>
     </div>
   );
