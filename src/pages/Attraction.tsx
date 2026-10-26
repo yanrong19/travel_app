@@ -15,6 +15,7 @@ import { TileCard } from '../components/AttractionCard';
 import { FactorSheet } from '../components/FactorSheet';
 import { Station } from '../components/Station';
 import { Icon } from '../components/Icon';
+import { AddToTrip } from '../components/planner/AddToTrip';
 import { Footer, HeartButton, TopNav } from '../components/Chrome';
 import { flags, readings, realTime } from '../lib/factors';
 import { clock, duration, durationRange, plural, yen } from '../lib/format';
@@ -23,6 +24,7 @@ import { photo, photoSet, creditFor } from '../lib/photos';
 import { MORPH_NAME, useGo } from '../lib/transition';
 import { useSaved } from '../lib/saved';
 import { useMedia } from '../lib/useMedia';
+import type { PlaceRef } from '../lib/trips';
 
 const TOKYO_STATION: [number, number] = [139.7671, 35.6812];
 const BOOKING_WORD = { required: 'Book ahead', recommended: 'Booking helps', none: 'Walk in' };
@@ -75,6 +77,7 @@ function Detail({ a }: { a: A }) {
   const lenis = useRef<Lenis | null>(null);
   const [sheet, setSheet] = useState<LineId | null>(null);
   const area = areaById(a.area)!;
+  const place: PlaceRef = { level: 'area', id: a.area };
   const fl = flags(a);
   const r = readings(a);
   const saved = trip.has(a.id);
@@ -161,6 +164,7 @@ function Detail({ a }: { a: A }) {
                 <Icon name="heart" filled={saved} />
                 {saved ? 'Saved' : 'Save to my list'}
               </button>
+              <AddToTrip attractionId={a.id} place={place} />
               <button type="button" className="button is-quiet" onClick={() => go(areaPath(a.area))}>
                 <Icon name="map" />
                 See it on the map
@@ -262,6 +266,7 @@ function Detail({ a }: { a: A }) {
             <Icon name="heart" filled={saved} />
             {saved ? 'Saved to my list' : 'Save to my list'}
           </button>
+          <AddToTrip attractionId={a.id} place={place} />
           <button type="button" className="round-button is-dark" onClick={() => go(areaPath(a.area))} aria-label="See it on the map">
             <Icon name="map" size={20} />
           </button>

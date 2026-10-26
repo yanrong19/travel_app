@@ -94,28 +94,33 @@ function CityPicker() {
   );
 }
 
+const TRIPS_PATH = '/trips';
+
 /**
  * Which nav tab is the page you are on. The map is one page from the globe down to a ward,
- * so "Explore" is the globe only and "Tokyo" covers Tokyo and its wards.
+ * so "Explore" covers the globe and every map level; "Trips" covers the trips list, setup and planner.
  */
 function navHere(pathname: string) {
-  return { world: pathname === WORLD_PATH, tokyo: pathname.startsWith(TOKYO_PATH) };
+  return {
+    explore: pathname === WORLD_PATH || pathname === '/map' || pathname.startsWith('/map/'),
+    trips: pathname === TRIPS_PATH || pathname.startsWith(`${TRIPS_PATH}/`),
+  };
 }
 
 export function TopNav({ tone = 'solid' }: { tone?: 'glass' | 'solid' }) {
   const go = useGo();
   const { pathname } = useLocation();
   const { ids, setOpen } = useSaved();
-  const { world, tokyo } = navHere(pathname);
+  const { explore, trips } = navHere(pathname);
   return (
     <header className={`topnav is-${tone}`}>
       <Wordmark />
       <nav className="topnav-links" aria-label="Main">
-        <a href={WORLD_PATH} aria-current={world ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(WORLD_PATH))}>
+        <a href={WORLD_PATH} aria-current={explore ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(WORLD_PATH))}>
           Explore
         </a>
-        <a href={TOKYO_PATH} aria-current={tokyo ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(TOKYO_PATH))}>
-          Tokyo
+        <a href={TRIPS_PATH} aria-current={trips ? 'page' : undefined} onClick={(e) => (e.preventDefault(), go(TRIPS_PATH))}>
+          Trips
         </a>
         <button type="button" onClick={() => setOpen(true)}>
           Saved
@@ -137,16 +142,16 @@ export function BottomTabs() {
   const go = useGo();
   const { pathname } = useLocation();
   const { ids, setOpen } = useSaved();
-  const { world, tokyo } = navHere(pathname);
+  const { explore, trips } = navHere(pathname);
   return (
     <nav className="tabs" aria-label="Main">
-      <button type="button" aria-current={world ? 'page' : undefined} onClick={() => go(WORLD_PATH)}>
+      <button type="button" aria-current={explore ? 'page' : undefined} onClick={() => go(WORLD_PATH)}>
         <Icon name="globe" size={20} />
         Explore
       </button>
-      <button type="button" aria-current={tokyo ? 'page' : undefined} onClick={() => go(TOKYO_PATH)}>
-        <Icon name="home" size={20} />
-        Tokyo
+      <button type="button" aria-current={trips ? 'page' : undefined} onClick={() => go(TRIPS_PATH)}>
+        <Icon name="trip" size={20} />
+        Trips
       </button>
       <button type="button" onClick={() => setOpen(true)}>
         <span className="tabs-icon">

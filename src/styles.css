@@ -4981,3 +4981,408 @@ button.area-card {
     animation: none !important;
   }
 }
+
+/* ---------- Trips ---------- */
+
+.trips {
+  width: var(--page);
+  margin: 40px auto 0;
+}
+.trips-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.trips-head h1 {
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+}
+.trips-count {
+  margin-top: 4px;
+  color: var(--muted);
+}
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.trip-card {
+  position: relative;
+  height: 360px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  color: #fff;
+  background: #1c2628;
+  isolation: isolate;
+}
+.trip-card.is-plain {
+  background: linear-gradient(160deg, var(--cedar), #08302b);
+}
+.trip-card:has(.trip-card-name a:focus-visible) {
+  outline: 2px solid var(--cedar);
+  outline-offset: 3px;
+}
+.trip-card-name a:focus-visible {
+  outline: none;
+}
+.trip-card-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  transition: transform 0.8s var(--ease-out);
+}
+.trip-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg, rgba(6, 12, 14, 0.82) 0%, rgba(6, 12, 14, 0.5) 40%, rgba(6, 12, 14, 0.08) 68%, rgba(6, 12, 14, 0.22) 100%); /* taste-skill-ignore: neutral scrim under text on a photo */
+}
+.trip-card:hover .trip-card-photo {
+  transform: scale(1.05);
+}
+.trip-card-top {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+}
+.trip-card-delete {
+  width: 40px;
+  height: 40px;
+}
+.trip-card-body {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+}
+.trip-card-name {
+  padding: 0 6px;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.trip-card-name a {
+  text-decoration: none;
+}
+/* The whole card opens the trip. */
+.trip-card-name a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.trip-card-places {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 12px;
+  padding: 0 6px;
+  font-size: 14px;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-card-places svg {
+  flex: none;
+}
+
+.trips-empty {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 540px;
+  padding: 32px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  color: #fff;
+  background: #1c2628;
+  isolation: isolate;
+}
+.trips-empty > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+.trips-empty::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(20deg, rgba(6, 12, 14, 0.6) 0%, rgba(6, 12, 14, 0.1) 60%); /* taste-skill-ignore: neutral scrim under text on a photo */
+}
+.trips-empty-card {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  max-width: 460px;
+  padding: 28px;
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.trips-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.trips-empty-card h1 {
+  font-size: 44px;
+  line-height: 48px;
+  letter-spacing: -0.02em;
+}
+.trips-empty-card p:not(.trips-eyebrow) {
+  margin-bottom: 8px;
+  font-size: 16px;
+  line-height: 24px;
+  opacity: 0.92;
+}
+.trips-credit {
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+}
+.trips-credit:hover {
+  text-decoration: underline;
+}
+
+/* Undo toast: sits low and takes clicks. */
+.toast.is-action {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  top: auto;
+  bottom: 24px;
+  transform: translate(-50%, 12px);
+}
+.toast.is-action[data-on='1'] {
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+.toast-undo {
+  flex: none;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Add to trip: a button and a popover picking the trip, then the day. */
+.att {
+  display: inline-flex;
+}
+/* On the map card it takes a row of its own; on phones it shrinks to an icon in the actions row. */
+.pin-card-actions {
+  flex-wrap: wrap;
+}
+.pin-card .att {
+  display: flex;
+  flex-basis: 100%;
+  /* Fill the row without widening the card past its usual size. */
+  contain: inline-size;
+}
+.pin-card .att-button {
+  flex: 1;
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+.att-pop {
+  position: fixed;
+  z-index: 60;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--lift);
+}
+.att-pop[data-side='down'] {
+  transform-origin: top left;
+}
+.att-pop[data-side='up'] {
+  transform-origin: bottom left;
+}
+.att-title {
+  padding: 6px 10px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.att-step-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.att-step-head .icon-button {
+  width: 36px;
+  height: 36px;
+}
+.att-step-head .att-title {
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.att-list {
+  display: grid;
+  gap: 2px;
+}
+.att-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  color: var(--ink);
+}
+.att-item:hover:not(:disabled) {
+  background: var(--raised);
+}
+.att-item:disabled {
+  color: var(--muted);
+}
+.att-item > svg {
+  flex: none;
+  color: var(--muted);
+}
+.att-item:disabled > svg {
+  color: var(--cedar);
+}
+.att-item-text {
+  display: grid;
+  min-width: 0;
+}
+.att-item-text strong {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.att-item-text span {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.att-tag {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--cedar-soft);
+  color: var(--cedar);
+  font-size: 12px;
+  font-weight: 600;
+}
+.att-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 10px 8px;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
+  background: none;
+  font-weight: 600;
+  color: var(--cedar);
+}
+.att-new:hover {
+  color: var(--cedar-hover);
+}
+
+@media (max-width: 760px) {
+  .trips {
+    margin-top: 24px;
+  }
+  .trips-head h1 {
+    font-size: 32px;
+    line-height: 36px;
+  }
+  .trips-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .trip-card {
+    height: 320px;
+  }
+  .trips-empty {
+    min-height: calc(100svh - 220px);
+    padding: 12px 12px 36px;
+  }
+  .trips-empty-card {
+    padding: 20px;
+  }
+  .trips-empty-card h1 {
+    font-size: 34px;
+    line-height: 38px;
+  }
+  .toast.is-action {
+    top: auto;
+    bottom: 96px;
+  }
+  /* The phone save bar and map card have room for an icon only; the label stays for screen readers. */
+  .d-bar .att-button {
+    width: 52px;
+    padding: 0;
+  }
+  .pin-card .att {
+    flex-basis: auto;
+    contain: none;
+  }
+  /* Room for the trip icon: the details button drops its decorative arrow. */
+  .pin-card-actions .button.is-compact svg {
+    display: none;
+  }
+  .pin-card .att-button {
+    flex: none;
+    width: 40px;
+    padding: 0;
+  }
+  .d-bar .att-label,
+  .pin-card .att-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

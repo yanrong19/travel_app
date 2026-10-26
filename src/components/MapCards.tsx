@@ -7,6 +7,7 @@ import { photo } from '../lib/photos';
 import { HeartButton } from './Chrome';
 import { Icon } from './Icon';
 import { Station } from './Station';
+import { AddToTrip } from './planner/AddToTrip';
 
 /** A list row that mirrors a map ticker: hovering one lights up the other. */
 export function PanelRow({
@@ -110,6 +111,7 @@ export function PinCard({ a, onOpen, onClose }: { a: Attraction; onOpen: (id: st
             <Icon name="arrowRight" />
           </button>
           <HeartButton id={a.id} name={a.name} tone="solid" size={40} />
+          <AddToTrip attractionId={a.id} place={{ level: 'area', id: a.area }} />
         </div>
       </div>
     </article>

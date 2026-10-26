@@ -3,6 +3,7 @@ import Explore from './pages/Explore';
 import AttractionPage from './pages/Attraction';
 import Credits from './pages/Credits';
 import PlacePage from './pages/Place';
+import TripsPage, { TripPlaceholder } from './pages/Trips';
 import { TransitionProvider } from './lib/transition';
 import { SavedProvider } from './lib/saved';
 import { TripsProvider } from './lib/tripsStore';
@@ -23,6 +24,10 @@ export default function App() {
               <Route path="/map" element={<Navigate to="/" replace />} />
               <Route path="/attraction/:id" element={<AttractionPage />} />
               <Route path="/credits" element={<Credits />} />
+              {/* Static /trips routes sit before the place redirect so it never catches them. */}
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/new" element={<TripPlaceholder />} />
+              <Route path="/trips/:id" element={<TripPlaceholder />} />
               <Route path="/:country/:region?/:area?" element={<PlacePage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
