@@ -120,6 +120,14 @@ interface Props {
   onNotice: (text: string) => void;
   /** The style has loaded and the map is drawing, so the page around it can settle. */
   onReady?: () => void;
+  /** Trip planning: an attraction's ticker in the current day's colour or the other days' colour. Toned tickers are raised above the rest. */
+  tones?: Record<string, 'today' | 'other'>;
+  /** The world-level tour: the turning globe, its card and the Tokyo live pin. On unless set to false. */
+  tour?: boolean;
+  /** Countries (worldIds) lit as picked, destinations or not. */
+  litCountries?: string[];
+  /** A country clicked at world level; when set, it's called instead of `onCountry`. */
+  onWorldPick?: (worldId: string) => void;
 }
 
 type Pad = { top: number; right: number; bottom: number; left: number };
@@ -143,7 +151,12 @@ export function MapExplorer(props: Props) {
     attributionHost = null,
     cardBottom = 92,
     cardClearOf,
+    tones,
+    tour = true,
+    litCountries,
   } = props;
+  const tourRef = useRef(tour);
+  tourRef.current = tour;
   const cardBottomRef = useRef(cardBottom);
   cardBottomRef.current = cardBottom;
   const clearOfRef = useRef(cardClearOf);
@@ -174,6 +187,8 @@ export function MapExplorer(props: Props) {
   const hotAreaRef = useRef(hotArea);
   hotAreaRef.current = hotArea;
   const focusKey = (focusPrefs ?? []).join(',');
+  const litKey = (litCountries ?? []).join(',');
+  const toneKey = tones ? Object.entries(tones).map(([id, t]) => `${id}:${t}`).sort().join(',') : '';
 
   // The tour: one destination lit at a time while the globe turns.
   const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
@@ -189,7 +204,7 @@ export function MapExplorer(props: Props) {
   const firstWorld = useRef(true);
   const toured = useRef(false);
   const flightId = useRef(0);
-  const tourOn = target.level === 'world';
+  const tourOn = target.level === 'world' && tour;
   const tourDest: Destination | null = tourOn && touring ? current : null;
   const cardDest: CardSubject | null = tourOn ? tourDest : pinned;
   const cardRef = useRef(cardDest);
@@ -232,7 +247,7 @@ export function MapExplorer(props: Props) {
       paused.current = true;
       clearTimeout(resumeTimer.current);
     };
-    const release = () => levelRef.current === 'world' && resumeLater(RESUME_MS);
+    const release = () => levelRef.current === 'world' && tourRef.current && resumeLater(RESUME_MS);
     map.on('mousedown', hold);
     map.on('touchstart', hold);
     map.on('wheel', () => {
@@ -421,7 +436,7 @@ export function MapExplorer(props: Props) {
   function resumeLater(ms: number) {
     clearTimeout(resumeTimer.current);
     resumeTimer.current = window.setTimeout(() => {
-      if (levelRef.current !== 'world' || !mapRef.current) return;
+      if (levelRef.current !== 'world' || !tourRef.current || !mapRef.current) return;
       paused.current = false;
       startSpin();
       if (touringRef.current) pickNext();
@@ -442,9 +457,37 @@ export function MapExplorer(props: Props) {
     if (!tourOn) {
       setTouring(false);
       clearTimeout(resumeTimer.current);
+      cancelAnimationFrame(spin.current);
       paused.current = false;
     }
   }, [tourOn]);
+
+  // The tour switched back on while on the globe: pick it up again (a no-op on mount).
+  const lastTour = useRef(tour);
+  useEffect(() => {
+    if (lastTour.current === tour) return;
+    lastTour.current = tour;
+    if (tour && ready && levelRef.current === 'world') resumeLater(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour]);
+
+  // ---- Countries lit as picked: destinations on `fl-dest`, the rest on `fl-world` ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !map.getSource('fl-dest') || !map.getSource('fl-world')) return;
+    const wids = new Set(litKey ? litKey.split(',') : []);
+    if (!wids.size) return;
+    const dest = DEST_SHAPES.features.filter((f) => wids.has(f.properties.wid)).map((f) => f.id);
+    const world = WORLD.flatMap((f, i) => (wids.has(f.id) && !destinationByWorldId(f.id) ? [i + 1] : []));
+    const set = (picked: boolean) => {
+      dest.forEach((id) => map.setFeatureState({ source: 'fl-dest', id }, { picked }));
+      world.forEach((id) => map.setFeatureState({ source: 'fl-world', id }, { picked }));
+    };
+    set(true);
+    return () => {
+      if (mapRef.current) set(false);
+    };
+  }, [litKey, ready]);
 
   useEffect(() => {
     if (!tourOn || !touring) return;
@@ -456,7 +499,7 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey]);
 
   // Ticker widths change once the web fonts arrive: measure again.
   useEffect(() => {
@@ -573,7 +616,7 @@ export function MapExplorer(props: Props) {
       go({ center: from as [number, number], zoom, pitch: 0, bearing: 0, padding: { ...insets } });
       firstWorld.current = false;
       map.once('moveend', () => {
-        if (flight !== flightId.current || levelRef.current !== 'world' || paused.current) return;
+        if (flight !== flightId.current || levelRef.current !== 'world' || !tourRef.current || paused.current) return;
         startSpin();
         // The first visit tours straight away; coming back, it waits a moment.
         if (!touringRef.current) resumeLater(toured.current ? RESUME_MS : 0);
@@ -694,7 +737,10 @@ export function MapExplorer(props: Props) {
     };
     const onWorldClick = (e: Ev) => {
       const f = e.features?.[0];
-      if (f && levelRef.current === 'world') handlers.current.onCountry(slug(f.properties.name));
+      if (!f || levelRef.current !== 'world') return;
+      const pick = handlers.current.onWorldPick;
+      if (pick) pick(f.properties.fid);
+      else handlers.current.onCountry(slug(f.properties.name));
     };
     const onPrefClick = (e: Ev) => {
       const f = e.features?.[0];
@@ -753,7 +799,7 @@ export function MapExplorer(props: Props) {
       <div ref={canvasBox} className="map-canvas" role="region" aria-label={`Map of ${placeName}`} />
 
       <div ref={overlay} className="map-overlay">
-        {level === 'world' && (
+        {level === 'world' && tour && (
           <button type="button" className="livepin" data-flip="" data-ll={TOKYO_LL.join(',')} onClick={() => handlers.current.onRegion()} aria-label={`Tokyo, live: ${plural(ATTRACTIONS.length, 'attraction')} checked. Fly in`}>
             <span className="livepin-photo" aria-hidden="true">
               <img src={photo('shibuya-sky')} alt="" draggable={false} />
@@ -768,12 +814,14 @@ export function MapExplorer(props: Props) {
           pins.map((a, i) => {
             const rating = lensRating(a, lens);
             const raised = selectedId === a.id || hoverId === a.id;
-            const prio = raised ? 0 : (rating ? RANK[rating] : 2) + i / 100;
+            const tone = tones?.[a.id];
+            // Toned tickers (a trip's stops) rank between the raised one and the rest: today's first.
+            const prio = raised ? 0 : tone ? (tone === 'today' ? 0.2 : 0.5) + i / 10000 : (rating ? RANK[rating] : 2) + i / 100;
             return (
               <button
                 key={a.id}
                 type="button"
-                className={`ticker ${rating ? `is-${rating}` : ''} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''}`}
+                className={`ticker ${rating ? `is-${rating}` : ''} ${tone ? `is-${tone}` : ''} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''}`}
                 data-ll={a.lonlat.join(',')}
                 data-prio={prio}
                 style={{ ['--i' as string]: i }}
@@ -860,6 +908,8 @@ function addOurLayers(map: MapLibreMap) {
   map.addSource('fl-dest', { type: 'geojson', data: DEST_SHAPES });
   const hover = ['boolean', ['feature-state', 'hover'], false];
   const lit = ['boolean', ['feature-state', 'current'], false];
+  // A country picked for a trip.
+  const picked = ['boolean', ['feature-state', 'picked'], false];
   // A region of Japan the list has opened: its prefectures stay lit while the camera holds them.
   const focus = ['boolean', ['feature-state', 'focus'], false];
 
@@ -869,8 +919,8 @@ function addOurLayers(map: MapLibreMap) {
       type: 'fill',
       source: 'fl-world',
       paint: {
-        'fill-color': C.ink,
-        'fill-opacity': ['case', hover, 0.08, 0] as never,
+        'fill-color': ['case', picked, C.cedar, C.ink] as never,
+        'fill-opacity': ['case', picked, ['case', hover, 0.58, 0.5], hover, 0.08, 0] as never,
       },
     },
     firstSymbol,
@@ -884,7 +934,7 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-dest',
       paint: {
         'fill-color': C.cedar,
-        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, ['case', lit, 0.9, ['get', 'live'], 0.6, 0.3], 4.4, ['case', lit, 0.28, 0]] as never,
+        'fill-opacity': ['interpolate', ['linear'], ['zoom'], 2.8, ['case', lit, 0.9, picked, 0.75, ['get', 'live'], 0.6, 0.3], 4.4, ['case', picked, 0.75, lit, 0.28, 0]] as never,
         'fill-opacity-transition': { duration: 600 },
       },
     },

@@ -49,6 +49,9 @@
   --c-cost-track: #fbdca6;
   --c-cost-ink: #7a4600;
 
+  /* Trip planner pins: today's stops in cedar, other days' in a muted cedar (white text still reads, 4.7:1). */
+  --c-plan-other: #4d7d75;
+
   --glass: rgba(255, 255, 255, 0.16);
   --glass-strong: rgba(255, 255, 255, 0.24);
   --glass-line: rgba(255, 255, 255, 0.38);
@@ -3162,6 +3165,14 @@ h2:focus {
 .ticker:not(.is-compact) {
   z-index: 3;
 }
+.ticker.is-today,
+.ticker.is-other {
+  z-index: 2;
+}
+.ticker.is-today:not(.is-compact),
+.ticker.is-other:not(.is-compact) {
+  z-index: 4;
+}
 .ticker.is-hot,
 .ticker:focus-visible {
   z-index: 5;
@@ -3271,6 +3282,19 @@ h2:focus {
   outline: 2px solid var(--cedar);
   outline-offset: 2px;
 }
+/* A trip's stops: today's in cedar, other days' in the muted cedar. */
+.ticker.is-today .ticker-pill,
+.ticker.is-other .ticker-pill {
+  --tick: var(--cedar);
+  color: #fff;
+}
+.ticker.is-other .ticker-pill {
+  --tick: var(--c-plan-other);
+}
+.ticker.is-today .ticker-value,
+.ticker.is-other .ticker-value {
+  color: rgba(255, 255, 255, 0.8);
+}
 .ticker.is-picked .ticker-pill {
   --tick: var(--ink);
   color: #fff;
@@ -3289,7 +3313,7 @@ h2:focus {
 .ticker.is-poor .ticker-pill img {
   box-shadow: 0 0 0 2.5px var(--negative);
 }
-.ticker.is-poor:not(.is-hot):not(.is-picked) .ticker-pill {
+.ticker.is-poor:not(.is-hot):not(.is-picked):not(.is-today):not(.is-other) .ticker-pill {
   opacity: 0.6;
 }
 
