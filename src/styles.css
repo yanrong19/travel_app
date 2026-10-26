@@ -6211,6 +6211,8 @@ button.area-card {
   gap: 14px;
 }
 .dl-tabs {
+  /* Positioned, so the tabs' screen-reader text scrolls inside it instead of widening the page. */
+  position: relative;
   flex: none;
   display: flex;
   gap: 6px;
@@ -6759,6 +6761,175 @@ button.area-card {
   color: var(--muted);
 }
 
+/* ---------- Rain (mock forecast) ---------- */
+/* A likely-wet day (50% or more) gets a rain mark on its tab. The mark takes the Conditions
+   line's colour, kept small, as the design system uses factor colours. */
+
+.dl-top {
+  flex: none;
+}
+.dl-tab-rain {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  color: var(--c-conditions-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.dl-tab-rain svg {
+  color: var(--c-conditions);
+}
+.dl-tab[aria-selected='true'] .dl-tab-rain,
+.dl-tab[aria-selected='true'] .dl-tab-rain svg {
+  color: #fff;
+}
+.dl-stop-rain {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  margin-top: 4px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  background: var(--c-conditions-soft);
+  color: var(--c-conditions-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.dl-stop-rain svg {
+  color: var(--c-conditions);
+}
+.dl-peek {
+  display: none;
+}
+
+/* ---------- Wet-weather plan ---------- */
+/* A tray-like section under the day summary. Open on likely-wet days, collapsed otherwise. */
+
+.wet {
+  flex: none;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.wet h3 {
+  margin: 0;
+}
+.wet-head > svg:first-child {
+  flex: none;
+  color: var(--c-conditions);
+}
+.wet-head > svg + span {
+  flex: 1;
+}
+.wet.is-open .wet-head > svg:last-child {
+  transform: rotate(180deg);
+}
+.wet-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 0 14px;
+}
+.wet-note {
+  padding: 0 16px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--muted);
+}
+.wet-note strong {
+  color: var(--c-conditions-ink);
+}
+.wet-adding {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px;
+}
+.wet-adding-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.wet-switch {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.wet-switch button {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.wet-switch button:hover {
+  color: var(--ink);
+}
+.wet-switch button[aria-pressed='true'] {
+  background: var(--cedar);
+  color: #fff;
+}
+.wet-switch button:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.wet .tray-empty {
+  padding-bottom: 0;
+}
+.wet .tray-list {
+  padding-bottom: 0;
+}
+.wet-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.wet-open img {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.wet-sum {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  font-weight: 600;
+}
+.wet-sum svg {
+  flex: none;
+  color: var(--muted);
+}
+/* Not rain-proof while adding to the wet-weather plan: greyed, with no add button. */
+.tray-item.is-off img,
+.tray-item.is-off .tray-text {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
 /* ---------- Planner sheets (native dialog) ---------- */
 
 .psheet {
@@ -6863,7 +7034,11 @@ button.area-card {
   }
 }
 
-/* Phone: a working layout until the planner's bottom sheet lands. */
+/* Phone: the map on top and the day panel as a bottom sheet, as on the map page. The page
+   scrolls and the sheet slides up over the fixed map (useGuideScroll writes --gp and --vh).
+   It peeks --plan-peek tall above the tab bar (--sheet-clear) with the day tabs and the
+   one-line summary, and comes up to --sheet-top, under the trip bar, the search and the place
+   pills, where the tabs pin. */
 @media (max-width: 760px) {
   .plan-bar {
     top: 72px;
@@ -6878,7 +7053,9 @@ button.area-card {
     height: 40px;
   }
   .plan-name {
-    max-width: 128px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
     height: 40px;
     padding: 0 8px;
     font-size: 16px;
@@ -6887,31 +7064,114 @@ button.area-card {
     width: 40px;
     height: 40px;
   }
+  .planner > .explore-chrome > .msearch {
+    top: 132px;
+  }
+  /* The place pills: a row of their own under the search, scrolling sideways edge to edge. */
+  .plan-places {
+    position: absolute;
+    top: 188px;
+    left: 0;
+    right: 0;
+  }
+  .plan-places .psw {
+    padding: 2px 12px 12px;
+    scroll-padding: 0 12px;
+  }
   .psw-pill,
   .psw-add {
-    height: 36px;
+    height: 38px;
+    box-shadow: var(--float);
   }
-  .planner > .explore-chrome > .msearch {
-    top: 134px;
+  .psw-add {
+    background: var(--frost);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
   }
-  .planner > .explore-stage .map-offscreen {
-    top: 194px;
+  .planner > .explore-stage .map-offscreen,
+  .planner .map-controls {
+    top: calc(var(--sheet-top) + 4px);
   }
-  .planner .panel {
-    top: auto;
-    left: 8px;
-    right: 8px;
-    bottom: 86px;
-    width: auto;
-    max-height: 42svh;
-    border-radius: var(--r-lg);
+  .planner .map-controls {
+    transform: none;
   }
+
+  /* The sheet. */
+  .plan-sheet {
+    position: relative;
+    z-index: 10;
+    margin-top: calc(var(--vh, 100svh) - var(--plan-peek) - var(--sheet-clear));
+    /* Always tall enough to come fully up, even with little in it. */
+    min-height: calc(var(--vh, 100svh) - var(--sheet-top));
+    padding: 16px 16px calc(var(--sheet-clear) + 24px);
+    border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
+    background: var(--mist);
+    box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
+  }
+  .plan-sheet .gsheet-handle {
+    top: 6px;
+  }
+  .plan-sheet .dl {
+    gap: 10px;
+  }
+  /* The tabs pin under the place pills once the sheet is up. Their frosted backing reaches up
+     behind the bar, the search and the pills, so the list never shows between them. */
+  .plan-sheet .dl-top {
+    position: sticky;
+    top: var(--sheet-top);
+    z-index: 3;
+    margin: 0 -16px;
+    padding: 0 16px 6px;
+    background: var(--mist);
+  }
+  .plan-sheet .dl-top::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--sheet-top);
+    border-bottom: 1px solid var(--line);
+    background: var(--frost);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    opacity: clamp(0, (var(--gp, 0) - 0.98) / 0.02, 1);
+    pointer-events: none;
+  }
+  .plan-sheet .dl-peek {
+    display: block;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* In the sheet, the list runs on in the page's scroll instead of its own. */
+  .plan-sheet .dl-panel {
+    flex: none;
+    margin: 6px 0 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .plan-sheet .dl-replace {
+    top: calc(var(--sheet-top) + 50px);
+  }
+
+  /* The credit rests just above the peek, and above the tab bar once the sheet is up. */
+  .planner > .explore-attrib.maplibregl-ctrl-bottom-right {
+    --attrib-rest: calc(var(--plan-peek) + var(--sheet-clear));
+  }
+  /* Pin cards dock at the bottom, above the peek and the credit under them. */
   .planner .pincard {
-    top: 192px;
-    bottom: auto;
+    top: auto;
+    bottom: calc(var(--sheet-clear) + var(--plan-peek) + 30px);
   }
   .planner .toast:not(.is-action) {
-    top: 192px;
+    top: calc(var(--sheet-top) + 4px);
+  }
+  .planner .toast.is-action {
+    bottom: calc(var(--sheet-clear) + var(--plan-peek) + 12px);
   }
   .psheet-box {
     max-height: calc(100svh - 24px);

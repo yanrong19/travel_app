@@ -33,6 +33,8 @@ type Options = {
   levelKey: string;
   /** Stops the page scrolling while something sits over it (the saved drawer). */
   paused?: boolean;
+  /** How much of the sheet shows at the top of the page (the planner's phone sheet peeks taller). */
+  peek?: number;
 };
 
 /**
@@ -42,20 +44,22 @@ type Options = {
  * guides uses the same viewport height as the progress and the settle (on phones the
  * window grows past 100svh when the toolbar retracts).
  */
-export function useGuideScroll({ enabled, root, barH, levelKey, paused = false }: Options) {
+export function useGuideScroll({ enabled, root, barH, levelKey, paused = false, peek = PEEK }: Options) {
   const [atGuides, setAtGuides] = useState(false);
   // True once the sheet covers the title card and panel: they are faded out, so they leave the tab order.
   const [covered, setCovered] = useState(false);
   const lenis = useRef<Lenis | null>(null);
   const barRef = useRef(barH);
+  const peekRef = useRef(peek);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
   const refresh = useRef<() => void>(() => {});
 
   useLayoutEffect(() => {
     barRef.current = barH;
+    peekRef.current = peek;
     refresh.current();
-  }, [barH]);
+  }, [barH, peek]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -70,7 +74,7 @@ export function useGuideScroll({ enabled, root, barH, levelKey, paused = false }
     // no scroll events arrive but the user is still steering the page.
     let held = false;
 
-    const progress = () => guideProgress(l.scroll, window.innerHeight, PEEK, barRef.current);
+    const progress = () => guideProgress(l.scroll, window.innerHeight, peekRef.current, barRef.current);
     // The one viewport height for both sides: the CSS reads --vh, the maths reads innerHeight.
     const writeVh = () => root.current?.style.setProperty('--vh', `${window.innerHeight}px`);
     const update = () => {
@@ -89,7 +93,7 @@ export function useGuideScroll({ enabled, root, barH, levelKey, paused = false }
         if (pausedRef.current) return;
         const target = settleTarget(progress());
         if (!target) return;
-        const to = target === 'top' ? 0 : window.innerHeight - PEEK - barRef.current;
+        const to = target === 'top' ? 0 : window.innerHeight - peekRef.current - barRef.current;
         l.scrollTo(to, { duration: SETTLE_SECONDS });
       }, SETTLE_MS);
     };
@@ -153,7 +157,7 @@ export function useGuideScroll({ enabled, root, barH, levelKey, paused = false }
     lenis.current?.scrollTo(to, prefersReducedMotion() ? { immediate: true } : { duration: SETTLE_SECONDS });
   }, []);
   const scrollToGuides = useCallback(
-    () => scrollTo(window.innerHeight - PEEK - barRef.current),
+    () => scrollTo(window.innerHeight - peekRef.current - barRef.current),
     [scrollTo],
   );
   const scrollToTop = useCallback(() => scrollTo(0), [scrollTo]);

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
@@ -13,13 +13,17 @@ import { PlaceSwitcher } from '../components/planner/PlaceSwitcher';
 import { Sheet } from '../components/planner/Sheet';
 import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
+import { WetPlan, type AddTarget } from '../components/planner/WetPlan';
 import { summarizeDay } from '../lib/daySummary';
+import { isRainProof } from '../lib/factors';
+import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
   addPlace,
   addStop,
+  addWet,
   dateOf,
   dayOf,
   endDate,
@@ -27,13 +31,16 @@ import {
   planUnplanned,
   removePlace,
   removeStop,
+  removeWet,
   replaceStop,
   setDays,
   type PlaceRef,
   type Trip,
 } from '../lib/trips';
-import { attractionsIn, covers, coveringPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
+import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
+import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
+import { useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
 // The map engine is large, so it loads only on the map pages.
@@ -44,8 +51,15 @@ const NOTICE_MS = 3600;
 const noop = () => {};
 /** Laptop: the map frames its place between the top bar and search, and the day panel. */
 const INSETS: Insets = { top: 236, right: 476, bottom: 40, left: 40 };
-/** Phone (laid out properly in a later pass): the day panel docks at the bottom. */
-const INSETS_PHONE: Insets = { top: 196, right: 16, bottom: 400, left: 16 };
+/**
+ * Phone: the day panel is a bottom sheet over the map, as the map page's guide sheet is. The page
+ * scrolls; the sheet peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR) and comes up to
+ * SHEET_TOP, under the trip bar, the search and the place pills.
+ */
+const PEEK_PHONE = 128;
+const SHEET_CLEAR = 92;
+const SHEET_TOP = 240;
+const INSETS_PHONE: Insets = { top: SHEET_TOP, right: 16, bottom: PEEK_PHONE + SHEET_CLEAR + 16, left: 16 };
 
 /** True for a key event from somewhere the user types. */
 const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || t.matches('input, textarea, select'));
@@ -78,6 +92,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const [undo, setUndo] = useState<Undo | null>(null);
   const [sheet, setSheet] = useState<'places' | 'settings' | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [adding, setAdding] = useState<AddTarget>('day');
   const undoTimer = useRef<number | undefined>(undefined);
 
   // The trip can shrink under the page (fewer days, a place removed): stay on one that exists.
@@ -112,6 +127,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // A new place or day closes the card; a new day leaves replace mode.
   useEffect(() => setSelected(null), [placeKey]);
   useEffect(() => setReplace(null), [day]);
+  useEffect(() => setAdding('day'), [day]);
 
   // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
@@ -127,6 +143,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [plan, trip.dayStart, trip.pace, trip.who, date?.getTime()],
   );
+  const wetDay = isLikelyWet(getRainChance(dayPlace(trip, day), date));
+  const toWet = adding === 'wet';
 
   // ---- toasts ----
   useEffect(() => {
@@ -184,15 +202,67 @@ function PlannerPage({ trip }: { trip: Trip }) {
     edit((t, now) => (t.unplanned.includes(sid) ? planUnplanned(t, sid, day, now) : addStop(t, day, sid, now)));
   };
 
+  // ---- the wet-weather plan ----
+  /** Adds to the current day's wet-weather plan. Rain-proof attractions only; the day's own stops stay put. */
+  const addToWet = (sid: string) => {
+    const a = stopsOf([sid])[0];
+    if (!a || !isRainProof(a)) return setNotice(`${a?.name ?? 'That place'} isn’t rain-proof, so it can’t go in the wet-weather plan.`);
+    edit((t, now) => addWet(t, day, sid, now));
+  };
+
+  const removeFromWet = (d: number, sid: string, index: number) => {
+    edit((t, now) => removeWet(t, d, sid, now));
+    offerUndo({
+      text: `Removed ${nameOf(sid)} from Day ${d + 1}’s wet-weather plan`,
+      // Back where it was, unless it is back in the plan already.
+      run: () =>
+        edit((t, now) => {
+          const wet = t.days[d]?.wet;
+          if (!wet || wet.includes(sid)) return t;
+          const days = t.days.map((x, i) => (i === d ? { ...x, wet: [...wet.slice(0, index), sid, ...wet.slice(index)] } : x));
+          return { ...t, days, updatedAt: now };
+        }),
+    });
+  };
+
+  /** "Adding to": the wet-weather plan and replace mode don't mix (replace works on day lists only). */
+  const pickAdding = (to: AddTarget) => {
+    setAdding(to);
+    if (to === 'wet') setReplace(null);
+  };
+  const startReplace = (d: number, sid: string) => {
+    setAdding('day');
+    setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }));
+  };
+
+  /** Where the card, the search and the trays add to. */
+  const add = (sid: string) => (toWet ? addToWet(sid) : addToDay(sid));
+
   /** The card's own action for the attraction it shows. */
   const cardAction = (sid: string) => {
     let label: string;
-    let icon: 'plus' | 'close' | 'arrowRight' | 'swap' = 'plus';
+    let icon: 'plus' | 'close' | 'arrowRight' | 'swap' | 'rain' = 'plus';
     let run = () => addToDay(sid);
     let quiet = false;
     let disabled = false;
     const on = dayOf(trip, sid);
-    if (target && sid !== target.id) {
+    const a = stopsOf([sid])[0];
+    if (toWet) {
+      const at = trip.days[day]?.wet.indexOf(sid) ?? -1;
+      if (a && !isRainProof(a)) {
+        label = 'Not rain-proof';
+        icon = 'rain';
+        disabled = quiet = true;
+      } else if (at >= 0) {
+        label = 'Remove from wet-weather plan';
+        icon = 'close';
+        quiet = true;
+        run = () => removeFromWet(day, sid, at);
+      } else {
+        label = 'Add to wet-weather plan';
+        run = () => addToWet(sid);
+      }
+    } else if (target && sid !== target.id) {
       icon = 'swap';
       if (on === target.day) {
         label = `Already on Day ${on + 1}`;
@@ -297,8 +367,86 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const empty = !!place && pins.length === 0;
   const insets = narrow ? INSETS_PHONE : INSETS;
 
+  // ---- the phone sheet ----
+  // The page scrolls and the day sheet slides up over the fixed map, as on the map page (useGuideScroll).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { open: drawerOpen } = useSaved();
+  const { scrollToTop } = useGuideScroll({
+    enabled: narrow,
+    root: rootRef,
+    barH: SHEET_TOP + SHEET_CLEAR,
+    levelKey: trip.id,
+    paused: drawerOpen || !!sheet || !!confirm,
+    peek: PEEK_PHONE,
+  });
+  // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
+  const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
+  /** Opens the attraction's card; on phone the sheet goes back down so the map and the card show. */
+  const openStop = (sid: string) => {
+    setSelected(sid);
+    if (narrow) scrollToTop();
+  };
+
+  const switcher = (
+    <PlaceSwitcher
+      places={trip.places}
+      index={pi}
+      onPick={setPlaceIdx}
+      onAdd={() => setSheet('places')}
+      onRemove={(i) => askRemovePlace(trip.places[i])}
+    />
+  );
+
+  const days = (
+    <DayList
+      trip={trip}
+      day={day}
+      onDay={setDayIdx}
+      onRemove={removeFromDay}
+      onMove={(d, from, to) => edit((t, now) => moveStop(t, d, from, to, now))}
+      onReplace={startReplace}
+      onOpen={openStop}
+      hotId={selected ?? hoverId}
+      onHover={setHoverId}
+      replacing={target?.id ?? null}
+      onCancelReplace={() => setReplace(null)}
+      rainFlags={wetDay ? summary.conditions.rainSensitive : []}
+      peek={narrow && <p className="dl-peek">{summary.empty ? 'No stops yet. Add them from the map or search.' : summary.line}</p>}
+      after={
+        <>
+          <DaySummaryPanel summary={summary} />
+          <WetPlan
+            trip={trip}
+            day={day}
+            open={wetDay}
+            adding={adding}
+            onAdding={pickAdding}
+            onRemove={(sid, i) => removeFromWet(day, sid, i)}
+            onOpen={openStop}
+          />
+          <Trays trip={trip} day={day} onPlan={add} replacing={target?.id ?? null} wet={toWet} />
+        </>
+      }
+      note={
+        empty && (
+          <div className="plan-empty" role="status">
+            <Icon name="map" size={18} />
+            <p>
+              <strong>No checked attractions yet</strong>
+              {placeName} is on the map, but its attractions aren’t checked yet. Tokyo is. Your stops stay on their days.
+            </p>
+          </div>
+        )
+      }
+    />
+  );
+
   return (
-    <div className="explore planner">
+    <div
+      ref={rootRef}
+      className="explore planner"
+      style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${SHEET_TOP}px` } as CSSProperties}
+    >
       <div className="explore-chrome">
         <TopNav tone="glass" />
         <div className="plan-bar">
@@ -321,13 +469,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
             spellCheck={false}
             autoComplete="off"
           />
-          <PlaceSwitcher
-            places={trip.places}
-            index={pi}
-            onPick={setPlaceIdx}
-            onAdd={() => setSheet('places')}
-            onRemove={(i) => askRemovePlace(trip.places[i])}
-          />
+          {!narrow && switcher}
           <button type="button" className="round-button plan-settings" onClick={openSettings} aria-label="Trip settings" title="Trip settings">
             <Icon name="sliders" size={18} />
           </button>
@@ -339,10 +481,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onCountry={noop}
             onRegion={noop}
             onArea={noop}
-            onAttraction={setSelected}
+            onAttraction={openStop}
             onNotice={setNotice}
           />
         )}
+        {/* Phone: the place pills get a row of their own under the search, scrolling sideways. */}
+        {narrow && <div className="plan-places">{switcher}</div>}
       </div>
 
       <div className="explore-stage">
@@ -358,6 +502,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               tones={tones}
               tour={false}
               wheelScrollsPage={false}
+              attributionHost={narrow ? attribHost : null}
               onHover={setHoverId}
               onPrefPick={noop}
               onCountry={noop}
@@ -369,38 +514,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
           </Suspense>
         )}
 
-        <aside className="panel plan-panel" aria-label="Days">
-          <DayList
-            trip={trip}
-            day={day}
-            onDay={setDayIdx}
-            onRemove={removeFromDay}
-            onMove={(d, from, to) => edit((t, now) => moveStop(t, d, from, to, now))}
-            onReplace={(d, sid) => setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }))}
-            onOpen={setSelected}
-            hotId={selected ?? hoverId}
-            onHover={setHoverId}
-            replacing={target?.id ?? null}
-            onCancelReplace={() => setReplace(null)}
-            after={
-              <>
-                <DaySummaryPanel summary={summary} />
-                <Trays trip={trip} day={day} onPlan={addToDay} replacing={target?.id ?? null} />
-              </>
-            }
-            note={
-              empty && (
-                <div className="plan-empty" role="status">
-                  <Icon name="map" size={18} />
-                  <p>
-                    <strong>No checked attractions yet</strong>
-                    {placeName} is on the map, but its attractions aren’t checked yet. Tokyo is. Your stops stay on their days.
-                  </p>
-                </div>
-              )
-            }
-          />
-        </aside>
+        {!narrow && (
+          <aside className="panel plan-panel" aria-label="Days">
+            {days}
+          </aside>
+        )}
 
         <AnimatePresence>
           {picked && (
@@ -417,6 +535,16 @@ function PlannerPage({ trip }: { trip: Trip }) {
           )}
         </AnimatePresence>
       </div>
+
+      {narrow && (
+        <>
+          <div ref={setAttribHost} className="explore-attrib maplibregl-ctrl-bottom-right" />
+          <section className="plan-sheet" aria-label="Days">
+            <span className="gsheet-handle" aria-hidden="true" />
+            {days}
+          </section>
+        </>
+      )}
 
       <Sheet
         open={sheet === 'places'}

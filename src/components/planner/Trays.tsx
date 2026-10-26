@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { isRainProof } from '../../lib/factors';
 import { useSaved } from '../../lib/saved';
 import { photo } from '../../lib/photos';
 import { dayOf, type Trip } from '../../lib/trips';
@@ -13,10 +14,12 @@ interface Props {
   onPlan: (id: string) => void;
   /** The stop being replaced, if any: every item offers itself as its replacement. */
   replacing?: string | null;
+  /** The next add goes to the day's wet-weather plan: only rain-proof items can go. */
+  wet?: boolean;
 }
 
 /** Two collapsible trays under the day: attractions parked in Unplanned, and the hearted ones. */
-export function Trays({ trip, day, onPlan, replacing = null }: Props) {
+export function Trays({ trip, day, onPlan, replacing = null, wet = false }: Props) {
   const saved = useSaved();
   return (
     <div className="trays">
@@ -29,6 +32,7 @@ export function Trays({ trip, day, onPlan, replacing = null }: Props) {
         day={day}
         onPlan={onPlan}
         replacing={replacing}
+        wet={wet}
       />
       <Tray
         title="Saved"
@@ -39,6 +43,7 @@ export function Trays({ trip, day, onPlan, replacing = null }: Props) {
         day={day}
         onPlan={onPlan}
         replacing={replacing}
+        wet={wet}
       />
     </div>
   );
@@ -53,6 +58,7 @@ function Tray({
   day,
   onPlan,
   replacing,
+  wet,
 }: { title: string; ids: string[]; empty: string; startOpen: boolean } & Required<Omit<Props, 'replacing'>> & { replacing: string | null }) {
   const [open, setOpen] = useState(startOpen);
   const id = useId();
@@ -77,10 +83,22 @@ function Tray({
                 const on = dayOf(trip, a.id);
                 let action: { label: string; icon: 'plus' | 'swap' | 'arrowRight' } | null;
                 let note: string | null = null;
-                if (replacing) {
+                let noteIcon: 'check' | 'swap' | 'rain' = 'check';
+                const off = wet && !isRainProof(a);
+                if (wet) {
+                  // The wet-weather plan: any rain-proof attraction, whether or not it is on a day.
+                  action = null;
+                  if (off) {
+                    note = 'Not rain-proof';
+                    noteIcon = 'rain';
+                  } else if (trip.days[day]?.wet.includes(a.id)) note = 'In wet plan';
+                  else action = { label: 'Add to wet plan', icon: 'plus' };
+                } else if (replacing) {
                   // Replace mode works on the current day: an item already on it can't stand in.
-                  if (a.id === replacing) note = 'Being replaced';
-                  else if (on === day) note = `Already on Day ${day + 1}`;
+                  if (a.id === replacing) {
+                    note = 'Being replaced';
+                    noteIcon = 'swap';
+                  } else if (on === day) note = `Already on Day ${day + 1}`;
                   action = note ? null : { label: on !== null && on >= 0 ? `On Day ${on + 1} · use as replacement` : 'Use as replacement', icon: 'swap' };
                 } else if (on === day) {
                   action = null;
@@ -88,7 +106,7 @@ function Tray({
                 } else if (on !== null && on >= 0) action = { label: `On Day ${on + 1}: move here`, icon: 'arrowRight' };
                 else action = { label: `Add to Day ${day + 1}`, icon: 'plus' };
                 return (
-                  <li key={a.id} className="tray-item">
+                  <li key={a.id} className={`tray-item ${off ? 'is-off' : ''}`}>
                     <img src={photo(a.id)} alt="" loading="lazy" />
                     <span className="tray-text">
                       <strong>{a.name}</strong>
@@ -106,7 +124,7 @@ function Tray({
                       </button>
                     ) : (
                       <span className="tray-note">
-                        <Icon name={a.id === replacing ? 'swap' : 'check'} size={14} />
+                        <Icon name={noteIcon} size={14} />
                         {note}
                       </span>
                     )}

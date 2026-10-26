@@ -1,9 +1,11 @@
 import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { ATTRACTIONS } from '../../data/attractions';
 import type { Attraction } from '../../data/types';
+import { getRainChance, isLikelyWet } from '../../lib/forecast';
 import { DAYS, MONTHS, duration, plural } from '../../lib/format';
 import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
+import { dayPlace } from '../../lib/tripPlaces';
 import { dateOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
 
@@ -43,16 +45,22 @@ interface Props {
   note?: ReactNode;
   /** Shown under the stops, in the same scroll (the day summary, the trays). */
   after?: ReactNode;
+  /** Stops to flag as poor in rain (on a likely-wet day, the summary's rain-sensitive stops). */
+  rainFlags?: string[];
+  /** Shown under the tabs, outside the tab panel (the phone sheet's one-line summary). */
+  peek?: ReactNode;
 }
 
 /** Day tabs, then the day's stops in order with their planned times and the travel between them. */
-export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note, after }: Props) {
+export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen, hotId, onHover, replacing, onCancelReplace, note, after, rainFlags = [], peek }: Props) {
   const id = useId();
   const tabs = useRef<HTMLDivElement>(null);
   const plan = trip.days[day];
   const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), trip.dayStart), [plan, trip.dayStart]);
   const date = dateOf(trip, day);
   const replacingName = replacing ? byId.get(replacing)?.name : null;
+  // Each day's rain chance, from the place of its first stop (or the trip's first place).
+  const rain = useMemo(() => trip.days.map((_, i) => getRainChance(dayPlace(trip, i), dateOf(trip, i))), [trip]);
 
   // The current tab scrolls into view (a long trip's tabs scroll sideways).
   useEffect(() => {
@@ -70,32 +78,45 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
 
   return (
     <div className="dl">
-      <div ref={tabs} className="dl-tabs" role="tablist" aria-label="Days" onKeyDown={onTabKey}>
-        {trip.days.map((d, i) => {
-          const at = dateOf(trip, i);
-          return (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              id={`${id}-tab-${i}`}
-              aria-selected={i === day}
-              aria-controls={`${id}-panel`}
-              tabIndex={i === day ? 0 : -1}
-              className="dl-tab"
-              onClick={() => onDay(i)}
-            >
-              <span>Day {i + 1}</span>
-              {at && <span className="dl-tab-date"> · {shortDate(at)}</span>}
-              {d.stops.length > 0 && (
-                <span className="dl-tab-count num" aria-label={`, ${plural(d.stops.length, 'stop')}`}>
-                  {d.stops.length}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      <div className="dl-top">
+        <div ref={tabs} className="dl-tabs" role="tablist" aria-label="Days" onKeyDown={onTabKey}>
+          {trip.days.map((d, i) => {
+            const at = dateOf(trip, i);
+            const wet = isLikelyWet(rain[i]);
+            return (
+              <button
+                key={i}
+                type="button"
+                role="tab"
+                id={`${id}-tab-${i}`}
+                aria-selected={i === day}
+                aria-controls={`${id}-panel`}
+                tabIndex={i === day ? 0 : -1}
+                className="dl-tab"
+                onClick={() => onDay(i)}
+              >
+                <span>Day {i + 1}</span>
+                {at && <span className="dl-tab-date"> · {shortDate(at)}</span>}
+                {wet && (
+                  <span className="dl-tab-rain num">
+                    <Icon name="rain" size={15} />
+                    <span>
+                      <span className="sr-only">, </span>
+                      {rain[i]}% rain
+                    </span>
+                  </span>
+                )}
+                {d.stops.length > 0 && (
+                  <span className="dl-tab-count num" aria-label={`, ${plural(d.stops.length, 'stop')}`}>
+                    {d.stops.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
+      {peek}
 
       <div className="dl-panel" role="tabpanel" data-lenis-prevent id={`${id}-panel`} aria-labelledby={`${id}-tab-${day}`}>
         <div className="dl-head">
@@ -171,6 +192,12 @@ export function DayList({ trip, day, onDay, onRemove, onMove, onReplace, onOpen,
                         <Icon name="clock" size={13} />
                         {hhmm(s.start)} · {duration(s.end - s.start)}
                       </span>
+                      {rainFlags.includes(s.a.id) && (
+                        <span className="dl-stop-rain num">
+                          <Icon name="rain" size={13} />
+                          Poor in rain · {s.a.conditions.covered}% covered
+                        </span>
+                      )}
                     </span>
                   </button>
                   <div className="dl-stop-order">
