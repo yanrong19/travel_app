@@ -75,8 +75,16 @@ export type RowAction = { kind: 'add' | 'remove' | 'move' | 'replace'; label: st
 /**
  * A row's one action on the current day: add it, take it off, or bring it over from another day. In
  * replace mode (always on the current day) any other attraction offers itself as the replacement.
+ * With the wet-weather toggle on, the action is on the day's wet-weather plan instead, which takes
+ * rain-proof places only; replace mode is off there.
  */
-export function rowAction(trip: Trip, day: number, id: string, replacing: string | null): RowAction {
+export function rowAction(trip: Trip, day: number, id: string, replacing: string | null, wet = false): RowAction {
+  if (wet) {
+    const a = attractionById(id);
+    if (!a || !isRainProof(a)) return { kind: 'note', label: 'Not rain-proof' };
+    if (trip.days[day]?.wet.includes(id)) return { kind: 'remove', label: 'Remove from wet-weather plan' };
+    return { kind: 'add', label: 'Add to wet-weather plan' };
+  }
   const on = dayOf(trip, id);
   if (replacing) {
     if (id === replacing) return { kind: 'note', label: 'Being replaced' };
@@ -97,26 +105,33 @@ export interface BrowseRow {
   saved: boolean;
   facts: { cost: string; effort: string; rainProof: boolean; best: TimeSlot | null };
   action: RowAction;
+  /** Greyed: the wet-weather toggle is on and it isn't rain-proof. */
+  off: boolean;
 }
 
-/** The list: the chips applied, unplanned first, then by name. Planned ones stay, with their day. */
-export function browseRows(list: Attraction[], trip: Trip, day: number, on: BrowseFilterId[], replacing: string | null): BrowseRow[] {
+/**
+ * The list: the chips applied, unplanned first, then by name. Planned ones stay, with their day. With
+ * the wet-weather toggle on, the rain-proof ones come first and the rest are greyed.
+ */
+export function browseRows(list: Attraction[], trip: Trip, day: number, on: BrowseFilterId[], replacing: string | null, wet = false): BrowseRow[] {
   const markers = markersFor(trip, day);
   return list
     .filter((a) => matchesAll(a, on))
     .map((a): BrowseRow => {
       const m = markerOf(markers, a.id);
       const r = readings(a);
+      const rainProof = isRainProof(a);
       return {
         a,
         on: m.kind === 'free' ? null : m.day,
         n: m.kind === 'today' ? m.n : null,
         saved: trip.saved.includes(a.id),
-        facts: { cost: r.cost, effort: r.effort, rainProof: isRainProof(a), best: bestSlot(a) },
-        action: rowAction(trip, day, a.id, replacing),
+        facts: { cost: r.cost, effort: r.effort, rainProof, best: bestSlot(a) },
+        action: rowAction(trip, day, a.id, wet ? null : replacing, wet),
+        off: wet && !rainProof,
       };
     })
-    .sort((x, y) => Number(x.on !== null) - Number(y.on !== null) || x.a.name.localeCompare(y.a.name));
+    .sort((x, y) => Number(x.off) - Number(y.off) || Number(x.on !== null) - Number(y.on !== null) || x.a.name.localeCompare(y.a.name));
 }
 
 // ---------- which attractions ----------

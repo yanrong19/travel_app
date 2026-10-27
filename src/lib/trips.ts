@@ -58,6 +58,27 @@ const toClock = (min: number) => {
   return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 };
 
+/**
+ * A time as someone types it, as 'HH:MM', or null when it isn't one: "9", "930", "0930", "9:30",
+ * "9.30", "21:15", "9pm", "9:30 am". Hours run 0 to 23 (1 to 12 with am or pm); minutes 0 to 59.
+ */
+export function parseClock(text: string): string | null {
+  const m = /^(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?m?\.?)?$/i.exec(text.trim());
+  if (!m) return null;
+  let h = Number(m[1]);
+  const min = m[2] === undefined ? 0 : Number(m[2]);
+  const half = m[3]?.toLowerCase();
+  if (min > 59) return null;
+  if (half) {
+    if (h < 1 || h > 12) return null;
+    h = (h % 12) + (half === 'p' ? 12 : 0);
+  } else if (h > 23) return null;
+  return `${pad(h)}:${pad(min)}`;
+}
+
+/** A clock time moved by `delta` minutes, kept within 00:00..23:59. */
+export const stepClock = (t: string, delta: number): string => toClock(clockMin(t) + delta);
+
 // ---------- creating and dates ----------
 
 /** A whole number of days within 1..MAX_DAYS; anything that isn't a finite number becomes 1. */

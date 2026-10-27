@@ -3,15 +3,15 @@ import { isRainProof } from '../../lib/factors';
 import { photo } from '../../lib/photos';
 import { dayOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
-import { stopsOf, type PlanTab } from './DayList';
+import { stopsOf } from './DayList';
 
 interface Props {
   trip: Trip;
   /** The current day, 0-based. */
   day: number;
-  /** The sub-tab open: on Wet-weather plan, adds go to the day's wet-weather plan, rain-proof only. */
-  tab: PlanTab;
-  /** Adds where the sub-tab says (or, in replace mode, swaps the attraction in). */
+  /** The wet-weather toggle: while it's on, adds go to the day's wet-weather plan, rain-proof only. */
+  wet: boolean;
+  /** Adds where the toggle says (or, in replace mode, swaps the attraction in). */
   onPlan: (id: string) => void;
   /** Takes the attraction off the trip's Saved list. */
   onRemove: (id: string, index: number) => void;
@@ -25,11 +25,10 @@ type Action = { label: string; icon: 'plus' | 'swap' | 'arrowRight' };
  * The tray under the day: the trip's own Saved list, a shortlist kept whether or not its places are
  * on a day. (The global hearted list stays in its own drawer.)
  */
-export function Trays({ trip, day, tab, onPlan, onRemove, replacing = null }: Props) {
+export function Trays({ trip, day, wet, onPlan, onRemove, replacing = null }: Props) {
   const [open, setOpen] = useState(true);
   const id = useId();
   const items = stopsOf(trip.saved);
-  const wet = tab === 'wet';
 
   return (
     <div className="trays">

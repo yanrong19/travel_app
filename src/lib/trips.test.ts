@@ -12,6 +12,7 @@ import {
   MAX_DAYS,
   moveStop,
   newTrip,
+  parseClock,
   removePlace,
   removeStop,
   removeWet,
@@ -22,6 +23,7 @@ import {
   setDayTimes,
   setStartDate,
   unsaveFromTrip,
+  stepClock,
   type Trip,
 } from './trips';
 
@@ -465,4 +467,29 @@ test('movedToSaved counts only the cut days’ stops that saved doesn’t alread
   expect(movedToSaved(t, 3)).toBe(1);
   expect(movedToSaved(t, 4)).toBe(0);
   expect(movedToSaved(saveToTrip(saveToTrip(t, 'a', 2), 'c', 2), 2)).toBe(0);
+});
+
+test('parseClock reads a time as it is typed', () => {
+  expect(parseClock('9')).toBe('09:00');
+  expect(parseClock('930')).toBe('09:30');
+  expect(parseClock('0930')).toBe('09:30');
+  expect(parseClock('9:30')).toBe('09:30');
+  expect(parseClock(' 21.15 ')).toBe('21:15');
+  expect(parseClock('19:00')).toBe('19:00');
+  expect(parseClock('0')).toBe('00:00');
+  expect(parseClock('7pm')).toBe('19:00');
+  expect(parseClock('7:30 PM')).toBe('19:30');
+  expect(parseClock('12am')).toBe('00:00');
+  expect(parseClock('12 p.m.')).toBe('12:00');
+});
+
+test('parseClock rejects what is not a time', () => {
+  for (const t of ['', '24', '25:00', '9:60', '13pm', '0am', 'noon', '9m', '12345', '9:3']) expect(parseClock(t), t).toBeNull();
+});
+
+test('stepClock moves a time and stays within the day', () => {
+  expect(stepClock('09:00', 15)).toBe('09:15');
+  expect(stepClock('09:00', -15)).toBe('08:45');
+  expect(stepClock('23:50', 15)).toBe('23:59');
+  expect(stepClock('00:10', -15)).toBe('00:00');
 });

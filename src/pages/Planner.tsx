@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
@@ -8,8 +8,8 @@ import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
 import { Browse } from '../components/planner/Browse';
-import { DayList, stopsOf, type PlanTab } from '../components/planner/DayList';
-import { DaySummaryPanel } from '../components/planner/DaySummaryPanel';
+import { DayAnalysis } from '../components/planner/DayAnalysis';
+import { DayList, stopsOf } from '../components/planner/DayList';
 import { PlacePicker } from '../components/planner/PlacePicker';
 import { PlaceSwitcher } from '../components/planner/PlaceSwitcher';
 import { Sheet } from '../components/planner/Sheet';
@@ -19,11 +19,12 @@ import { Trays } from '../components/planner/Trays';
 import { WetPlan } from '../components/planner/WetPlan';
 import { browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
 import { summarizeDay } from '../lib/daySummary';
+import { readDayView, writeDayView, type DayView, type PlanTab } from '../lib/dayView';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
 import { planningState, readPlannerOpen, readPlanSearch, SEARCH_STATE, searchStep } from '../lib/planning';
-import { PEEK_PHONE, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH } from '../lib/planSheet';
+import { ANALYSIS_SIDE_MIN, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, withAnalysis } from '../lib/planSheet';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -42,6 +43,7 @@ import {
   replaceStop,
   saveToTrip,
   setDays,
+  setDayTimes,
   setStartDate,
   unsaveFromTrip,
   type PlaceRef,
@@ -62,13 +64,30 @@ const MapExplorer = lazy(() => import('../map/MapExplorer'));
 const UNDO_MS = 6000;
 const NOTICE_MS = 3600;
 const noop = () => {};
-/** Laptop: the map frames its place between the top bar and search, and the day panel. */
-const INSETS: Insets = { top: 236, right: 476, bottom: 40, left: 40 };
+/** Laptop: the map frames its place between the top bar and search, and the day panel (lib/planSheet). */
+const INSETS_ANALYSIS: Insets = withAnalysis(PLAN_INSETS);
+/** Whether the analysis was open beside the day panel, for the rest of the session. */
+const ANALYSIS_KEY = 'fitline.planner.analysis';
+const readAnalysisOpen = () => {
+  try {
+    return sessionStorage.getItem(ANALYSIS_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+const writeAnalysisOpen = (open: boolean) => {
+  try {
+    sessionStorage.setItem(ANALYSIS_KEY, open ? '1' : '0');
+  } catch {
+    /* no storage: it simply isn't remembered */
+  }
+};
 /*
  * Phone (lib/planSheet): one header over the map (the trip bar, the place pills, the breadcrumb) and
  * the day panel as a bottom sheet, as the map page's guide sheet is. The page scrolls; the sheet
  * peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR), enough for the day dropdown, the one-line
- * summary and the whole sub-tab pill, and comes all the way up over the header, to the safe area.
+ * header (date and times, the wet-weather toggle, Analysis) and the one-line summary, and comes all
+ * the way up over the header, to the safe area.
  */
 
 /** A 1-based position from the URL (`?day=3`) as a 0-based index; 0 when missing or not a whole number. */
@@ -97,12 +116,16 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const go = useGo();
   const navigate = useNavigate();
   const narrow = useMedia('(max-width: 760px)');
+  // Wide laptops have room for the day analysis beside the day panel; narrower, it slides over the list.
+  const roomy = useMedia(`(min-width: ${ANALYSIS_SIDE_MIN}px)`);
+  const side = roomy && !narrow;
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
 
-  // The day and place shown live in the URL (?day=3&place=2, 1-based), the Browse and Wet-weather
-  // plan sub-tabs as &tab=browse and &tab=wet, and the map level being viewed as &view=region:kanto, so Back from an
-  // attraction page comes back to them. Written with replace: switching days isn't a step in history.
+  // The day and place shown live in the URL (?day=3&place=2, 1-based), the Browse sub-tab as
+  // &tab=browse, the wet-weather toggle as &wet=1 (lib/dayView), and the map level being viewed as
+  // &view=region:kanto, so Back from an attraction page and a reload come back to them. Written with
+  // replace: switching days isn't a step in history.
   const [params, setParams] = useSearchParams();
   // An attraction page opened from here gets this search with the trip, so it shows the trip bar and
   // its Back comes back to the same day, place, view and tab.
@@ -125,19 +148,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   );
   const setDayIdx = useCallback((d: number) => setParam('day', d), [setParam]);
   const setPlaceIdx = useCallback((i: number) => setParam('place', i), [setParam]);
-  const tabParam = params.get('tab');
-  const tab: PlanTab = tabParam === 'wet' || tabParam === 'browse' ? tabParam : 'plan';
-  const setTab = useCallback(
-    (to: PlanTab) =>
-      setParams(
-        (p) => {
-          const q = new URLSearchParams(p);
-          if (to === 'plan') q.delete('tab');
-          else q.set('tab', to);
-          return q;
-        },
-        { replace: true, preventScrollReset: true },
-      ),
+  const { tab, wet } = readDayView(params);
+  const setView = useCallback(
+    (next: Partial<DayView>) => setParams((p) => writeDayView(p, next), { replace: true, preventScrollReset: true }),
     [setParams],
   );
   const [selected, setSelected] = useState<string | null>(null);
@@ -258,7 +271,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
     [plan, date?.getTime()],
   );
   const wetDay = isLikelyWet(getRainChance(dayPlace(trip, day), date));
-  const toWet = tab === 'wet';
+  const toWet = wet;
+  // The wet-weather plan read the same way, for the analysis while the toggle is on.
+  const wetSummary = useMemo(
+    () => summarizeDay(stopsOf(plan?.wet ?? []), { start: plan?.start ?? DAY_START, end: plan?.end ?? DAY_END, date }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plan, date?.getTime()],
+  );
+  const shown = wet ? wetSummary : summary;
 
   // ---- toasts ----
   useEffect(() => {
@@ -322,15 +342,30 @@ function PlannerPage({ trip }: { trip: Trip }) {
     });
   };
 
-  /**
-   * The sub-tabs: the wet-weather plan and replace mode don't mix. Replace starts on the Plan sub-tab;
-   * Browse can pick the replacement, as the Saved tray does.
-   */
+  /** The sub-tabs. Replace starts on the Plan sub-tab; Browse can pick the replacement, as the Saved tray does. */
   const pickTab = (to: PlanTab) => {
-    setTab(to);
+    setView({ tab: to });
     // A row or stop lit from the list being left shouldn't stay lit on the map.
     setHoverId(null);
-    if (to === 'wet') setReplace(null);
+  };
+  /** The wet-weather toggle: the list shows the day's wet-weather plan and adds go there. It and replace mode don't mix. */
+  const toggleWet = (on: boolean) => {
+    setView({ wet: on });
+    setHoverId(null);
+    if (on) setReplace(null);
+  };
+
+  // ---- the day's times ----
+  /** A new start or end for a day; an end not after the start isn't taken, and says so. */
+  const setTimes = (d: number, times: { start?: string; end?: string }) => {
+    if (setDayTimes(trip, d, times, 0) === trip) {
+      const cur = trip.days[d];
+      const same = !cur || ((times.start ?? cur.start) === cur.start && (times.end ?? cur.end) === cur.end);
+      if (!same) setNotice('A day has to end after it starts, by 23:59.');
+      return same;
+    }
+    edit((t, now) => setDayTimes(t, d, times, now));
+    return true;
   };
   const startReplace = (d: number, sid: string) => setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }));
 
@@ -360,7 +395,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     );
   };
 
-  /** Where the card, the search and the Saved tray add to: the sub-tab open. */
+  /** Where the card, the search, Browse and the Saved tray add to: the day, or its wet-weather plan while the toggle is on. */
   const add = (sid: string) => (toWet ? addToWet(sid) : addToDay(sid));
 
   /** The card's own action for the attraction it shows. */
@@ -464,10 +499,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (cut)
       offerUndo({
         text: moved > 0 ? `${plural(moved, 'stop')} moved to Saved` : `Trip cut to ${plural(n, 'day')}`,
-        run: () => edit(undoSetDays(before, n)),
+        // The start date goes back too, if this change moved it.
+        run: () => edit(undoSetDays(before, n, next.startDate)),
       });
   };
   const closeDates = useCallback(() => setDatesOpen(false), []);
+  // A cut waiting for "Cut to N days" in the phone sheet: its Done is hidden meanwhile, so it can't read as confirming it.
+  const [datesHeld, setDatesHeld] = useState(false);
 
   // ---- the name, edited in place ----
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -537,6 +575,33 @@ function PlannerPage({ trip }: { trip: Trip }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navKey, narrow]);
 
+  // ---- the day analysis ----
+  // Beside the day panel on wide laptops, remembered for the session; over the day list on phones and
+  // narrower windows, where it starts closed. Opening moves focus to its heading, closing back to the
+  // Analysis button.
+  const [sideOpen, setSideOpen] = useState(readAnalysisOpen);
+  const [overOpen, setOverOpen] = useState(false);
+  const analysisOpen = side ? sideOpen : overOpen;
+  const analysisBtn = useRef<HTMLButtonElement>(null);
+  const analysisId = useId();
+  const analysisHeading = `${analysisId}-h`;
+  const showAnalysis = (open: boolean) => {
+    if (side) {
+      setSideOpen(open);
+      writeAnalysisOpen(open);
+    } else setOverOpen(open);
+    if (open) {
+      // Phone: the sheet comes fully up first (from the peek, or from deep in the list).
+      if (narrow) scrollToGuides();
+      requestAnimationFrame(() => document.getElementById(analysisHeading)?.focus({ preventScroll: true }));
+    } else {
+      // After the list is back in reach (it is inert under the overlay).
+      requestAnimationFrame(() => analysisBtn.current?.focus({ preventScroll: true }));
+    }
+  };
+  const showAnalysisRef = useRef(showAnalysis);
+  showAnalysisRef.current = showAnalysis;
+
   // ---- keys ----
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -544,11 +609,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
       if (document.querySelector('dialog[open], .drawer')) return;
       if (searching) closeSearch();
       else if (selected) setSelected(null);
+      else if (analysisOpen) showAnalysisRef.current(false);
       else if (replace) setReplace(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, replace, searching, closeSearch]);
+  }, [selected, replace, searching, closeSearch, analysisOpen]);
 
   const empty = !!viewed && countFor(viewed) === 0;
 
@@ -558,9 +624,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const safeTop = useSafeTop(narrow);
   const phoneFrame = useMemo(() => phoneInsets(safeTop), [safeTop]);
-  const insets = narrow ? phoneFrame : INSETS;
+  const insets = narrow ? phoneFrame : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
   const { open: drawerOpen } = useSaved();
-  const { scrollToTop, atGuides } = useGuideScroll({
+  const { scrollToTop, scrollToGuides, atGuides } = useGuideScroll({
     enabled: narrow,
     root: rootRef,
     barH: sheetBarH(safeTop),
@@ -656,6 +722,10 @@ function PlannerPage({ trip }: { trip: Trip }) {
     </div>
   );
 
+  const analysisContent = (
+    <DayAnalysis day={day} headingId={analysisHeading} wet={wet} summary={shown} mode={side ? 'side' : 'overlay'} onClose={() => showAnalysis(false)} />
+  );
+
   const days = (
     <DayList
       trip={trip}
@@ -671,6 +741,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
       onDay={setDayIdx}
       tab={tab}
       onTab={pickTab}
+      wet={wet}
+      onWet={toggleWet}
+      onTimes={setTimes}
       onRemove={removeFromDay}
       onMove={(d, from, to) => edit((t, now) => moveStop(t, d, from, to, now))}
       onReplace={startReplace}
@@ -680,9 +753,18 @@ function PlannerPage({ trip }: { trip: Trip }) {
       replacing={target?.id ?? null}
       onCancelReplace={() => setReplace(null)}
       rainFlags={wetDay ? summary.conditions.rainSensitive : []}
-      peek={narrow && <p className="dl-peek">{summary.empty ? 'No stops yet. Add them from the map or search.' : summary.line}</p>}
-      after={<DaySummaryPanel summary={summary} />}
-      wet={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} />}
+      hint={shown.empty ? (wet ? 'No rain-proof places in the plan yet' : 'Add stops to see how the day reads') : shown.line}
+      analysis={{
+        open: analysisOpen,
+        id: analysisId,
+        mode: side ? 'side' : 'overlay',
+        onToggle: () => showAnalysis(!analysisOpen),
+        onClose: () => showAnalysis(false),
+        buttonRef: analysisBtn,
+        swipe: narrow,
+        content: !side && analysisContent,
+      }}
+      wetPlan={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} onBrowse={() => pickTab('browse')} />}
       browse={
         <Browse
           trip={trip}
@@ -691,17 +773,18 @@ function PlannerPage({ trip }: { trip: Trip }) {
           placeName={scope.name === 'this trip' ? 'This trip' : viewedName}
           filters={browseFilters}
           onFilters={setBrowseFilters}
-          replacing={target?.id ?? null}
+          replacing={wet ? null : (target?.id ?? null)}
+          wet={wet}
           hotId={selected ?? hoverId}
           onHover={setHoverId}
           onOpen={openStop}
-          onAdd={addToDay}
-          onRemove={(sid) => removeFromDay(day, sid, trip.days[day].stops.indexOf(sid))}
+          onAdd={add}
+          onRemove={(sid) => (wet ? removeFromWet(day, sid, trip.days[day].wet.indexOf(sid)) : removeFromDay(day, sid, trip.days[day].stops.indexOf(sid)))}
           onSave={toggleSave}
           quietEmpty={empty}
         />
       }
-      tray={<Trays trip={trip} day={day} tab={tab} onPlan={add} onRemove={unsave} replacing={target?.id ?? null} />}
+      tray={<Trays trip={trip} day={day} wet={wet} onPlan={add} onRemove={unsave} replacing={target?.id ?? null} />}
       note={
         empty && (
           <div className="plan-empty" role="status">
@@ -719,7 +802,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className={`explore planner ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''}`}
+      className={`explore planner ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''} ${side && analysisOpen ? 'is-analysis' : ''}`}
       style={
         {
           '--sheet-clear': `${SHEET_CLEAR}px`,
@@ -822,6 +905,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
               target={view.target}
               focusPrefs={view.focusPrefs}
               insets={insets}
+              // The analysis opening beside the day panel pans the view clear of it, keeping its zoom.
+              panOnInsets
               // Phone: a city frames on its attractions, as on the map page, not its whole outline:
               // Tokyo's western mountains would leave the city a speck in a phone-wide strip.
               fitPins={narrow}
@@ -849,10 +934,28 @@ function PlannerPage({ trip }: { trip: Trip }) {
         )}
 
         {!narrow && (
-          <aside ref={panelRef} className="panel plan-panel" aria-label="Days">
+          <aside ref={panelRef} className={`panel plan-panel ${wet ? 'is-wet' : ''}`} aria-label="Days">
             {days}
           </aside>
         )}
+
+        {/* Wide laptops: the day analysis beside the day panel, which steps left to make room for it. */}
+        <AnimatePresence>
+          {side && analysisOpen && (
+            <motion.aside
+              key="analysis"
+              id={analysisId}
+              className="panel plan-analysis"
+              aria-label={`Day ${day + 1} analysis`}
+              initial={{ opacity: 0, x: 32 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 32 }}
+              transition={{ duration: reduced ? 0 : 0.36, ease: EASE_OUT }}
+            >
+              {analysisContent}
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {picked && (
@@ -907,14 +1010,17 @@ function PlannerPage({ trip }: { trip: Trip }) {
         size="small"
         onClose={closeDates}
         footer={
-          <div className="psheet-actions">
-            <button type="button" className="button is-wide" onClick={closeDates}>
-              Done
-            </button>
-          </div>
+          // While a cut waits, only its own "Keep N days" and "Cut to N days" answer it.
+          !datesHeld && (
+            <div className="psheet-actions">
+              <button type="button" className="button is-wide" onClick={closeDates}>
+                Done
+              </button>
+            </div>
+          )
         }
       >
-        <TripDatesPanel trip={trip} onApply={applyDates} />
+        <TripDatesPanel trip={trip} onApply={applyDates} onHeld={setDatesHeld} />
       </Sheet>
 
       <Sheet open={!!confirm} title="Remove this place?" size="small" onClose={() => setConfirm(null)}>

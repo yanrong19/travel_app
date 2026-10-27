@@ -1,48 +1,73 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { plural } from '../../lib/format';
-import { endDate, movedToSaved, type Trip } from '../../lib/trips';
+import { DAY_END, DAY_START, endDate, movedToSaved, type DayPlan, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
-import { TripDates, datesLabel, type TripDatesValue } from './TripSettings';
+import { TripDates, datesLabel, shiftDate, type TripDatesValue } from './TripSettings';
 
-/** True when cutting the trip to `n` days would take stops or wet-weather plans off the days cut. */
-export const cutsPlans = (trip: Trip, n: number) => n < trip.days.length && trip.days.slice(n).some((d) => d.stops.length > 0 || d.wet.length > 0);
+/** A day with its own start or end time, not the 09:00–19:00 a new day gets. */
+const ownTimes = (d: DayPlan) => d.start !== DAY_START || d.end !== DAY_END;
+
+/**
+ * True when cutting the trip to `n` days would lose something on the days cut: stops (they go to
+ * Saved), wet-weather plans, or a day's own start and end times.
+ */
+export const cutsPlans = (trip: Trip, n: number) =>
+  n < trip.days.length && trip.days.slice(n).some((d) => d.stops.length > 0 || d.wet.length > 0 || ownTimes(d));
 
 interface PanelProps {
   trip: Trip;
   /** Applies new dates to the trip (start date and number of days). */
   onApply: (next: TripDatesValue) => void;
+  /** Told when a cut starts or stops waiting for "Cut to N days" (the phone sheet hides its Done meanwhile). */
+  onHeld?: (held: boolean) => void;
 }
 
 /**
  * The trip's dates, edited in place: every change applies to the trip as it's made, so the day headers
- * follow. The one exception is fewer days that would take stops or wet-weather plans off the days
- * cut: that waits, with what it would do, until "Cut to N days" is pressed. Closing drops it.
+ * follow. The one exception is fewer days that would lose stops, wet-weather plans or a day's own
+ * times on the days cut: that waits, with what it would do, until "Cut to N days" is pressed (a new
+ * start date still applies meanwhile). Closing drops it.
  */
-export function TripDatesPanel({ trip, onApply }: PanelProps) {
+export function TripDatesPanel({ trip, onApply, onHeld }: PanelProps) {
   const [pending, setPending] = useState<TripDatesValue | null>(null);
   const value: TripDatesValue = pending ?? { startDate: trip.startDate, endDate: endDate(trip), days: trip.days.length };
   const change = (next: TripDatesValue) => {
-    if (cutsPlans(trip, next.days)) return setPending(next);
+    if (cutsPlans(trip, next.days)) {
+      // The cut waits; a new start date doesn't, and keeps the trip's own number of days meanwhile.
+      if (next.startDate !== trip.startDate) {
+        const days = trip.days.length;
+        onApply({ startDate: next.startDate, endDate: next.startDate ? shiftDate(next.startDate, days - 1) : null, days });
+      }
+      return setPending(next);
+    }
     setPending(null);
     onApply(next);
   };
+  const held = pending !== null;
+  const heldRef = useRef(onHeld);
+  heldRef.current = onHeld;
+  useEffect(() => heldRef.current?.(held), [held]);
+  useEffect(() => () => heldRef.current?.(false), []);
 
   const n = pending?.days ?? trip.days.length;
-  const dropped = pending ? trip.days.slice(n).reduce((c, d) => c + d.stops.length, 0) : 0;
+  const cut = pending ? trip.days.slice(n) : [];
+  const dropped = cut.reduce((c, d) => c + d.stops.length, 0);
   // Only the stops Saved doesn't already hold are news.
   const moved = pending ? movedToSaved(trip, n) : 0;
-  const droppedWet = pending ? trip.days.slice(n).some((d) => d.wet.length > 0) : false;
+  const droppedWet = cut.some((d) => d.wet.length > 0);
 
   return (
     <div className="tdates-panel">
-      <TripDates value={value} onChange={change} />
+      <TripDates value={value} onChange={change} commitDays />
       {pending && (
         <div className="tdates-cut" role="status">
           <p className="plan-warn">
             <Icon name="alert" size={16} />
             {dropped > 0
               ? `${moved > 0 ? `${plural(moved, 'stop')} after Day ${n} will move to Saved` : `The stops after Day ${n} come off their days and stay in Saved`}${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
-              : `The wet-weather plans after Day ${n} will be removed.`}
+              : droppedWet
+                ? `The wet-weather plans after Day ${n} will be removed.`
+                : `The days after Day ${n} have their own start and end times, which will be lost.`}
           </p>
           <div className="tdates-actions">
             <button type="button" className="button is-compact is-quiet" onClick={() => setPending(null)}>

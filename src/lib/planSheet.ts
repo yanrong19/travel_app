@@ -4,8 +4,11 @@
 
 import type { Insets } from '../map/camera';
 
-/** How tall the sheet peeks above the tab bar: the day dropdown, the one-line summary and the sub-tab pill. */
-export const PEEK_PHONE = 168;
+/**
+ * How tall the sheet peeks above the tab bar: the day dropdown, the day's date and times, the
+ * wet-weather toggle and the Analysis button, and the one-line summary. The sub-tabs sit just under it.
+ */
+export const PEEK_PHONE = 196;
 /** The room the peek leaves under it for the tab bar. */
 export const SHEET_CLEAR = 92;
 /**
@@ -38,3 +41,20 @@ export const headBottom = (safeTop: number) => safeTop + HEAD_PHONE;
 export function phoneInsets(safeTop: number, peek = PEEK_PHONE, clear = SHEET_CLEAR): Insets {
   return { top: headBottom(safeTop) + HEAD_GAP, right: 16, bottom: peek + clear + 16, left: 16 };
 }
+
+// ---------- laptop ----------
+
+/** Laptop: the map frames its place between the top bar and search, and the day panel. */
+export const PLAN_INSETS: Insets = { top: 236, right: 476, bottom: 40, left: 40 };
+/** The day analysis panel beside the day panel on wide laptops, and the gap between them. */
+export const ANALYSIS_W = 360;
+export const ANALYSIS_GAP = 12;
+/**
+ * The narrowest window where the analysis fits beside the day panel, clear of the search: the search
+ * (32 + 400) and some air, the analysis and the day panel (420), and the right margin (24). Narrower,
+ * it slides over the day list instead, as on phone. styles.css's media queries use the same number.
+ */
+export const ANALYSIS_SIDE_MIN = 1264;
+
+/** The map's insets with the analysis open beside the day panel: the right inset grows by its width. */
+export const withAnalysis = (i: Insets): Insets => ({ ...i, right: i.right + ANALYSIS_W + ANALYSIS_GAP });

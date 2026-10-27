@@ -1,17 +1,17 @@
 // What the planner's Undo buttons run: each builder returns an edit, (trip, now) => trip, to apply to
 // the trip as it is when Undo is pressed. An undo never overrides a change made since: if the plan has
 // moved on, it does nothing.
-import { addStop, dayOf, moveStop, removePlace, removeStop, replaceStop, setDays, type PlaceRef, type Trip } from './trips';
+import { addStop, dayOf, moveStop, removePlace, removeStop, replaceStop, setDays, setStartDate, type PlaceRef, type Trip } from './trips';
 
 export type Edit = (t: Trip, now: number) => Trip;
 
-type ListField = 'places' | 'days' | 'saved';
+type Field = 'places' | 'days' | 'saved' | 'startDate';
 
 /**
  * Puts the listed fields back as they were in `before`, if they still read exactly as the action left
  * them (`after`). Otherwise the plan has changed since, and it's a no-op.
  */
-function restoreIfUnchanged(before: Trip, after: Trip, fields: ListField[]): Edit {
+function restoreIfUnchanged(before: Trip, after: Trip, fields: Field[]): Edit {
   const pick = (t: Trip) => JSON.stringify(fields.map((f) => t[f]));
   const was = pick(after);
   return (t, now) => {
@@ -64,9 +64,14 @@ export function undoRemovePlace(before: Trip, ref: PlaceRef, removeStops: string
   return restoreIfUnchanged(before, removePlace(before, ref, removeStops, 0), ['places', 'days', 'saved']);
 }
 
-/** Fewer days: the cut days come back (stops, wet plans, times) and saved goes back as it was, unless either has changed since. */
-export function undoSetDays(before: Trip, n: number): Edit {
-  return restoreIfUnchanged(before, setDays(before, n, 0), ['days', 'saved']);
+/**
+ * Fewer days: the cut days come back (stops, wet plans, times) and saved goes back as it was, and so
+ * does the start date when the same change moved it (`startDate`, what it was set to), unless any of
+ * them has changed since.
+ */
+export function undoSetDays(before: Trip, n: number, startDate: string | null = before.startDate): Edit {
+  const moved = startDate !== before.startDate;
+  return restoreIfUnchanged(before, setStartDate(setDays(before, n, 0), startDate, 0), moved ? ['days', 'saved', 'startDate'] : ['days', 'saved']);
 }
 
 /** An attraction taken off saved goes back where it was, unless it is saved again already. */

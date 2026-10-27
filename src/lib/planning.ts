@@ -3,7 +3,7 @@
 
 export interface Planning {
   tripId: string;
-  /** The planner's URL search when it opened the page (`?day=2&place=1&view=…&tab=wet`), or ''. */
+  /** The planner's URL search when it opened the page (`?day=2&place=1&view=…&tab=browse&wet=1`), or ''. */
   search: string;
   /**
    * History entries pushed since the planner: 1 when the planner opened this page, one more per

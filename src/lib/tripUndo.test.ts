@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, setDays, setDayTimes, unsaveFromTrip } from './trips';
+import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, setDays, setDayTimes, setStartDate, unsaveFromTrip } from './trips';
 import { undoAddStop, undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from './tripUndo';
 
 const base = () => {
@@ -147,4 +147,23 @@ test('undoSetDays is a no-op when the days or saved changed since', () => {
   expect(undoSetDays(before, 1)(changed, 3)).toBe(changed);
   const retimed = setDayTimes(t, 0, { start: '10:00' }, 2);
   expect(undoSetDays(before, 1)(retimed, 3)).toBe(retimed);
+});
+
+test('undoSetDays puts the start date back too when the cut moved it', () => {
+  const before = setStartDate(addStop(base(), 2, 'z', 1), '2026-11-10', 1);
+  const t = setStartDate(setDays(before, 1, 2), '2026-11-20', 2);
+  const r = undoSetDays(before, 1, '2026-11-20')(t, 3);
+  expect([r.startDate, r.days, r.saved]).toEqual(['2026-11-10', before.days, before.saved]);
+});
+
+test('undoSetDays leaves a start date changed since alone when the cut didn’t move it', () => {
+  const before = setStartDate(addStop(base(), 2, 'z', 1), '2026-11-10', 1);
+  // The cut, then a new start date (applied live, apart from the cut).
+  const t = setStartDate(setDays(before, 1, 2), '2026-12-01', 3);
+  const r = undoSetDays(before, 1)(t, 4);
+  expect([r.startDate, r.days]).toEqual(['2026-12-01', before.days]);
+  // When the cut did move it and it has moved again since, the undo is a no-op.
+  const moved = setStartDate(setDays(before, 1, 2), '2026-11-20', 2);
+  const again = setStartDate(moved, '2026-11-25', 3);
+  expect(undoSetDays(before, 1, '2026-11-20')(again, 4)).toBe(again);
 });

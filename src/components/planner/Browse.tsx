@@ -18,14 +18,16 @@ interface Props {
   onFilters: (next: BrowseFilterId[]) => void;
   /** The stop being replaced, if any: the rows offer themselves as its replacement. */
   replacing: string | null;
+  /** The wet-weather toggle: rows add to the day's wet-weather plan, and the ones that aren't rain-proof are greyed. */
+  wet?: boolean;
   /** The attraction lit on the map; its row lights too. */
   hotId?: string | null;
   onHover: (id: string | null) => void;
   /** Opens the card (the planner's openStop: the map goes to the attraction's place first). */
   onOpen: (id: string) => void;
-  /** Adds to the day, moves it here from another day, or in replace mode swaps it in. */
+  /** Adds to the day (or its wet-weather plan), moves it here from another day, or in replace mode swaps it in. */
   onAdd: (id: string) => void;
-  /** Takes it off the current day. */
+  /** Takes it off the current day (or its wet-weather plan). */
   onRemove: (id: string) => void;
   /** The trip's Save toggle. */
   onSave: (id: string) => void;
@@ -35,6 +37,8 @@ interface Props {
 
 const BEST: Record<string, string> = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
 const ACTION_ICON: Record<string, IconName> = { add: 'plus', remove: 'close', move: 'arrowRight', replace: 'swap', note: 'check' };
+/** A note's icon: Not rain-proof gets the rain mark, Being replaced the swap, the rest a check. */
+const noteIcon = (r: BrowseRow, replacing: string | null): IconName => (r.off ? 'rain' : r.a.id === replacing ? 'swap' : 'check');
 
 const markerOfRow = (r: BrowseRow, day: number): Marker =>
   r.n !== null ? { kind: 'today', day, n: r.n } : r.on !== null ? { kind: 'other', day: r.on } : { kind: 'free' };
@@ -44,18 +48,18 @@ const markerOfRow = (r: BrowseRow, day: number): Marker =>
  * ones come first. Hovering or focusing a row lights its dot on the map; the row opens the card; its
  * buttons add, move or remove it, or save it to the trip.
  */
-export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty }: Props) {
+export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, wet = false, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty }: Props) {
   const id = useId();
-  // After an action the order holds (the row changes in place), until the day, the chips or the place
-  // change; leaving the sub-tab unmounts the list, which lists afresh too.
-  const [frozen, setFrozen] = useState<{ ids: string[]; day: number; filters: BrowseFilterId[]; pool: Attraction[] } | null>(null);
-  const sorted = useMemo(() => browseRows(pool, trip, day, filters, replacing), [pool, trip, day, filters, replacing]);
-  const held = frozen && frozen.day === day && frozen.filters === filters && frozen.pool === pool ? frozen.ids : null;
-  // Once the day, chips or place move on, the held order is dropped for good: Day 1, Day 2 and back
-  // to Day 1 sorts afresh.
+  // After an action the order holds (the row changes in place), until the day, the chips, the place or
+  // the wet-weather toggle change; leaving the sub-tab unmounts the list, which lists afresh too.
+  const [frozen, setFrozen] = useState<{ ids: string[]; day: number; filters: BrowseFilterId[]; pool: Attraction[]; wet: boolean } | null>(null);
+  const sorted = useMemo(() => browseRows(pool, trip, day, filters, replacing, wet), [pool, trip, day, filters, replacing, wet]);
+  const held = frozen && frozen.day === day && frozen.filters === filters && frozen.pool === pool && frozen.wet === wet ? frozen.ids : null;
+  // Once the day, chips, place or toggle move on, the held order is dropped for good: Day 1, Day 2
+  // and back to Day 1 sorts afresh.
   if (frozen && !held) setFrozen(null);
   const rows = useMemo(() => freezeOrder(sorted, held), [sorted, held]);
-  const hold = () => setFrozen({ ids: rows.map((r) => r.a.id), day, filters, pool });
+  const hold = () => setFrozen({ ids: rows.map((r) => r.a.id), day, filters, pool, wet });
   const counts = useMemo(() => filterCounts(pool, filters), [pool, filters]);
   // Leaving the sub-tab unmounts the list: its row's light on the map goes with it.
   const hoverRef = useRef(onHover);
@@ -80,7 +84,7 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
       <div className="dl-head">
         <h2 id={`${id}-h`}>{placeName}</h2>
         <p className="num" aria-live="polite">
-          {filters.length ? `${rows.length} of ${pool.length}` : `${pool.length} attractions`} · unplanned first
+          {filters.length ? `${rows.length} of ${pool.length}` : `${pool.length} attractions`} · {wet ? 'rain-proof first' : 'unplanned first'}
         </p>
       </div>
 
@@ -123,7 +127,7 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
             return (
               <li
                 key={a.id}
-                className={`br-row ${hotId === a.id ? 'is-hot' : ''} ${a.id === replacing ? 'is-replacing' : ''}`}
+                className={`br-row ${hotId === a.id ? 'is-hot' : ''} ${a.id === replacing && !wet ? 'is-replacing' : ''} ${r.off ? 'is-off' : ''}`}
                 onPointerEnter={() => onHover(a.id)}
                 onPointerLeave={() => onHover(null)}
                 // Focus anywhere in the row (its card button, its action, its Save) keeps it lit.
@@ -168,8 +172,8 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
                 </span>
                 <span className="br-foot">
                   {action.kind === 'note' ? (
-                    <span className="tray-note">
-                      <Icon name={a.id === replacing ? 'swap' : 'check'} size={14} />
+                    <span className={`tray-note ${r.off ? 'is-off' : ''}`}>
+                      <Icon name={noteIcon(r, replacing)} size={14} />
                       {action.label}
                     </span>
                   ) : (

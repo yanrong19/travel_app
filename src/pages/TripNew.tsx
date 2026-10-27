@@ -15,8 +15,6 @@ type Seed = { place: PlaceRef | null; attractionId: string };
 type NewTripState = { seed?: Seed } | null;
 
 const LEVELS: PlaceRef['level'][] = ['country', 'region', 'prefecture', 'area'];
-// The history entry of a setup that has made its trip, so going back to it doesn't offer a second copy.
-const DONE_KEY = 'fitline.newTripDone';
 const TOKYO: PlaceRef = { level: 'prefecture', id: TOKYO_PREF_ID };
 
 /** The seed "Add to trip" passes in router state, if it is one we can use. */
@@ -48,8 +46,8 @@ export default function TripNew() {
   // The name follows the first place until it's typed in.
   const [named, setNamed] = useState(false);
   // A second click on "Create trip" before the planner opens must not make a second trip.
+  // (The planner then replaces this page in history, so Back from it goes to the trips list.)
   const creating = useRef(false);
-  const [entryKey] = useState(location.key);
 
   const defaultName = places.length ? `${placeLabel(places[0]).name} trip` : 'My trip';
   const value = named ? settings : { ...settings, name: defaultName };
@@ -58,16 +56,6 @@ export default function TripNew() {
   useEffect(() => {
     document.title = 'New trip · Fitline';
   }, []);
-  // Back to a setup that has already made its trip goes to the trips list instead.
-  useEffect(() => {
-    let done: string | null = null;
-    try {
-      done = sessionStorage.getItem(DONE_KEY);
-    } catch {
-      /* no storage: going back simply shows the setup again */
-    }
-    if (done && done === location.key) navigate('/trips', { replace: true });
-  }, [location.key, navigate]);
 
   const onSettings = (next: TripSettingsValue) => {
     if (next.name !== value.name) setNamed(true);
@@ -80,12 +68,6 @@ export default function TripNew() {
     const name = (named ? settings.name.trim() : '') || defaultName;
     const trip = create({ name, places, startDate: settings.startDate, days: settings.days });
     if (seed) update(trip.id, (t, now) => saveToTrip(t, seed.attractionId, now));
-    try {
-      // A page opened straight from its URL has the key "default", which a later visit would share.
-      if (entryKey !== 'default') sessionStorage.setItem(DONE_KEY, entryKey);
-    } catch {
-      /* no storage: going back shows the setup again */
-    }
     navigate(`/trips/${trip.id}`, { replace: true });
   };
 

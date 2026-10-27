@@ -83,6 +83,12 @@ function boundsOf(points: [number, number][]): LngLatBoundsLike {
 interface Props {
   target: MapTarget;
   insets: Insets;
+  /**
+   * When only the insets change and the user has moved the map since it framed its place, pan by half
+   * the change (keeping their zoom and framing) instead of framing the place afresh. Left where it
+   * framed it, the map re-frames gently. The planner's analysis panel uses it.
+   */
+  panOnInsets?: boolean;
   pins: Attraction[];
   hoverId: string | null;
   /** The picked attraction; its ticker stays raised. */
@@ -166,6 +172,7 @@ export function MapExplorer(props: Props) {
   const {
     target,
     insets,
+    panOnInsets = false,
     pins,
     hoverId,
     selectedId = null,
@@ -775,6 +782,20 @@ export function MapExplorer(props: Props) {
   const insetKey = `${insets.top},${insets.right},${insets.bottom},${insets.left}`;
   const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}|${insetKey}`;
   const lastKey = useRef('');
+  const lastInsets = useRef(insets);
+  // Where the camera came to rest after the last framing, to tell whether the user has moved it since.
+  const framedAt = useRef<{ center: [number, number]; zoom: number } | null>(null);
+  const noteFrame = (map: MapLibreMap) =>
+    map.once('moveend', () => {
+      framedAt.current = { center: map.getCenter().toArray() as [number, number], zoom: map.getZoom() };
+    });
+  const stillFramed = (map: MapLibreMap) => {
+    const f = framedAt.current;
+    if (!f) return false;
+    const was = map.project(f.center);
+    const now = map.project(map.getCenter());
+    return Math.abs(map.getZoom() - f.zoom) < 0.02 && Math.hypot(now.x - was.x, now.y - was.y) < 2;
+  };
 
   useEffect(() => {
     const map = mapRef.current;
@@ -782,6 +803,17 @@ export function MapExplorer(props: Props) {
     const first = lastKey.current === '';
     const onlyInsets = !first && lastKey.current.split('|')[0] === camKey.split('|')[0];
     lastKey.current = camKey;
+    const was = lastInsets.current;
+    lastInsets.current = insets;
+    if (onlyInsets && panOnInsets && !stillFramed(map)) {
+      // The free area's centre moves by half the change; the view follows it, gently.
+      const dx = (insets.right - was.right - (insets.left - was.left)) / 2;
+      const dy = (insets.bottom - was.bottom - (insets.top - was.top)) / 2;
+      map.panBy([dx, dy], { duration: prefersReducedMotion() ? 0 : 450, essential: true });
+      return;
+    }
+    // Listening first: under reduced motion the camera jumps, and its moveend comes at once.
+    noteFrame(map);
     flyToTarget(first ? 2600 : onlyInsets ? 500 : undefined, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camKey, ready]);

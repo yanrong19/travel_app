@@ -109,6 +109,11 @@ export function datesLabel(trip: Trip): string {
 interface DatesProps {
   value: Dates;
   onChange: (next: Dates) => void;
+  /**
+   * The number of days applies when the field is left or Enter is pressed, not on every keystroke
+   * (the planner: "12" typed over "5" would pass through 1 day). The steppers still apply at once.
+   */
+  commitDays?: boolean;
 }
 
 /**
@@ -116,7 +121,7 @@ interface DatesProps {
  * end sets the days, the days move the end. Typing is safe: a date that isn't whole yet, or an end that
  * isn't usable, waits in its field (see typeStart and typeEnd) instead of moving the others.
  */
-export function TripDates({ value, onChange }: DatesProps) {
+export function TripDates({ value, onChange, commitDays = false }: DatesProps) {
   const id = useId();
   const set = (patch: Partial<Dates>) => onChange({ ...value, ...patch });
   // The days field keeps what's typed until it's a number in range, so "12" can be typed over "1".
@@ -135,10 +140,20 @@ export function TripDates({ value, onChange }: DatesProps) {
     set(d);
   };
 
+  const usableDays = (text: string) => {
+    const n = Number(text);
+    return text.trim() && Number.isInteger(n) && n >= 1 && n <= MAX_DAYS ? n : null;
+  };
   const typeDays = (text: string) => {
     setDaysText(text);
-    const n = Number(text);
-    if (text.trim() && Number.isInteger(n) && n >= 1 && n <= MAX_DAYS) setDates(withDays(value, n));
+    const n = usableDays(text);
+    if (!commitDays && n !== null) setDates(withDays(value, n));
+  };
+  /** Leaving the field (or Enter): a usable number applies; anything else goes back to the days as they are. */
+  const commitDaysText = () => {
+    const n = usableDays(daysText);
+    if (commitDays && n !== null && n !== value.days) setDates(withDays(value, n));
+    else setDaysText(String(value.days));
   };
 
   // A start that isn't a whole date yet stays in its field as a draft (see typeStart). An empty one is
@@ -226,7 +241,10 @@ export function TripDates({ value, onChange }: DatesProps) {
               max={MAX_DAYS}
               value={daysText}
               onChange={(e) => typeDays(e.target.value)}
-              onBlur={() => setDaysText(String(value.days))}
+              onBlur={commitDaysText}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitDaysText();
+              }}
             />
             <button
               type="button"

@@ -13,6 +13,7 @@ import {
   rowAction,
   type BrowseFilterId,
 } from './browse';
+import { isRainProof } from './factors';
 import type { Trip } from './trips';
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -178,5 +179,33 @@ describe('frozen order', () => {
     expect(freezeOrder(rows, null)).toBe(rows);
     const evening = browseRows(ATTRACTIONS, trip(), 0, ['evening'], null);
     expect(freezeOrder(evening, rows.map((r) => r.a.id))).toBe(evening);
+  });
+});
+
+describe('wet-weather toggle', () => {
+  const dry = ATTRACTIONS.find((x) => !isRainProof(x))!;
+  const proof = ATTRACTIONS.filter((x) => isRainProof(x) && x.id !== 'teamlab-planets');
+
+  test('rows act on the day’s wet-weather plan: rain-proof ones add or remove, the rest say Not rain-proof', () => {
+    expect(rowAction(trip(), 1, 'teamlab-planets', null, true)).toEqual({ kind: 'remove', label: 'Remove from wet-weather plan' });
+    expect(rowAction(trip(), 0, 'teamlab-planets', null, true)).toEqual({ kind: 'add', label: 'Add to wet-weather plan' });
+    expect(rowAction(trip(), 0, proof[0].id, null, true)).toEqual({ kind: 'add', label: 'Add to wet-weather plan' });
+    expect(rowAction(trip(), 0, dry.id, null, true)).toEqual({ kind: 'note', label: 'Not rain-proof' });
+  });
+
+  test('replace mode is off with the toggle on', () => {
+    expect(rowAction(trip(), 0, proof[0].id, 'senso-ji', true).label).toBe('Add to wet-weather plan');
+    expect(browseRows(ATTRACTIONS, trip(), 0, [], 'senso-ji', true).some((r) => r.action.kind === 'replace')).toBe(false);
+  });
+
+  test('the rain-proof ones come first and the rest are greyed', () => {
+    const rows = browseRows(ATTRACTIONS, trip(), 0, [], null, true);
+    expect(rows).toHaveLength(ATTRACTIONS.length);
+    const firstOff = rows.findIndex((r) => r.off);
+    expect(firstOff).toBeGreaterThan(0);
+    expect(rows.slice(0, firstOff).every((r) => isRainProof(r.a))).toBe(true);
+    expect(rows.slice(firstOff).every((r) => r.off && !isRainProof(r.a))).toBe(true);
+    // Toggle off: nothing is greyed.
+    expect(browseRows(ATTRACTIONS, trip(), 0, [], null).some((r) => r.off)).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { HEAD_PHONE, PEEK_PHONE, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, sheetTopAt } from './planSheet';
+import { ANALYSIS_GAP, ANALYSIS_W, HEAD_PHONE, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, sheetTopAt, withAnalysis } from './planSheet';
 import { guideProgress, settleTarget } from './useGuideScroll';
 
 test('the sheet rests at the peek above the tab bar and comes up to its top', () => {
@@ -50,4 +50,12 @@ test('the header leaves room for the map on the smallest phones', () => {
   // 360 × 640: the band between the header and the resting sheet still shows a good piece of map.
   const vh = 640;
   expect(sheetTopAt(0, { vh, top: 0 }) - headBottom(0)).toBeGreaterThanOrEqual(200);
+});
+
+test('the analysis beside the day panel widens only the map’s right inset, by its width and gap', () => {
+  const i = withAnalysis(PLAN_INSETS);
+  expect(i.right).toBe(PLAN_INSETS.right + ANALYSIS_W + ANALYSIS_GAP);
+  expect([i.top, i.bottom, i.left]).toEqual([PLAN_INSETS.top, PLAN_INSETS.bottom, PLAN_INSETS.left]);
+  // A pure copy: the laptop insets themselves don't change.
+  expect(PLAN_INSETS.right).toBe(476);
 });

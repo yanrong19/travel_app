@@ -6850,8 +6850,7 @@ button.lvl-crumb:hover {
   flex: none;
   color: var(--cedar);
 }
-/* Plan / Browse / Wet-weather plan: one pill, cedar for the open one. Each takes its label's width
-   and shares out the rest. */
+/* Plan / Browse: one pill, cedar for the open one. */
 .dl-subtabs {
   flex: none;
   display: flex;
@@ -6892,27 +6891,6 @@ button.lvl-crumb:hover {
 .dl-subtab:focus-visible {
   outline: 2px solid var(--cedar);
   outline-offset: 2px;
-}
-.dl-subtab svg {
-  flex: none;
-  color: var(--c-conditions);
-}
-.dl-subtab[aria-selected='true'] svg {
-  color: #fff;
-}
-.dl-subtab-short {
-  display: none;
-}
-@media (max-width: 760px) {
-  .dl-subtab {
-    padding: 0 10px;
-  }
-  .dl-subtab-long {
-    display: none;
-  }
-  .dl-subtab-short {
-    display: inline;
-  }
 }
 
 /* ---------- Browse: everything the map shows, as a compact list ---------- */
@@ -7750,9 +7728,8 @@ button.lvl-crumb:hover {
 }
 
 /* ---------- Rain (mock forecast) ---------- */
-/* A likely-wet day (50% or more) gets a rain mark and "N% rain" in the day dropdown, and a rain mark
-   on the Wet-weather plan sub-tab. The mark takes the Conditions line's colour, kept small, as the
-   design system uses factor colours. */
+/* A likely-wet day (50% or more) gets a rain mark and "N% rain" in the day dropdown. The mark takes
+   the Conditions line's colour, kept small, as the design system uses factor colours. */
 
 .dl-top {
   flex: none;
@@ -7787,41 +7764,39 @@ button.lvl-crumb:hover {
 .dl-stop-rain svg {
   color: var(--c-conditions);
 }
-.dl-peek {
-  display: none;
-}
 
 /* ---------- Wet-weather plan ---------- */
-/* The Wet-weather plan sub-tab's content: the rain note, the list and its time and cost. */
+/* The Plan sub-tab with the wet-weather toggle on: the rain note, then the list (or its empty state).
+   Its time and cost are in the day's analysis. */
 
 .wet {
   flex: none;
   display: grid;
-  gap: 12px;
-  padding: 14px 0;
-  border-radius: var(--r-md);
-  background: var(--surface);
+  gap: 10px;
 }
 .wet-note {
-  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--c-conditions-soft);
+  color: var(--c-conditions-ink);
   font-size: 13px;
-  line-height: 19px;
-  color: var(--muted);
+  font-weight: 600;
+  line-height: 18px;
 }
 .wet-note svg {
-  margin-right: 4px;
-  vertical-align: -3px;
+  flex: none;
   color: var(--c-conditions);
 }
 .wet-note strong {
-  color: var(--c-conditions-ink);
+  font-weight: 800;
 }
-.wet .tray-empty {
-  margin: 0;
-  padding-bottom: 0;
-}
-.wet .tray-list {
-  padding-bottom: 0;
+.wet-list {
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--surface);
 }
 .wet-open {
   flex: 1;
@@ -7843,25 +7818,446 @@ button.lvl-crumb:hover {
   border-radius: 10px;
   object-fit: cover;
 }
-.wet-sum {
+/* Not rain-proof while adding to the wet-weather plan: greyed, with no add button. */
+.tray-item.is-off img,
+.tray-item.is-off .tray-text,
+.br-row.is-off .br-photo,
+.br-row.is-off .br-name,
+.br-row.is-off .br-facts {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.br-row.is-off .tray-note {
+  color: var(--muted);
+}
+
+/* ---------- The day header: date, times, wet-weather toggle, Analysis ---------- */
+/* Two lines under the day dropdown: the date and stops with the day's times, then the wet-weather
+   toggle and the Analysis button; the one-line summary under them hints at what Analysis holds. */
+
+.dl-day {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+}
+.dl-date {
+  min-width: 0;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dl-times {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  height: 32px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+.dl-times > svg {
+  flex: none;
+  margin-right: 3px;
+}
+.dl-time {
+  width: 5.4ch;
+  height: 26px;
+  padding: 0 3px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  cursor: text;
+  transition: background-color 0.2s;
+}
+.dl-time:hover {
+  background: var(--raised);
+}
+.dl-time:focus {
+  outline: 2px solid var(--cedar);
+  outline-offset: 0;
+  background: var(--surface);
+}
+.dl-times-dash {
+  color: var(--muted);
+}
+.dl-wet,
+.dl-analyse {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.dl-wet:focus-visible,
+.dl-analyse:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+/* The wet-weather toggle: a switch, in the Conditions line's blue when on. */
+.dl-wet {
+  justify-self: start;
+  min-width: 0;
+  gap: 7px;
+  padding: 0 7px 0 11px;
+  color: var(--ink);
+}
+.dl-wet:hover {
+  border-color: var(--c-conditions);
+}
+.dl-wet > svg {
+  flex: none;
+  color: var(--c-conditions);
+}
+.dl-wet-text {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dl-wet-text .num {
+  color: var(--c-conditions-ink);
+}
+.dl-switch {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--control);
+  transition: background-color 0.25s;
+}
+.dl-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 25, 27, 0.25);
+  transition: transform 0.25s var(--ease-out);
+}
+.dl-wet[aria-pressed='true'] {
+  border-color: var(--c-conditions-track);
+  background: var(--c-conditions-soft);
+  color: var(--c-conditions-ink);
+}
+.dl-wet[aria-pressed='true'] .dl-switch {
+  background: var(--c-conditions);
+}
+.dl-wet[aria-pressed='true'] .dl-switch::after {
+  transform: translateX(12px);
+}
+.dl-analyse {
+  justify-self: end;
+  gap: 6px;
+  padding: 0 14px 0 11px;
+  color: var(--cedar);
+}
+.dl-analyse:hover {
+  border-color: var(--cedar);
+}
+.dl-analyse[aria-expanded='true'] {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.dl-hint {
+  flex: none;
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  text-wrap: pretty;
+}
+/* An empty Plan (or wet-weather plan): what goes here, and the way to Browse. */
+.dl-empty,
+.wet-empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--control);
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--muted);
+}
+.dl-empty strong,
+.wet-empty strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+/* ---------- The day's stage: the list, and the analysis sliding over it ---------- */
+/* Both sit in one grid cell; the analysis comes in from the right over the list (phones and narrower
+   windows). Once it has covered the list, the list hides and folds away, so the page doesn't run on
+   past the analysis; closing brings it straight back. It reaches the panel's edges (the list's own
+   scroll does too). */
+
+.dl-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  margin: 0 -16px -12px;
+  overflow-x: clip;
+}
+.dl-stage > * {
+  grid-area: 1 / 1;
+}
+.dl-body {
+  min-height: 0;
+  max-height: 100000px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+.dl-stage.is-covered > .dl-body {
+  max-height: 0;
+  visibility: hidden;
+  overflow: hidden;
+  transition:
+    max-height 0s 0.36s,
+    visibility 0s 0.36s;
+}
+.dl-body > .dl-panel {
+  margin: 0 -16px;
+}
+.dl-analysis {
+  --over-bg: rgba(247, 249, 250, 0.98);
+  position: relative;
+  z-index: 2;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 0 16px 16px;
+  background: var(--over-bg);
+}
+.dl.is-wet .dl-analysis {
+  --over-bg: rgba(228, 237, 243, 0.98);
+}
+/* Laptop: the panel stands at its full height while the analysis covers its list, and the analysis
+   follows its rounded bottom corners. */
+.plan-panel:has(.dl-stage.is-covered) {
+  height: calc(100% - 196px);
+}
+.plan-panel .dl-analysis {
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+}
+.dl-analysis .dan-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 -16px;
+  padding: 6px 16px 6px 8px;
+  background: var(--over-bg);
+}
+
+/* The analysis itself: a heading (with a back arrow or a close button), then the day summary. */
+.dan {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.dan-head {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 16px;
-  padding-top: 10px;
-  border-top: 1px solid var(--rule);
-  font-size: 13px;
-  font-weight: 600;
+  min-height: 48px;
 }
-.wet-sum svg {
+.dan-title {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  justify-items: start;
+  padding-left: 4px;
+}
+.dan-title h2 {
+  display: inline-block;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  border-radius: 6px;
+}
+.dan-title h2:focus {
+  outline: none;
+}
+.dan-title h2:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.dan-wet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-conditions-ink);
+}
+.dan-wet svg {
+  color: var(--c-conditions);
+}
+.dan-back,
+.dan-close {
   flex: none;
-  color: var(--muted);
+  width: 40px;
+  height: 40px;
 }
-/* Not rain-proof while adding to the wet-weather plan: greyed, with no add button. */
-.tray-item.is-off img,
-.tray-item.is-off .tray-text {
-  opacity: 0.45;
-  filter: grayscale(1);
+
+/* Wide laptops: the analysis beside the day panel, which steps left by its width to make room.
+   lib/planSheet's ANALYSIS_W, ANALYSIS_GAP and ANALYSIS_SIDE_MIN say the same. */
+.planner .plan-panel {
+  transition: transform 0.36s var(--ease-out);
+}
+.plan-analysis.panel {
+  top: 172px;
+  width: 360px;
+  height: calc(100% - 196px);
+  max-height: none;
+  padding: 16px 16px 0;
+  animation: none;
+}
+.plan-analysis .dan {
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+}
+.plan-analysis .dan-body {
+  margin: 0 -16px;
+  padding: 0 16px 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+@media (min-width: 1264px) {
+  .planner.is-analysis .plan-panel {
+    height: calc(100% - 196px);
+    transform: translateX(-372px);
+  }
+  /* The breadcrumb takes its row under the search again, and the pin card stays clear of both panels. */
+  .planner.is-analysis .plan-levels {
+    display: flex;
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 816px);
+  }
+  .planner.is-analysis .plan-levels > .lvl-crumbs {
+    position: static;
+  }
+  .planner.is-analysis .pincard {
+    top: 284px;
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 828px);
+  }
+}
+
+/* ---------- Rain behind the day panel (the wet-weather toggle) ---------- */
+/* A cooler tint and two layers of light streaks falling on a slant, behind the content (z-index -1 in
+   the panel's own stacking context). The streaks are lighter than the tint, so they never lower the
+   text's contrast; the tint keeps muted text above 4.5:1. Each layer animates its transform only. */
+
+.dl-rain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  background: rgba(184, 208, 224, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  contain: strict;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s 0.3s;
+}
+.dl.is-wet > .dl-rain {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease;
+}
+.dl-rain::before,
+.dl-rain::after {
+  content: '';
+  position: absolute;
+  top: -320px;
+  bottom: -120px;
+  left: -30%;
+  right: -30%;
+  background-repeat: repeat;
+  transform: rotate(14deg);
+  animation: rain-near 0.9s linear infinite paused;
+  will-change: transform;
+}
+.dl-rain::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='240'%3E%3Cg stroke='%23fff' stroke-width='1.4' stroke-linecap='round' opacity='.85'%3E%3Cpath d='M12 18v20M58 92v16M104 30v22M136 150v18M34 168v20M82 200v14M120 96v12M8 112v14'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 150px 240px;
+}
+.dl-rain::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='110' height='180'%3E%3Cg stroke='%23fff' stroke-width='1' stroke-linecap='round' opacity='.6'%3E%3Cpath d='M20 10v10M70 60v8M44 120v10M96 140v9M8 88v8M84 18v7'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 110px 180px;
+  animation-name: rain-far;
+  animation-duration: 1.5s;
+}
+.dl.is-wet > .dl-rain::before,
+.dl.is-wet > .dl-rain::after {
+  animation-play-state: running;
+}
+@keyframes rain-near {
+  from {
+    transform: rotate(14deg) translate3d(0, -240px, 0);
+  }
+  to {
+    transform: rotate(14deg) translate3d(0, 0, 0);
+  }
+}
+@keyframes rain-far {
+  from {
+    transform: rotate(14deg) translate3d(0, -180px, 0);
+  }
+  to {
+    transform: rotate(14deg) translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dl-rain::before,
+  .dl-rain::after {
+    animation: none;
+  }
+  .dl-rain {
+    transition: none;
+  }
+  .planner .plan-panel {
+    transition: none;
+  }
+  .dl-stage.is-covered > .dl-body {
+    transition: none;
+  }
 }
 
 /* ---------- Planner sheets (native dialog) ---------- */
@@ -8208,17 +8604,49 @@ button.lvl-crumb:hover {
     opacity: clamp(0, (var(--gp, 0) - 0.98) / 0.02, 1);
     pointer-events: none;
   }
-  .plan-sheet .dl-peek {
-    display: block;
-    font-size: 15px;
-    line-height: 20px;
-    font-weight: 700;
+  /* The one-line summary closes the peek: one line here. */
+  .plan-sheet .dl-hint {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* The peek ends with the one-line summary; the sub-tabs come into view as the sheet comes up
+     (instead of half showing behind the tab bar). */
+  .plan-sheet .dl-subtabs {
+    opacity: clamp(0, (var(--gp, 0) - 0.01) * 12, 1);
+  }
+  /* 16px: phones zoom the page into a field with smaller text. */
+  .plan-sheet .dl-time {
+    width: 5.2ch;
+    font-size: 16px;
+  }
+  .plan-sheet .dl-stage {
+    flex: none;
+    margin: 0 -16px;
+  }
+  .plan-sheet .dl-body {
+    gap: 10px;
+  }
+  /* In the sheet the analysis runs on in the page's scroll; its heading pins under the day dropdown. */
+  .plan-sheet .dl-analysis {
+    --over-bg: var(--mist);
+    overflow: visible;
+    padding-bottom: 8px;
+  }
+  .plan-sheet .dl.is-wet .dl-analysis,
+  .plan-sheet .dl.is-wet .dl-top {
+    --over-bg: #d8e4ec;
+    background: #d8e4ec;
+  }
+  .plan-sheet .dl-analysis .dan-head {
+    top: calc(var(--sheet-top) + 60px);
+  }
+  .plan-sheet .dl-rain {
+    border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
+  }
   /* In the sheet, the list runs on in the page's scroll instead of its own. */
-  .plan-sheet .dl-panel {
+  .plan-sheet .dl-panel,
+  .plan-sheet .dl-body > .dl-panel {
     flex: none;
     margin: 6px 0 0;
     padding: 0;

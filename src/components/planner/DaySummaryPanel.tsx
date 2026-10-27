@@ -49,13 +49,16 @@ function Row({ line, text, flags, children }: { line: LineId; text: ReactNode; f
   );
 }
 
-/** The day read factor by factor, each in its line's colour. Never one score. */
-export function DaySummaryPanel({ summary }: { summary: DaySummary }) {
+/**
+ * The day read factor by factor, each in its line's colour. Never one score. `label` names the
+ * section; `empty` is what an empty day says.
+ */
+export function DaySummaryPanel({ summary, label = 'Day summary', empty = 'Add stops from the map or search' }: { summary: DaySummary; label?: string; empty?: string }) {
   if (summary.empty) {
     return (
-      <section className="ds is-empty" aria-label="Day summary">
+      <section className="ds is-empty" aria-label={label}>
         <Icon name="plus" size={18} />
-        <p>Add stops from the map or search</p>
+        <p>{empty}</p>
       </section>
     );
   }
@@ -68,7 +71,7 @@ export function DaySummaryPanel({ summary }: { summary: DaySummary }) {
   const pct = (n: number) => `${Math.min(100, (n / scale) * 100)}%`;
 
   return (
-    <section className="ds" aria-label="Day summary">
+    <section className="ds" aria-label={label}>
       <h3 className="ds-line">{summary.line}</h3>
       <ul className="ds-rows">
         <Row
