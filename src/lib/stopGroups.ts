@@ -59,12 +59,21 @@ export function groupName(day: number, ns: number[], names: string[]): string {
 
 /**
  * The zoom at which the group's closest pair sits a little more than `radius` apart (screen distance
- * doubles with each zoom level), at least half a level in, at most `max`.
+ * doubles with each zoom level), at least half a level in, at most `max` (the map's own limit), and
+ * never below the current zoom.
  */
 export function splitZoom(points: StopPoint[], radius: number, zoom: number, max: number): number {
   let d = Infinity;
   for (let i = 0; i < points.length; i++)
     for (let j = i + 1; j < points.length; j++) d = Math.min(d, Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y));
-  if (!(d > 0.05)) return max;
-  return Math.min(max, Math.max(zoom + 0.5, zoom + Math.log2((radius * 1.2) / d)));
+  const want = d > 0.05 ? Math.max(zoom + 0.5, zoom + Math.log2((radius * 1.2) / d)) : max;
+  // Never past the cap, and never out from where the map already is.
+  return Math.max(zoom, Math.min(max, want));
 }
+
+/**
+ * Identifies a set of groups for change detection: members and their numbers, so a stop moved or
+ * removed outside a group still renumbers its pill.
+ */
+export const groupKey = (groups: { ids: string[]; ns: number[] }[]) =>
+  groups.map((g) => g.ids.map((id, k) => `${id}:${g.ns[k]}`).join('+')).join('|');

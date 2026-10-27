@@ -324,6 +324,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
    */
   const pickTab = (to: PlanTab) => {
     setTab(to);
+    // A row or stop lit from the list being left shouldn't stay lit on the map.
+    setHoverId(null);
     if (to === 'wet') setReplace(null);
   };
   const startReplace = (d: number, sid: string) => setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }));

@@ -10,7 +10,7 @@ import { prefersReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { readings } from '../lib/factors';
 import { markerName, markerOf, type Marker } from '../lib/browse';
-import { groupName, groupStops, splitZoom, stopRun } from '../lib/stopGroups';
+import { groupKey, groupName, groupStops, splitZoom, stopRun } from '../lib/stopGroups';
 import { lensRating, type LensId } from '../lib/lens';
 import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
@@ -157,8 +157,6 @@ export interface MapBubble {
 
 /** Dot mode: today's numbered circles closer than this on screen merge into one pill. */
 const STOP_MERGE_PX = 28;
-/** The deepest a pill's zoom-in goes: the area level's own framing limit. */
-const SPLIT_MAX_ZOOM = 15.5;
 
 type Pad = { top: number; right: number; bottom: number; left: number };
 type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: number; pitch: number; bearing: number; padding?: Pad };
@@ -237,6 +235,10 @@ export function MapExplorer(props: Props) {
   const stopGroupKey = useRef('');
   // The pill under the pointer or focus: raised, so its list of names gets a side with room.
   const [hotGroup, setHotGroup] = useState<string | null>(null);
+  // A pill whose stops still overlap at the map's deepest zoom: its list turns into buttons to pick one.
+  const [pickGroup, setPickGroup] = useState<string | null>(null);
+  // A pill split from the keyboard: focus goes to its first stop once that stop shows on its own.
+  const focusAfterSplit = useRef<string | null>(null);
   const pinsRef = useRef(pins);
   pinsRef.current = pins;
   const dotsRef = useRef(dots);
@@ -395,6 +397,7 @@ export function MapExplorer(props: Props) {
     const tickers: { el: HTMLElement; sx: number; sy: number }[] = [];
     const dotEls: { el: HTMLElement; sx: number; sy: number }[] = [];
     const bubbleEls: { el: HTMLElement; sx: number; sy: number }[] = [];
+    let offDots = 0;
     groupTodaysStops(map, el);
     el.querySelectorAll<HTMLElement>('[data-ll]').forEach((node) => {
       const [lng, lat] = node.dataset.ll!.split(',').map(Number);
@@ -402,19 +405,29 @@ export function MapExplorer(props: Props) {
       node.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
       if (node.dataset.flip !== undefined) node.classList.toggle('is-flipped', p.x > W - 140);
       if (node.classList.contains('ticker')) tickers.push({ el: node, sx: p.x, sy: p.y });
-      if (node.classList.contains('mdot') && !node.classList.contains('is-grouped')) dotEls.push({ el: node, sx: p.x, sy: p.y });
+      if (node.classList.contains('mdot') && !node.classList.contains('is-grouped')) {
+        // Dots well outside the view stay out of the label layout.
+        if (p.x < -40 || p.x > W + 40 || p.y < -40 || p.y > H + 40) {
+          node.classList.remove('is-labelled', 'is-left');
+          offDots++;
+        } else dotEls.push({ el: node, sx: p.x, sy: p.y });
+      }
       if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
     if (dotEls.length) {
       // Labels stay left of a panel over the map's right side (its own edge, or the right inset).
       const panel = clearOfRef.current?.current?.getBoundingClientRect();
-      const left0 = wrap.current?.getBoundingClientRect().left ?? 0;
+      const box = wrap.current?.getBoundingClientRect();
+      const left0 = box?.left ?? 0;
       const free = panel && panel.width ? panel.left - left0 - 8 : W - insetsRef.current.right;
-      layoutDots(dotEls, map.getZoom(), free);
+      // The zoom controls sit over the map (on the right on phones): labels keep off them.
+      const ctl = wrap.current?.querySelector('.map-controls')?.getBoundingClientRect();
+      const avoid = ctl && ctl.width && box ? [{ x0: ctl.left - box.left - 4, x1: ctl.right - box.left + 4, y0: ctl.top - box.top - 4, y1: ctl.bottom - box.top + 4 }] : [];
+      layoutDots(dotEls, map.getZoom(), free, H, avoid);
     }
     if (bubbleEls.length) layoutBubbles(bubbleEls, insetsRef.current.top, H - insetsRef.current.bottom);
-    const off = [...tickers, ...dotEls].filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
+    const off = offDots + [...tickers, ...dotEls].filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
     if (offscreen.current) {
       offscreen.current.dataset.on = off ? '1' : '';
       offscreen.current.firstElementChild!.textContent = off === 1 ? '1 place outside the view' : `${off} places outside the view`;
@@ -435,25 +448,36 @@ export function MapExplorer(props: Props) {
         })
       : [];
     const groups = groupStops(points, STOP_MERGE_PX);
-    const key = groups.map((g) => g.ids.join('+')).join('|');
+    const key = groupKey(groups);
     if (key === stopGroupKey.current) return;
     stopGroupKey.current = key;
     setStopGroups(groups.map((g) => ({ ids: g.ids, ns: g.ns })));
   }
 
-  /** A pill clicked: zoom in on its stops until their circles separate. */
-  function splitGroup(ids: string[]) {
+  /**
+   * A pill clicked: zoom in on its stops until their circles separate. At the map's deepest zoom,
+   * where that can't happen, its list opens as buttons to pick one. From the keyboard, focus follows
+   * to the first stop once it shows on its own.
+   */
+  function splitGroup(key: string, ids: string[], keyboard: boolean) {
     const map = mapRef.current;
     if (!map) return;
+    const max = map.getMaxZoom();
+    if (map.getZoom() >= max - 0.01) {
+      setPickGroup((k) => (k === key ? null : key));
+      return;
+    }
     // The pill goes once its stops separate, so it can't hear the pointer leave.
     setHotGroup(null);
+    setPickGroup(null);
+    focusAfterSplit.current = keyboard ? ids[0] : null;
     const members = ids.map((id) => pinsRef.current.find((a) => a.id === id)).filter((a): a is Attraction => !!a);
     if (!members.length) return;
     const points = members.map((a, i) => {
       const q = map.project(a.lonlat);
       return { id: a.id, n: i, x: q.x, y: q.y };
     });
-    const zoom = splitZoom(points, STOP_MERGE_PX, map.getZoom(), SPLIT_MAX_ZOOM);
+    const zoom = splitZoom(points, STOP_MERGE_PX, map.getZoom(), max);
     const center: [number, number] = [
       members.reduce((t, a) => t + a.lonlat[0], 0) / members.length,
       members.reduce((t, a) => t + a.lonlat[1], 0) / members.length,
@@ -614,7 +638,15 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers, stopGroups, hotGroup]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers, stopGroups, hotGroup, pickGroup]);
+
+  // A pill split from the keyboard: once its first stop is no longer merged, focus moves to it.
+  useEffect(() => {
+    const id = focusAfterSplit.current;
+    if (!id || stopGroups.some((g) => g.ids.includes(id))) return;
+    focusAfterSplit.current = null;
+    overlay.current?.querySelector<HTMLElement>(`.mdot[data-id="${id}"]`)?.focus({ preventScroll: true });
+  }, [stopGroups]);
 
   // ---- Keep the picked ticker clear of a card over the map (trip planning) ----
   useEffect(() => {
@@ -993,6 +1025,7 @@ export function MapExplorer(props: Props) {
                 key={a.id}
                 type="button"
                 className={`mdot is-${m.kind} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''} ${grouped ? 'is-grouped' : ''}`}
+                data-id={a.id}
                 data-ll={a.lonlat.join(',')}
                 data-prio={prio}
                 data-tier={m.kind === 'today' ? 'today' : 'rest'}
@@ -1017,40 +1050,64 @@ export function MapExplorer(props: Props) {
         {showTickers &&
           dotMode &&
           stopGroups.map((g) => {
-            const members = g.ids.map((id) => pins.find((a) => a.id === id)).filter((a): a is Attraction => !!a);
+            // Numbers come from the current markers, so a stop moved or removed elsewhere renumbers the pill.
+            const members = g.ids
+              .map((id) => ({ a: pins.find((x) => x.id === id), m: markerOf(dots, id) }))
+              .flatMap(({ a, m }) => (a && m.kind === 'today' ? [{ a, n: m.n, day: m.day }] : []))
+              .sort((x, y) => x.n - y.n);
             if (members.length < 2) return null;
-            const m = markerOf(dots, g.ids[0]);
-            const day = m.kind === 'today' ? m.day : 0;
-            const ll = [0, 1].map((k) => members.reduce((t, a) => t + a.lonlat[k], 0) / members.length);
+            const ns = members.map((x) => x.n);
+            const day = members[0].day;
+            const ll = [0, 1].map((k) => members.reduce((t, x) => t + x.a.lonlat[k], 0) / members.length);
             const key = g.ids.join('+');
-            const raised = hotGroup === key || g.ids.some((id) => id === hoverId || id === selectedId);
+            const picking = pickGroup === key;
+            const raised = picking || hotGroup === key || g.ids.some((id) => id === hoverId || id === selectedId);
             return (
-              <button
+              <div
                 key={key}
-                type="button"
-                className={`mdot mgroup is-today ${raised ? 'is-hot' : ''}`}
+                className={`mdot mgroup is-today ${raised ? 'is-hot' : ''} ${picking ? 'is-picking' : ''}`}
                 data-ll={ll.join(',')}
                 data-prio={raised ? 0 : 0.1}
                 data-tier="group"
-                onClick={() => splitGroup(g.ids)}
                 onPointerEnter={() => setHotGroup(key)}
-                onPointerLeave={() => setHotGroup(null)}
+                onPointerLeave={(e) => {
+                  // A finger "leaves" as it lifts; only a mouse leaving closes the list.
+                  if (e.pointerType !== 'mouse') return;
+                  setHotGroup(null);
+                  setPickGroup(null);
+                }}
                 onFocus={() => setHotGroup(key)}
-                onBlur={() => setHotGroup(null)}
-                aria-label={`${groupName(day, g.ns, members.map((a) => a.name))}. Zoom in`}
+                onBlur={(e) => {
+                  if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+                  setHotGroup(null);
+                  setPickGroup(null);
+                }}
               >
-                <span className="mgroup-mark num" aria-hidden="true">
-                  {stopRun(g.ns)}
+                <button
+                  type="button"
+                  className="mgroup-mark num"
+                  onClick={(e) => splitGroup(key, g.ids, e.detail === 0)}
+                  aria-expanded={picking}
+                  aria-label={`${groupName(day, ns, members.map((x) => x.a.name))}. ${picking ? 'Pick one' : 'Zoom in'}`}
+                >
+                  {stopRun(ns)}
+                </button>
+                <span className="mdot-label mgroup-label" aria-hidden={!picking}>
+                  {members.map(({ a, n }) =>
+                    picking ? (
+                      <button key={a.id} type="button" className="mgroup-row" onClick={() => props.onAttraction(a.id)}>
+                        <span className="mgroup-n num">{n}</span>
+                        <span className="mdot-name">{a.name}</span>
+                      </button>
+                    ) : (
+                      <span key={a.id} className={`mgroup-row ${a.id === hoverId || a.id === selectedId ? 'is-hot' : ''}`}>
+                        <span className="mgroup-n num">{n}</span>
+                        <span className="mdot-name">{a.name}</span>
+                      </span>
+                    ),
+                  )}
                 </span>
-                <span className="mdot-label mgroup-label" aria-hidden="true">
-                  {members.map((a, k) => (
-                    <span key={a.id} className={`mgroup-row ${a.id === hoverId || a.id === selectedId ? 'is-hot' : ''}`}>
-                      <span className="mgroup-n num">{g.ns[k]}</span>
-                      <span className="mdot-name">{a.name}</span>
-                    </span>
-                  ))}
-                </span>
-              </button>
+              </div>
             );
           })}
         {showTickers &&
@@ -1334,8 +1391,9 @@ const DOT_LABEL_ZOOM = { today: 10, rest: 12.5 } as const;
  * rest), a label shows to the right of its dot, or failing that to the left, when the zoom allows
  * it and it would overlap no dot and no label placed before it.
  */
-function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: number, right: number) {
-  type Box = { x0: number; x1: number; y0: number; y1: number };
+type Box = { x0: number; x1: number; y0: number; y1: number };
+
+function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: number, right: number, bottom: number, avoid: Box[]) {
   // A merged pill's half-width stands in for a dot's radius (it sets --r for its label's offset).
   const radius = (el: HTMLElement) => (el.dataset.mw ? Number(el.dataset.mw) / 2 : el.classList.contains('is-today') ? 11 : 6);
   for (const t of list) {
@@ -1357,7 +1415,8 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
     return { x0: t.sx - r, x1: t.sx + r, y0: t.sy - v, y1: t.sy + v };
   });
   const overlap = (b: Box, p: Box) => !(b.x1 < p.x0 || b.x0 > p.x1 || b.y1 < p.y0 || b.y0 > p.y1);
-  const placed: Box[] = [];
+  // The map's controls count as placed from the start.
+  const placed: Box[] = [...avoid];
   const hits = (b: Box, self: number) => placed.some((p) => overlap(b, p)) || dotsAt.some((p, i) => i !== self && overlap(b, p));
   const order = list.map((t, i) => ({ t, i })).sort((a, b) => Number(a.t.el.dataset.prio) - Number(b.t.el.dataset.prio));
   for (const { t, i } of order) {
@@ -1376,12 +1435,11 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
     // Near the right edge of the free area (a panel can cover the map's right side), left first.
     const sides = toRight.x1 > right - 8 ? [toLeft, toRight] : [toRight, toLeft];
     let pick: Box | null = null;
-    // A raised label must show: clear of everything if it can be, else at least inside the free area
-    // (over a dot, rather than cut off under the panel).
-    const inside = (b: Box) => b.x1 <= right && b.x0 >= 0;
+    // Every label stays inside the free area. A raised one must show: clear of everything if it can
+    // be, else over a dot rather than cut off under the panel.
+    const inside = (b: Box) => b.x1 <= right && b.x0 >= 0 && b.y0 >= 0 && b.y1 <= bottom;
     if (raised) pick = sides.find((b) => inside(b) && !hits(b, i)) ?? sides.find(inside) ?? sides.find((b) => !hits(b, i)) ?? sides[0];
-    // A dot under a panel or off the map keeps its label to itself.
-    else if (zoom >= DOT_LABEL_ZOOM[tier] && t.sx >= 0 && t.sx <= right) pick = sides.find((b) => !hits(b, i)) ?? null;
+    else if (zoom >= DOT_LABEL_ZOOM[tier]) pick = sides.find((b) => inside(b) && !hits(b, i)) ?? null;
     t.el.classList.toggle('is-labelled', !!pick);
     t.el.classList.toggle('is-left', pick === toLeft);
     if (pick) placed.push(pick);

@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Attraction } from '../../data/types';
 import { BROWSE_FILTERS, browseRows, filterCounts, freezeOrder, markerName, type BrowseFilterId, type BrowseRow, type Marker } from '../../lib/browse';
 import { photo } from '../../lib/photos';
@@ -51,9 +51,16 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
   const [frozen, setFrozen] = useState<{ ids: string[]; day: number; filters: BrowseFilterId[]; pool: Attraction[] } | null>(null);
   const sorted = useMemo(() => browseRows(pool, trip, day, filters, replacing), [pool, trip, day, filters, replacing]);
   const held = frozen && frozen.day === day && frozen.filters === filters && frozen.pool === pool ? frozen.ids : null;
+  // Once the day, chips or place move on, the held order is dropped for good: Day 1, Day 2 and back
+  // to Day 1 sorts afresh.
+  if (frozen && !held) setFrozen(null);
   const rows = useMemo(() => freezeOrder(sorted, held), [sorted, held]);
   const hold = () => setFrozen({ ids: rows.map((r) => r.a.id), day, filters, pool });
   const counts = useMemo(() => filterCounts(pool, filters), [pool, filters]);
+  // Leaving the sub-tab unmounts the list: its row's light on the map goes with it.
+  const hoverRef = useRef(onHover);
+  hoverRef.current = onHover;
+  useEffect(() => () => hoverRef.current(null), []);
   const toggle = (f: BrowseFilterId) => onFilters(filters.includes(f) ? filters.filter((x) => x !== f) : [...filters, f]);
 
   if (!pool.length) {
@@ -119,14 +126,15 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
                 className={`br-row ${hotId === a.id ? 'is-hot' : ''} ${a.id === replacing ? 'is-replacing' : ''}`}
                 onPointerEnter={() => onHover(a.id)}
                 onPointerLeave={() => onHover(null)}
+                // Focus anywhere in the row (its card button, its action, its Save) keeps it lit.
+                onFocus={() => onHover(a.id)}
+                onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node | null) && onHover(null)}
               >
                 {/* The row's main area: it covers the whole row, under the buttons. */}
                 <button
                   type="button"
                   className="br-open"
                   onClick={() => onOpen(a.id)}
-                  onFocus={() => onHover(a.id)}
-                  onBlur={() => onHover(null)}
                   aria-label={`${markerName(a, markerOfRow(r, day))}. Show card`}
                   aria-describedby={factsId}
                 />

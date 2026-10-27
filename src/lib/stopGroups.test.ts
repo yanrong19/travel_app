@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { groupName, groupStops, splitZoom, stopRun } from './stopGroups';
+import { groupKey, groupName, groupStops, splitZoom, stopRun } from './stopGroups';
 
 const p = (id: string, n: number, x: number, y: number) => ({ id, n, x, y });
 
@@ -46,4 +46,19 @@ test('the zoom that splits a group: enough doublings to push the closest pair pa
   expect(splitZoom([p('a', 1, 0, 0), p('b', 2, 0, 0)], 26, 10, 15.5)).toBe(15.5);
   // Always at least a visible step in.
   expect(splitZoom([p('a', 1, 0, 0), p('b', 2, 25, 0)], 26, 10, 15.5)).toBeGreaterThanOrEqual(10.5);
+});
+
+test('the group key changes when the numbers change, not only the members (a stop outside moved or went)', () => {
+  const before = groupKey([{ ids: ['b', 'c'], ns: [2, 3] }]);
+  const after = groupKey([{ ids: ['b', 'c'], ns: [1, 2] }]);
+  expect(after).not.toBe(before);
+  expect(groupKey([{ ids: ['b', 'c'], ns: [1, 2] }])).toBe(after);
+  expect(groupKey([])).toBe('');
+});
+
+test('the split zoom never zooms out, and stops at the map’s own limit', () => {
+  const pts = [p('a', 1, 0, 0), p('b', 2, 1, 0)];
+  expect(splitZoom(pts, 26, 18, 18)).toBe(18);
+  // Already past a lower cap: stays put rather than zooming out.
+  expect(splitZoom(pts, 26, 19, 18)).toBe(19);
 });
