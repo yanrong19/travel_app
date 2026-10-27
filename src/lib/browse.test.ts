@@ -5,6 +5,7 @@ import {
   browsePool,
   browseRows,
   filterCounts,
+  freezeOrder,
   markerName,
   markerOf,
   markersFor,
@@ -161,5 +162,24 @@ describe('which attractions', () => {
   test('none for places without data', () => {
     expect(browsePool({ level: 'prefecture', id: '26' }, [{ level: 'prefecture', id: '26' }])).toEqual([]);
     expect(browsePool(null, [])).toEqual([]);
+  });
+});
+
+describe('frozen order', () => {
+  test('after an action the rows keep the order they had, with their new status', () => {
+    const before = browseRows(ATTRACTIONS, trip(), 0, [], null);
+    const frozen = before.map((r) => r.a.id);
+    // Golden Gai goes on Day 1: by the sort it would drop to the planned group.
+    const t = trip({ days: [{ stops: ['senso-ji', 'tokyo-national-museum', 'yanaka-ginza', 'golden-gai'], wet: [] }, trip().days[1]] });
+    const after = freezeOrder(browseRows(ATTRACTIONS, t, 0, [], null), frozen);
+    expect(after.map((r) => r.a.id)).toEqual(frozen);
+    expect(after.find((r) => r.a.id === 'golden-gai')!.action).toEqual({ kind: 'remove', label: 'Remove from Day 1' });
+  });
+
+  test('no frozen order, or a different set of rows (a filter, another place): the sort as usual', () => {
+    const rows = browseRows(ATTRACTIONS, trip(), 0, [], null);
+    expect(freezeOrder(rows, null)).toBe(rows);
+    const evening = browseRows(ATTRACTIONS, trip(), 0, ['evening'], null);
+    expect(freezeOrder(evening, rows.map((r) => r.a.id))).toBe(evening);
   });
 });

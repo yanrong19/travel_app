@@ -130,3 +130,15 @@ export function browsePool(viewed: PlaceRef | null, places: PlaceRef[]): Attract
   if (nodeOf(viewed).attractionLevel) return attractionsIn(viewed);
   return [...new Map(places.flatMap(attractionsIn).map((a) => [a.id, a])).values()];
 }
+
+/**
+ * Right after an action in the list, the rows keep the order they had (the status and button change
+ * in place) instead of jumping to their new group. Only while the list holds the same rows: a new
+ * filter, day or place lists afresh.
+ */
+export function freezeOrder(rows: BrowseRow[], frozen: string[] | null): BrowseRow[] {
+  if (!frozen || frozen.length !== rows.length) return rows;
+  const at = new Map(frozen.map((id, i) => [id, i]));
+  if (rows.some((r) => !at.has(r.a.id))) return rows;
+  return [...rows].sort((x, y) => at.get(x.a.id)! - at.get(y.a.id)!);
+}

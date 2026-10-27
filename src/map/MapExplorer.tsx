@@ -10,6 +10,7 @@ import { prefersReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { readings } from '../lib/factors';
 import { markerName, markerOf, type Marker } from '../lib/browse';
+import { groupName, groupStops, splitZoom, stopRun } from '../lib/stopGroups';
 import { lensRating, type LensId } from '../lib/lens';
 import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
@@ -154,6 +155,11 @@ export interface MapBubble {
   onPick(): void;
 }
 
+/** Dot mode: today's numbered circles closer than this on screen merge into one pill. */
+const STOP_MERGE_PX = 28;
+/** The deepest a pill's zoom-in goes: the area level's own framing limit. */
+const SPLIT_MAX_ZOOM = 15.5;
+
 type Pad = { top: number; right: number; bottom: number; left: number };
 type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: number; pitch: number; bearing: number; padding?: Pad };
 const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -225,6 +231,16 @@ export function MapExplorer(props: Props) {
   const dotMode = markers === 'dot';
   const dotModeRef = useRef(dotMode);
   dotModeRef.current = dotMode;
+  // Dot mode: today's stops whose circles overlap on screen, merged into one pill each. Worked out on
+  // every camera move; React hears only when the membership changes.
+  const [stopGroups, setStopGroups] = useState<{ ids: string[]; ns: number[] }[]>([]);
+  const stopGroupKey = useRef('');
+  // The pill under the pointer or focus: raised, so its list of names gets a side with room.
+  const [hotGroup, setHotGroup] = useState<string | null>(null);
+  const pinsRef = useRef(pins);
+  pinsRef.current = pins;
+  const dotsRef = useRef(dots);
+  dotsRef.current = dots;
 
   // The tour: one destination lit at a time while the globe turns.
   const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
@@ -379,13 +395,14 @@ export function MapExplorer(props: Props) {
     const tickers: { el: HTMLElement; sx: number; sy: number }[] = [];
     const dotEls: { el: HTMLElement; sx: number; sy: number }[] = [];
     const bubbleEls: { el: HTMLElement; sx: number; sy: number }[] = [];
+    groupTodaysStops(map, el);
     el.querySelectorAll<HTMLElement>('[data-ll]').forEach((node) => {
       const [lng, lat] = node.dataset.ll!.split(',').map(Number);
       const p = map.project([lng, lat]);
       node.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
       if (node.dataset.flip !== undefined) node.classList.toggle('is-flipped', p.x > W - 140);
       if (node.classList.contains('ticker')) tickers.push({ el: node, sx: p.x, sy: p.y });
-      if (node.classList.contains('mdot')) dotEls.push({ el: node, sx: p.x, sy: p.y });
+      if (node.classList.contains('mdot') && !node.classList.contains('is-grouped')) dotEls.push({ el: node, sx: p.x, sy: p.y });
       if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
@@ -403,6 +420,45 @@ export function MapExplorer(props: Props) {
       offscreen.current.firstElementChild!.textContent = off === 1 ? '1 place outside the view' : `${off} places outside the view`;
     }
     placeCard(map, W, H);
+  }
+
+  /** Dot mode: merges today's numbered circles that overlap on screen (see lib/stopGroups). */
+  function groupTodaysStops(map: MapLibreMap, el: HTMLElement) {
+    const marks = dotsRef.current;
+    const on = dotModeRef.current && !!marks && !!el.querySelector('.mdot');
+    const points = on
+      ? pinsRef.current.flatMap((a) => {
+          const m = marks![a.id];
+          if (m?.kind !== 'today') return [];
+          const q = map.project(a.lonlat);
+          return [{ id: a.id, n: m.n, x: q.x, y: q.y }];
+        })
+      : [];
+    const groups = groupStops(points, STOP_MERGE_PX);
+    const key = groups.map((g) => g.ids.join('+')).join('|');
+    if (key === stopGroupKey.current) return;
+    stopGroupKey.current = key;
+    setStopGroups(groups.map((g) => ({ ids: g.ids, ns: g.ns })));
+  }
+
+  /** A pill clicked: zoom in on its stops until their circles separate. */
+  function splitGroup(ids: string[]) {
+    const map = mapRef.current;
+    if (!map) return;
+    // The pill goes once its stops separate, so it can't hear the pointer leave.
+    setHotGroup(null);
+    const members = ids.map((id) => pinsRef.current.find((a) => a.id === id)).filter((a): a is Attraction => !!a);
+    if (!members.length) return;
+    const points = members.map((a, i) => {
+      const q = map.project(a.lonlat);
+      return { id: a.id, n: i, x: q.x, y: q.y };
+    });
+    const zoom = splitZoom(points, STOP_MERGE_PX, map.getZoom(), SPLIT_MAX_ZOOM);
+    const center: [number, number] = [
+      members.reduce((t, a) => t + a.lonlat[0], 0) / members.length,
+      members.reduce((t, a) => t + a.lonlat[1], 0) / members.length,
+    ];
+    map.easeTo({ center, zoom, duration: prefersReducedMotion() ? 0 : 700 });
   }
 
   /** Tether the destination card to its country: beside it on wide screens, docked at the bottom on phones. */
@@ -558,7 +614,7 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers, stopGroups, hotGroup]);
 
   // ---- Keep the picked ticker clear of a card over the map (trip planning) ----
   useEffect(() => {
@@ -928,6 +984,7 @@ export function MapExplorer(props: Props) {
           dotMode &&
           pins.map((a, i) => {
             const m = markerOf(dots, a.id);
+            const grouped = m.kind === 'today' && stopGroups.some((g) => g.ids.includes(a.id));
             const raised = selectedId === a.id || hoverId === a.id;
             // Raised first, then today's stops in route order, then other days', then the rest.
             const prio = raised ? 0 : m.kind === 'today' ? 0.2 + m.n / 1000 : m.kind === 'other' ? 0.5 + i / 10000 : 1 + i / 100;
@@ -935,7 +992,7 @@ export function MapExplorer(props: Props) {
               <button
                 key={a.id}
                 type="button"
-                className={`mdot is-${m.kind} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''}`}
+                className={`mdot is-${m.kind} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''} ${grouped ? 'is-grouped' : ''}`}
                 data-ll={a.lonlat.join(',')}
                 data-prio={prio}
                 data-tier={m.kind === 'today' ? 'today' : 'rest'}
@@ -953,6 +1010,45 @@ export function MapExplorer(props: Props) {
                 <span className="mdot-label" aria-hidden="true">
                   <span className="mdot-name">{a.name}</span>
                   <span className="mdot-value num">{readings(a).cost}</span>
+                </span>
+              </button>
+            );
+          })}
+        {showTickers &&
+          dotMode &&
+          stopGroups.map((g) => {
+            const members = g.ids.map((id) => pins.find((a) => a.id === id)).filter((a): a is Attraction => !!a);
+            if (members.length < 2) return null;
+            const m = markerOf(dots, g.ids[0]);
+            const day = m.kind === 'today' ? m.day : 0;
+            const ll = [0, 1].map((k) => members.reduce((t, a) => t + a.lonlat[k], 0) / members.length);
+            const key = g.ids.join('+');
+            const raised = hotGroup === key || g.ids.some((id) => id === hoverId || id === selectedId);
+            return (
+              <button
+                key={key}
+                type="button"
+                className={`mdot mgroup is-today ${raised ? 'is-hot' : ''}`}
+                data-ll={ll.join(',')}
+                data-prio={raised ? 0 : 0.1}
+                data-tier="group"
+                onClick={() => splitGroup(g.ids)}
+                onPointerEnter={() => setHotGroup(key)}
+                onPointerLeave={() => setHotGroup(null)}
+                onFocus={() => setHotGroup(key)}
+                onBlur={() => setHotGroup(null)}
+                aria-label={`${groupName(day, g.ns, members.map((a) => a.name))}. Zoom in`}
+              >
+                <span className="mgroup-mark num" aria-hidden="true">
+                  {stopRun(g.ns)}
+                </span>
+                <span className="mdot-label mgroup-label" aria-hidden="true">
+                  {members.map((a, k) => (
+                    <span key={a.id} className={`mgroup-row ${a.id === hoverId || a.id === selectedId ? 'is-hot' : ''}`}>
+                      <span className="mgroup-n num">{g.ns[k]}</span>
+                      <span className="mdot-name">{a.name}</span>
+                    </span>
+                  ))}
                 </span>
               </button>
             );
@@ -1240,18 +1336,25 @@ const DOT_LABEL_ZOOM = { today: 10, rest: 12.5 } as const;
  */
 function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: number, right: number) {
   type Box = { x0: number; x1: number; y0: number; y1: number };
-  const radius = (el: HTMLElement) => (el.classList.contains('is-today') ? 11 : 6);
+  // A merged pill's half-width stands in for a dot's radius (it sets --r for its label's offset).
+  const radius = (el: HTMLElement) => (el.dataset.mw ? Number(el.dataset.mw) / 2 : el.classList.contains('is-today') ? 11 : 6);
   for (const t of list) {
     if (t.el.dataset.w) continue;
     const label = t.el.querySelector<HTMLElement>('.mdot-label');
     if (!label) continue;
     t.el.dataset.w = String(label.offsetWidth);
     t.el.dataset.h = String(label.offsetHeight);
+    const pill = t.el.querySelector<HTMLElement>('.mgroup-mark');
+    if (pill) {
+      t.el.dataset.mw = String(pill.offsetWidth);
+      t.el.style.setProperty('--r', `${pill.offsetWidth / 2}px`);
+    }
   }
   // Every dot is in the way of every label but its own.
   const dotsAt: Box[] = list.map((t) => {
     const r = radius(t.el) + 2;
-    return { x0: t.sx - r, x1: t.sx + r, y0: t.sy - r, y1: t.sy + r };
+    const v = t.el.dataset.mw ? 13 : r;
+    return { x0: t.sx - r, x1: t.sx + r, y0: t.sy - v, y1: t.sy + v };
   });
   const overlap = (b: Box, p: Box) => !(b.x1 < p.x0 || b.x0 > p.x1 || b.y1 < p.y0 || b.y0 > p.y1);
   const placed: Box[] = [];
@@ -1265,10 +1368,18 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
     const toLeft: Box = { x0: t.sx - gap - w - 2, x1: t.sx - gap + 2, y0: toRight.y0, y1: toRight.y1 };
     const raised = t.el.dataset.prio === '0';
     const tier = t.el.dataset.tier === 'today' ? 'today' : 'rest';
+    // A pill lists its stops only when raised (and on hover or focus, in CSS).
+    if (t.el.dataset.tier === 'group' && !raised) {
+      t.el.classList.remove('is-labelled', 'is-left');
+      continue;
+    }
     // Near the right edge of the free area (a panel can cover the map's right side), left first.
     const sides = toRight.x1 > right - 8 ? [toLeft, toRight] : [toRight, toLeft];
     let pick: Box | null = null;
-    if (raised) pick = sides.find((b) => !hits(b, i)) ?? sides[0];
+    // A raised label must show: clear of everything if it can be, else at least inside the free area
+    // (over a dot, rather than cut off under the panel).
+    const inside = (b: Box) => b.x1 <= right && b.x0 >= 0;
+    if (raised) pick = sides.find((b) => inside(b) && !hits(b, i)) ?? sides.find(inside) ?? sides.find((b) => !hits(b, i)) ?? sides[0];
     // A dot under a panel or off the map keeps its label to itself.
     else if (zoom >= DOT_LABEL_ZOOM[tier] && t.sx >= 0 && t.sx <= right) pick = sides.find((b) => !hits(b, i)) ?? null;
     t.el.classList.toggle('is-labelled', !!pick);

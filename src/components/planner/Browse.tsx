@@ -1,6 +1,6 @@
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { Attraction } from '../../data/types';
-import { BROWSE_FILTERS, browseRows, filterCounts, markerName, type BrowseFilterId, type BrowseRow, type Marker } from '../../lib/browse';
+import { BROWSE_FILTERS, browseRows, filterCounts, freezeOrder, markerName, type BrowseFilterId, type BrowseRow, type Marker } from '../../lib/browse';
 import { photo } from '../../lib/photos';
 import type { Trip } from '../../lib/trips';
 import { Icon, type IconName } from '../Icon';
@@ -46,7 +46,13 @@ const markerOfRow = (r: BrowseRow, day: number): Marker =>
  */
 export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty }: Props) {
   const id = useId();
-  const rows = useMemo(() => browseRows(pool, trip, day, filters, replacing), [pool, trip, day, filters, replacing]);
+  // After an action the order holds (the row changes in place), until the day, the chips or the place
+  // change; leaving the sub-tab unmounts the list, which lists afresh too.
+  const [frozen, setFrozen] = useState<{ ids: string[]; day: number; filters: BrowseFilterId[]; pool: Attraction[] } | null>(null);
+  const sorted = useMemo(() => browseRows(pool, trip, day, filters, replacing), [pool, trip, day, filters, replacing]);
+  const held = frozen && frozen.day === day && frozen.filters === filters && frozen.pool === pool ? frozen.ids : null;
+  const rows = useMemo(() => freezeOrder(sorted, held), [sorted, held]);
+  const hold = () => setFrozen({ ids: rows.map((r) => r.a.id), day, filters, pool });
   const counts = useMemo(() => filterCounts(pool, filters), [pool, filters]);
   const toggle = (f: BrowseFilterId) => onFilters(filters.includes(f) ? filters.filter((x) => x !== f) : [...filters, f]);
 
@@ -102,7 +108,11 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
           {rows.map((r) => {
             const { a, facts, action } = r;
             const factsId = `${id}-f-${a.id}`;
-            const run = action.kind === 'remove' ? () => onRemove(a.id) : () => onAdd(a.id);
+            const run = () => {
+              hold();
+              if (action.kind === 'remove') onRemove(a.id);
+              else onAdd(a.id);
+            };
             return (
               <li
                 key={a.id}
