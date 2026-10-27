@@ -152,3 +152,11 @@ Deferred:
 - Part 1: minor (deferred): ratings aren't weekday-aware (National Museum Friday late opening flagged); starts before 06:00 count as morning; Sensō-ji evening ok vs 17:00 hours; Todoroki note says "unlit" (data only says daylight only); "Best part of the day" vs "Best time of day" titles near-duplicate; slot hour strings hardcoded in Conditions.tsx; no UI tests for chip/pills
 - Part 2: minor (deferred): bar day lost on reload; push adds a second planner entry when hops ≥ 2 (follows ruling); day-option building duplicated from DayList
 - Part 2: complete (71981c2..be0f001, fix round 1/5 all addressed). Part 2: minor (deferred): Back/map dead if navigate(-1) yields no popstate (stale hops, unlikely)
+
+## Phone planner header clean-up (branch planner-detail, 2026-10-27)
+
+- Fitline mark left out of the phone header (4 controls in 366px); search open/close via history state so Back closes it; zoom buttons hide while a card is open on phone — cost if wrong: no wordmark on phone planner.
+- phone planner frames by attractions (fitPins on narrow), card only pans; credit fades out at p 0.95–1 on phone planner — cost if wrong: Mount Takao starts outside the phone Tokyo view (as on Explore).
+- bottom tab bar stays reachable while searching (not inert) — leaving the planner from search is legitimate — cost if wrong: Tab can leave search to the tabs.
+
+- Minor (deferred): phone detected by map width in MapExplorer (implicit 761); no component tests for search history; Mount Takao outside phone framing (accepted; when on today's plan, not visible at rest)
