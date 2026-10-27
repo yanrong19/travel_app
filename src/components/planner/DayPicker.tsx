@@ -134,6 +134,8 @@ export function DayPicker({ options, value, onPick }: { options: DayOption[]; va
         aria-activedescendant={open ? `${id}-opt-${active}` : undefined}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKey}
+        // A button clicks on Space keyup (Firefox), which would close the list Space just opened.
+        onKeyUp={(e) => e.key === ' ' && e.preventDefault()}
       >
         <span id={`${id}-value`} className="dp-value">
           {current && <Parts o={current} />}

@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { Navigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
+import type { MapBubble } from '../map/MapExplorer';
 import { BottomTabs, TopNav } from '../components/Chrome';
 import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
@@ -40,6 +41,7 @@ import {
   type Trip,
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
+import { attractionLevelFor, countFor, nodeOf, parseRefKey, pathTo, placeAnchor, refKey, sameTree } from '../lib/placeTree';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from '../lib/tripUndo';
@@ -56,12 +58,13 @@ const noop = () => {};
 const INSETS: Insets = { top: 236, right: 476, bottom: 40, left: 40 };
 /**
  * Phone: the day panel is a bottom sheet over the map, as the map page's guide sheet is. The page
- * scrolls; the sheet peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR) and comes up to
- * SHEET_TOP, under the trip bar, the search and the place pills.
+ * scrolls; the sheet peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR), enough for the day
+ * dropdown, the one-line summary and the whole sub-tab pill, and comes up to SHEET_TOP, under the
+ * trip bar, the search, the place pills and the map level row. useGuideScroll gets the same peek.
  */
-const PEEK_PHONE = 128;
+const PEEK_PHONE = 164;
 const SHEET_CLEAR = 92;
-const SHEET_TOP = 240;
+const SHEET_TOP = 280;
 const INSETS_PHONE: Insets = { top: SHEET_TOP, right: 16, bottom: PEEK_PHONE + SHEET_CLEAR + 16, left: 16 };
 
 /** A 1-based position from the URL (`?day=3`) as a 0-based index; 0 when missing or not a whole number. */
@@ -92,9 +95,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
 
-  // The day and place shown live in the URL (?day=3&place=2, 1-based), and the Wet-weather plan
-  // sub-tab as &tab=wet, so Back from an attraction page comes back to them. Written with replace:
-  // switching days isn't a step in history.
+  // The day and place shown live in the URL (?day=3&place=2, 1-based), the Wet-weather plan
+  // sub-tab as &tab=wet, and the map level being viewed as &view=region:kanto, so Back from an
+  // attraction page comes back to them. Written with replace: switching days isn't a step in history.
   const [params, setParams] = useSearchParams();
   const dayIdx = indexParam(params.get('day'));
   const placeIdx = indexParam(params.get('place'));
@@ -104,6 +107,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
         (p) => {
           const q = new URLSearchParams(p);
           q.set(key, String(index + 1));
+          // Picking a trip place views that place itself.
+          if (key === 'place') q.delete('view');
           return q;
         },
         { replace: true, preventScrollReset: true },
@@ -143,30 +148,81 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (dayIdx !== day) setDayIdx(day);
   }, [dayIdx, day, setDayIdx]);
   const place = trip.places[pi] ?? null;
-  const placeKey = place ? `${place.level}:${place.id}` : '';
-  const placeName = place ? placeLabel(place).name : 'this trip';
+
+  // The viewed place: the map's level, kept apart from the trip's places. It starts at the trip place
+  // and moves up and down that place's tree (the breadcrumb, bubbles and chips); a view from another
+  // tree (the place it came from was removed) falls back to the trip place.
+  const viewParam = parseRefKey(params.get('view'));
+  const viewed = place && viewParam && sameTree(viewParam, place) ? viewParam : place;
+  const viewKey = viewed ? refKey(viewed) : '';
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const node = useMemo(() => (viewed ? nodeOf(viewed) : null), [viewKey]);
+  const viewedName = node?.label ?? 'this trip';
+  /** Views a place: in the current trip place's tree, or in the tree of the trip place it belongs to. */
+  const setViewed = useCallback(
+    (ref: PlaceRef) => {
+      const at = place && sameTree(ref, place) ? pi : trip.places.findIndex((p) => sameTree(p, ref));
+      if (at < 0) return;
+      const home = trip.places[at];
+      setParams(
+        (p) => {
+          const q = new URLSearchParams(p);
+          q.set('place', String(at + 1));
+          if (sameRef(ref, home)) q.delete('view');
+          else q.set('view', refKey(ref));
+          return q;
+        },
+        { replace: true, preventScrollReset: true },
+      );
+    },
+    [place, pi, trip.places, setParams],
+  );
 
   useEffect(() => {
     document.title = `${trip.name} · Fitline`;
   }, [trip.name]);
 
   // ---- the map ----
-  // Keyed on the place itself, so an unrelated edit doesn't hand the map a new target and reframe it.
+  // Keyed on the viewed place itself, so an unrelated edit doesn't hand the map a new target and reframe it.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const view = useMemo(() => (place ? placeView(place) : null), [placeKey]);
+  const view = useMemo(() => (viewed ? placeView(viewed) : null), [viewKey]);
+  // Pins only at the attraction level; above it, a count bubble per child place.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pins = useMemo(() => (place ? attractionsIn(place) : []), [placeKey]);
+  const pins = useMemo(() => (viewed && node?.attractionLevel ? attractionsIn(viewed) : []), [viewKey]);
+  const setViewedRef = useRef(setViewed);
+  setViewedRef.current = setViewed;
+  const bubbles = useMemo<MapBubble[] | undefined>(
+    () =>
+      node && !node.attractionLevel
+        ? node.children.map((c) => ({
+            id: refKey(c),
+            ll: placeAnchor(c),
+            label: placeLabel(c).name,
+            count: countFor(c),
+            onPick: () => setViewedRef.current(c),
+          }))
+        : undefined,
+    [node],
+  );
   const tones = useMemo(() => {
     const t: Record<string, 'today' | 'other'> = {};
     trip.days.forEach((d, i) => d.stops.forEach((s) => (t[s] = i === day ? 'today' : 'other')));
     return t;
   }, [trip.days, day]);
-  const scope = useMemo(() => ({ name: placeName, attractions: pins }), [placeName, pins]);
+  // The search covers the viewed place; above the attraction level, every attraction in the trip.
+  const placesKey = trip.places.map(refKey).join(',');
+  const scope = useMemo(() => {
+    if (!node || node.attractionLevel) return { name: viewedName, attractions: pins };
+    const all = new Map(trip.places.flatMap(attractionsIn).map((a) => [a.id, a]));
+    return { name: 'this trip', attractions: [...all.values()] };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node, viewedName, pins, placesKey]);
   const picked = selected ? (stopsOf([selected])[0] ?? null) : null;
 
-  // A new place or day closes the card; a new day leaves replace mode (the sub-tab stays).
-  useEffect(() => setSelected(null), [placeKey]);
+  // A new day leaves replace mode (the sub-tab stays). A new viewed place closes the card, unless
+  // the search moved the map there to open one (below).
   useEffect(() => setReplace(null), [day]);
+  const pendingOpen = useRef<string | null>(null);
 
   // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
@@ -270,7 +326,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
         type="button"
         className={`button is-compact plan-save ${on ? 'is-done' : 'is-quiet'}`}
         aria-pressed={on}
-        aria-label={on ? `Saved to this trip: ${name}. Remove from Saved` : `Save ${name} to this trip`}
+        aria-label={`Save ${name} to this trip`}
         onClick={() => (on ? unsave(sid) : edit((t, now) => saveToTrip(t, sid, now)))}
       >
         <Icon name={on ? 'check' : 'plus'} />
@@ -420,7 +476,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [selected, replace]);
 
-  const empty = !!place && pins.length === 0;
+  const empty = !!viewed && countFor(viewed) === 0;
   const insets = narrow ? INSETS_PHONE : INSETS;
 
   // ---- the phone sheet ----
@@ -442,6 +498,22 @@ function PlannerPage({ trip }: { trip: Trip }) {
     setSelected(sid);
     if (narrow) scrollToTop();
   };
+  useEffect(() => {
+    const sid = pendingOpen.current;
+    pendingOpen.current = null;
+    if (sid) openStop(sid);
+    else setSelected(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewKey]);
+  /** A search result: above the attraction level the map first goes to the place that holds it. */
+  const searchPick = (sid: string) => {
+    if (!viewed || node?.attractionLevel) return openStop(sid);
+    const roots = [viewed, ...trip.places.map((p) => pathTo(p)[0])];
+    const home = roots.map((r) => attractionLevelFor(r, sid)).find((r) => r !== null);
+    if (!home) return openStop(sid);
+    pendingOpen.current = sid;
+    setViewed(home);
+  };
 
   const switcher = (
     <PlaceSwitcher
@@ -451,6 +523,56 @@ function PlannerPage({ trip }: { trip: Trip }) {
       onAdd={() => setSheet('places')}
       onRemove={(i) => askRemovePlace(trip.places[i])}
     />
+  );
+
+  // The map level: a breadcrumb up the viewed place's tree, then a chip per child for keyboard and phone.
+  const path = viewed ? pathTo(viewed) : [];
+  const levels = viewed && (
+    <div className="plan-levels">
+      <nav className="lvl-crumbs" aria-label="Map level">
+        <ol>
+          {path.map((r, i) => {
+            const name = placeLabel(r).name;
+            return (
+              <li key={refKey(r)}>
+                {i < path.length - 1 ? (
+                  <>
+                    <button type="button" className="lvl-crumb" onClick={() => setViewed(r)}>
+                      {name}
+                    </button>
+                    <span className="lvl-sep" aria-hidden="true">
+                      ›
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="lvl-crumb is-current" aria-current="location">
+                      {name}
+                    </span>
+                    {/* Leads into the chips: Japan › Hokkaidō, Tōhoku, Kantō… */}
+                    {bubbles && bubbles.length > 0 && (
+                      <span className="lvl-sep is-lead" aria-hidden="true">
+                        ›
+                      </span>
+                    )}
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+      {bubbles && bubbles.length > 0 && (
+        <div className="lvl-chips" role="group" aria-label={`Places in ${viewedName}`}>
+          {bubbles.map((b) => (
+            <button key={b.id} type="button" className={`lvl-chip ${b.count ? 'is-live' : ''}`} onClick={b.onPick}>
+              {b.label}
+              <span className="lvl-chip-count num">{b.count || 'Soon'}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 
   const days = (
@@ -487,7 +609,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
             <Icon name="map" size={18} />
             <p>
               <strong>No checked attractions yet</strong>
-              {placeName} is on the map, but its attractions aren’t checked yet. Tokyo is. Your stops stay on their days.
+              {viewedName} is on the map, but its attractions aren’t checked yet. Tokyo is. Your stops stay on their days.
             </p>
           </div>
         )
@@ -535,12 +657,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onCountry={noop}
             onRegion={noop}
             onArea={noop}
-            onAttraction={openStop}
+            onAttraction={searchPick}
             onNotice={setNotice}
           />
         )}
         {/* Phone: the place pills get a row of their own under the search, scrolling sideways. */}
         {narrow && <div className="plan-places">{switcher}</div>}
+        {levels}
       </div>
 
       <div className="explore-stage">
@@ -554,6 +677,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               hoverId={hoverId}
               selectedId={selected}
               tones={tones}
+              bubbles={bubbles}
               tour={false}
               wheelScrollsPage={false}
               attributionHost={narrow ? attribHost : null}

@@ -128,6 +128,17 @@ interface Props {
   litCountries?: string[];
   /** A country clicked at world level; when set, it's called instead of `onCountry`. */
   onWorldPick?: (worldId: string) => void;
+  /** Trip planning above the attraction level: one count bubble per child place, in place of pins. */
+  bubbles?: MapBubble[];
+}
+
+/** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
+export interface MapBubble {
+  id: string;
+  ll: [number, number];
+  label: string;
+  count: number;
+  onPick(): void;
 }
 
 type Pad = { top: number; right: number; bottom: number; left: number };
@@ -154,6 +165,7 @@ export function MapExplorer(props: Props) {
     tones,
     tour = true,
     litCountries,
+    bubbles,
   } = props;
   const tourRef = useRef(tour);
   tourRef.current = tour;
@@ -191,6 +203,7 @@ export function MapExplorer(props: Props) {
   // Planning mode: countries are being picked, so no destination is tinted stronger than another.
   const planning = litCountries !== undefined;
   const toneKey = tones ? Object.entries(tones).map(([id, t]) => `${id}:${t}`).sort().join(',') : '';
+  const bubbleKey = bubbles ? bubbles.map((b) => `${b.id}:${b.count}`).join(',') : '';
 
   // The tour: one destination lit at a time while the globe turns.
   const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
@@ -343,14 +356,17 @@ export function MapExplorer(props: Props) {
     const W = el.clientWidth;
     const H = el.clientHeight;
     const tickers: { el: HTMLElement; sx: number; sy: number }[] = [];
+    const bubbleEls: { el: HTMLElement; sx: number; sy: number }[] = [];
     el.querySelectorAll<HTMLElement>('[data-ll]').forEach((node) => {
       const [lng, lat] = node.dataset.ll!.split(',').map(Number);
       const p = map.project([lng, lat]);
       node.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
       if (node.dataset.flip !== undefined) node.classList.toggle('is-flipped', p.x > W - 140);
       if (node.classList.contains('ticker')) tickers.push({ el: node, sx: p.x, sy: p.y });
+      if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
+    if (bubbleEls.length) layoutBubbles(bubbleEls);
     const off = tickers.filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
     if (offscreen.current) {
       offscreen.current.dataset.on = off ? '1' : '';
@@ -512,12 +528,12 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey]);
 
   // Ticker widths change once the web fonts arrive: measure again.
   useEffect(() => {
     document.fonts?.ready.then(() => {
-      overlay.current?.querySelectorAll<HTMLElement>('.ticker').forEach((t) => delete t.dataset.w);
+      overlay.current?.querySelectorAll<HTMLElement>('.ticker, .mbubble').forEach((t) => delete t.dataset.w);
       place();
     });
   }, []);
@@ -857,6 +873,24 @@ export function MapExplorer(props: Props) {
               </button>
             );
           })}
+        {bubbles?.map((b, i) => (
+          <button
+            key={b.id}
+            type="button"
+            className={`mbubble ${b.count ? 'is-live' : ''}`}
+            data-ll={b.ll.join(',')}
+            // Places with checked attractions keep their labels first when bubbles crowd.
+            data-prio={(b.count ? 0.5 : 1) + i / 100}
+            style={{ ['--i' as string]: i }}
+            onClick={b.onPick}
+            aria-label={`${b.label}: ${b.count ? `${plural(b.count, 'checked attraction')}` : 'coming soon'}. Show`}
+          >
+            <span className="mbubble-pill" aria-hidden="true">
+              <span className="mbubble-name">{b.label}</span>
+              <span className="mbubble-count num">· {b.count || 'coming soon'}</span>
+            </span>
+          </button>
+        ))}
       </div>
 
       <svg ref={tether} className="globe-tether" aria-hidden="true">
@@ -1075,6 +1109,44 @@ function layoutTickers(list: { el: HTMLElement; sx: number; sy: number }[]) {
       t.el.classList.add('is-compact');
       placed.push({ x0: t.sx - 20, x1: t.sx + 20, y0: t.sy - 50, y1: t.sy });
     }
+  }
+}
+
+/**
+ * Count bubbles centre on their place, places with checked attractions first. One that would
+ * overlap a bubble placed before it drops its count ("Saitama"), then moves just above or below
+ * its place, and only then folds to a dot; its full label shows again on hover or focus.
+ */
+function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[]) {
+  for (const b of list) {
+    if (b.el.dataset.w) continue;
+    const pill = b.el.querySelector<HTMLElement>('.mbubble-pill');
+    if (!pill) continue;
+    b.el.classList.add('is-measuring');
+    b.el.classList.remove('is-short');
+    b.el.dataset.w = String(pill.offsetWidth);
+    b.el.dataset.h = String(pill.offsetHeight);
+    b.el.classList.add('is-short');
+    b.el.dataset.ws = String(pill.offsetWidth);
+    b.el.classList.remove('is-measuring', 'is-short');
+  }
+  type Box = { x0: number; x1: number; y0: number; y1: number };
+  const placed: Box[] = [];
+  const hits = (r: Box) => placed.some((p) => !(r.x1 < p.x0 || r.x0 > p.x1 || r.y1 < p.y0 || r.y0 > p.y1));
+  for (const b of [...list].sort((x, y) => Number(x.el.dataset.prio) - Number(y.el.dataset.prio))) {
+    const h = Number(b.el.dataset.h);
+    const box = (w: number, dy: number): Box => ({ x0: b.sx - w / 2 - 4, x1: b.sx + w / 2 + 4, y0: b.sy + dy - h / 2 - 3, y1: b.sy + dy + h / 2 + 3 });
+    const tries: { short: boolean; dy: number }[] = [
+      { short: false, dy: 0 },
+      { short: true, dy: 0 },
+      { short: true, dy: -(h + 6) },
+      { short: true, dy: h + 6 },
+    ];
+    const fit = tries.find((t) => !hits(box(Number(t.short ? b.el.dataset.ws : b.el.dataset.w), t.dy)));
+    b.el.classList.toggle('is-compact', !fit);
+    b.el.classList.toggle('is-short', !!fit?.short);
+    b.el.style.setProperty('--dy', `${fit?.dy ?? 0}px`);
+    placed.push(fit ? box(Number(fit.short ? b.el.dataset.ws : b.el.dataset.w), fit.dy) : { x0: b.sx - 9, x1: b.sx + 9, y0: b.sy - 9, y1: b.sy + 9 });
   }
 }
 

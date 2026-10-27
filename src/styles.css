@@ -3317,6 +3317,104 @@ h2:focus {
   opacity: 0.6;
 }
 
+/* ---------- Count bubbles: the trip planner above the attraction level ---------- */
+/* One per child place, centred on it: "Kantō · 16" in cedar, "Kansai · coming soon" in white.
+   A bubble that would overlap one placed before it folds to a dot and opens on hover or focus. */
+
+.mbubble {
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  z-index: 2;
+}
+.mbubble:not(.is-compact) {
+  z-index: 3;
+}
+.mbubble.is-live {
+  z-index: 4;
+}
+.mbubble:hover,
+.mbubble:focus-visible {
+  z-index: 6;
+  outline: none;
+}
+.mbubble-pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 14px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px -10px rgba(16, 25, 27, 0.55);
+  transform: translate(-50%, calc(-50% + var(--dy, 0px)));
+  transition:
+    transform 0.3s var(--ease-out),
+    height 0.3s var(--ease-out),
+    padding 0.3s var(--ease-out),
+    background-color 0.2s;
+  animation: mbubble-in 0.5s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes mbubble-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + var(--dy, 0px))) scale(0.6);
+  }
+}
+.mbubble-count {
+  font-weight: 600;
+  color: var(--muted);
+}
+.mbubble.is-live .mbubble-pill {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.mbubble.is-live .mbubble-count {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+.mbubble:hover .mbubble-pill,
+.mbubble:focus-visible .mbubble-pill {
+  transform: translate(-50%, calc(-50% + var(--dy, 0px))) scale(1.06);
+}
+.mbubble.is-short:not(:hover):not(:focus-visible) .mbubble-count {
+  display: none;
+}
+.mbubble:focus-visible .mbubble-pill {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.mbubble.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill {
+  height: 14px;
+  padding: 0 5px;
+  gap: 0;
+  background: var(--muted);
+}
+.mbubble.is-live.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill {
+  background: var(--cedar);
+  border-color: #fff;
+}
+.mbubble.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill > span {
+  display: none;
+}
+.mbubble.is-measuring .mbubble-pill {
+  transition: none;
+  animation: none;
+}
+
 .map-controls {
   position: absolute;
   left: max(20px, calc((100vw - 1240px) / 2));
@@ -6164,6 +6262,116 @@ button.area-card {
   background: var(--cedar-soft);
 }
 
+/* The map level under the search: a breadcrumb up the viewed place's tree (Japan › Kantō › Tokyo),
+   then a chip per child place, the bubbles' keyboard and phone twin. One row, scrolling sideways;
+   only the crumbs and chips take clicks, the gaps go to the map. */
+.plan-levels {
+  position: absolute;
+  top: 232px;
+  left: var(--search-left);
+  right: calc(max(24px, calc((100vw - 1240px) / 2)) + 444px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2px 2px 10px;
+}
+.explore-chrome > .plan-levels {
+  pointer-events: none;
+}
+.lvl-crumbs,
+.lvl-chip {
+  pointer-events: auto;
+}
+.lvl-crumbs {
+  flex: none;
+  height: 36px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--frost);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--float);
+}
+.lvl-crumbs ol {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lvl-crumbs li {
+  display: flex;
+  align-items: center;
+}
+.lvl-crumb {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--cedar);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+button.lvl-crumb:hover {
+  background: var(--cedar-soft);
+}
+.lvl-crumb.is-current {
+  color: var(--ink);
+  font-weight: 700;
+}
+.lvl-sep {
+  color: var(--muted);
+  font-size: 15px;
+}
+.lvl-sep.is-lead {
+  margin-right: 8px;
+}
+.lvl-chips {
+  flex: 1 1 280px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  pointer-events: none;
+}
+.lvl-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--float);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.lvl-chip:hover {
+  border-color: var(--control);
+}
+.lvl-chip-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+.lvl-chip.is-live .lvl-chip-count {
+  color: var(--cedar);
+  font-weight: 700;
+}
+
 /* Scoped to the page's own search and map: the place picker in a sheet has its own. */
 .planner > .explore-chrome > .msearch {
   top: 172px;
@@ -6171,8 +6379,9 @@ button.area-card {
 .planner > .explore-stage .map-offscreen {
   top: 172px;
 }
+/* Below the map level row, which wraps to two rows above the attraction level. */
 .planner .pincard {
-  top: 240px;
+  top: 324px;
 }
 /* Notes drop below the trip bar instead of covering it. */
 .planner .toast:not(.is-action) {
@@ -7199,6 +7408,29 @@ button.area-card {
   .plan-places .psw {
     padding: 2px 12px 12px;
     scroll-padding: 0 12px;
+  }
+  /* The map level: a row of its own under the place pills, edge to edge, scrolling sideways. */
+  .plan-levels {
+    top: 232px;
+    left: 0;
+    right: 0;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 2px 12px 10px;
+    overflow-x: auto;
+    scroll-padding: 0 12px;
+    scrollbar-width: none;
+  }
+  .plan-levels::-webkit-scrollbar {
+    display: none;
+  }
+  .lvl-chips {
+    flex: none;
+    flex-wrap: nowrap;
+  }
+  .lvl-crumbs,
+  .lvl-chip {
+    height: 34px;
   }
   .psw-pill,
   .psw-add {

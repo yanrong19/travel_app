@@ -60,7 +60,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 
 - TopNav links (desktop): **Explore**, **Trips**, **Saved**. BottomTabs (phone): **Explore**, **Trips**, **Saved**. The Tokyo tab is removed from both; its route `/map/japan/tokyo` stays reachable from the map.
 - Attraction page and map PinCard gain an **"Add to trip"** button.
-  - With no trips, it starts a new trip with that attraction's place picked and the attraction waiting in an "Unplanned" tray.
+  - With no trips, it starts a new trip with that attraction's place picked and the attraction waiting in the trip's Saved list.
   - With trips, it opens a small picker (trip, then day). The last-used trip and day come first.
 - The hearted **Saved** list stays as it is (drawer). Inside the planner it appears as a "Saved" tray of attractions that can be dropped into a day.
 
@@ -117,7 +117,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
   - move up and move down (drag to reorder on desktop is optional for the builder)
   - remove (with an undo toast)
   - **replace**: puts the list in replace mode for that stop ("Pick a replacement for Mount Takao"). The next attraction added from the map, search or trays takes its place. Escape or a Cancel button leaves replace mode.
-- An "Unplanned" tray collects attractions added from outside a day (e.g. "Add to trip" from the attraction page). They can be dropped into any day.
+- The trip's Saved list (its "Saved" tray) collects attractions saved for the trip from outside a day (e.g. "Add to trip" from the attraction page, or the planner card's Save toggle). They can be added to any day and stay in Saved once planned. (Revised 2026-10-27: this replaced the "Unplanned" tray.)
 
 **Day summary** (updates live; per factor, never averaged):
 
@@ -181,7 +181,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 - **Trips are saved in the browser** (localStorage), under a new key, e.g. `fitline.trips`:
   - a list of trips: `{ id, name, places, startDate?, days, who, pace, dayStart, plan, createdAt, updatedAt }`
   - `places`: ordered refs such as `{ level: 'country' | 'region' | 'prefecture' | 'area', id }`
-  - `plan`: per day `{ stops: attractionId[], wet: attractionId[] }`, plus `unplanned: attractionId[]`
+  - `plan`: per day `{ stops: attractionId[], wet: attractionId[] }`, plus the trip's `saved: attractionId[]` (it replaced `unplanned`)
   - Saving happens on every change. Reads tolerate missing or corrupt data, starting fresh with a notice if it can't be parsed. Include a `version` field.
 - The existing hearted list (`src/lib/trip.tsx`, `TripProvider`/`useTrip`, key `fitline.trip`) is the "Saved" feature, and its name now collides with real trips. Rename it in code to `SavedProvider`/`useSaved` (file `src/lib/saved.tsx`) and keep reading the old storage key, so nobody's hearts are lost.
 - Summary maths lives in pure, unit-tested functions (Vitest is set up). The same goes for the travel estimate and the mock forecast.
@@ -234,7 +234,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 - **Who's going.**
   - A Vibe flag when a stop's `vibe.suits[who]` is `poor` (e.g. "Not great for families").
   - It's a warning only; nothing is hidden.
-- **"Add to trip" with no trips** opens `/trips/new` pre-filled with the attraction's Tokyo place, and the attraction waits in Unplanned. A trip always gets its settings in Step 2. The picker offers the trip's days plus Unplanned.
+- **"Add to trip" with no trips** opens `/trips/new` pre-filled with the attraction's Tokyo place, and the attraction waits in the trip's Saved list. A trip always gets its settings in Step 2. The picker offers the trip's days plus "Save to trip".
 
 ## Left to the builder
 
