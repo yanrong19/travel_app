@@ -7711,6 +7711,9 @@ button.lvl-crumb:hover {
   align-items: center;
   gap: 6px;
 }
+.tbar-map {
+  display: none;
+}
 .tbar-toggle {
   display: inline-flex;
   align-items: center;
@@ -7885,6 +7888,13 @@ button.lvl-crumb:hover {
   .tbar-toggle {
     width: 44px;
     padding: 0;
+  }
+  /* The save bar's map button, here since the save bar steps aside while planning. */
+  .tbar-map {
+    display: grid;
+    flex: none;
+    width: 44px;
+    height: 44px;
   }
   .tbar-toggle-text {
     position: absolute;

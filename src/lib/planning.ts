@@ -10,15 +10,26 @@ export interface Planning {
    * attraction page opened from here. At 1 the previous entry is the planner itself.
    */
   hops: number;
+  /** The day (0-based) picked in the trip bar on the page that opened this one; null: the planner's own. */
+  day: number | null;
 }
 
 /** Router state for opening an attraction from the planner. */
-export const planningState = (tripId: string, search: string) => ({ planning: { tripId, search: normalSearch(search), hops: 1 } satisfies Planning });
+export const planningState = (tripId: string, search: string) => ({
+  planning: { tripId, search: normalSearch(search), hops: 1, day: null } satisfies Planning,
+});
 
-/** Router state for opening another attraction from an attraction page in planning: one hop further. */
-export const onwardState = (p: Planning) => ({ planning: { ...p, hops: p.hops + 1 } satisfies Planning });
+/** Router state for opening another attraction from an attraction page in planning: one hop further, with the bar's day. */
+export const onwardState = (p: Planning, day: number | null = p.day) => ({ planning: { ...p, hops: p.hops + 1, day } satisfies Planning });
 
 const normalSearch = (s: string) => (s && !s.startsWith('?') ? `?${s}` : s);
+
+/** The day in a planner search, 0-based and unclamped; 0 when missing or not a whole number ≥ 1. */
+const dayParam = (search: string) => {
+  const v = new URLSearchParams(search).get('day');
+  const n = Number(v);
+  return v !== null && Number.isInteger(n) && n >= 1 ? n - 1 : 0;
+};
 
 /** The planning context in a location's state, or null when there is none or it isn't one. */
 export function readPlanning(state: unknown): Planning | null {
@@ -27,24 +38,50 @@ export function readPlanning(state: unknown): Planning | null {
   const search = typeof p.search === 'string' ? normalSearch(p.search) : '';
   // Unknown hops: the previous entry can't be trusted to be the planner, so Back goes by URL.
   const hops = typeof p.hops === 'number' && Number.isInteger(p.hops) && p.hops >= 1 ? p.hops : 0;
-  return { tripId: p.tripId, search, hops };
+  const day = typeof p.day === 'number' && Number.isInteger(p.day) && p.day >= 0 ? p.day : null;
+  return { tripId: p.tripId, search, hops, day };
 }
 
-/** The planner page the context came from: `/trips/<id>?day=…`. */
-export const plannerPath = (p: Planning) => `/trips/${encodeURIComponent(p.tripId)}${p.search}`;
+/** The planner page the context came from (`/trips/<id>?day=…`), on `day` (0-based) when given. */
+export function plannerPath(p: Planning, day: number | null = null): string {
+  let search = p.search;
+  if (day !== null && day !== dayParam(search)) {
+    const q = new URLSearchParams(search);
+    q.set('day', String(day + 1));
+    search = `?${q}`;
+  }
+  return `/trips/${encodeURIComponent(p.tripId)}${search}`;
+}
 
-/** The planner's day (0-based) from its search, within a trip of `dayCount` days; the first when missing. */
-export function planningDay(search: string, dayCount: number): number {
-  const v = new URLSearchParams(search).get('day');
-  const n = Number(v);
-  const day = v !== null && Number.isInteger(n) && n >= 1 ? n - 1 : 0;
+/** The day the trip bar starts on (0-based), within a trip of `dayCount` days: the one carried, else the planner's. */
+export function planningDay(p: Planning, dayCount: number): number {
+  const day = p.day ?? dayParam(p.search);
   return Math.max(0, Math.min(day, dayCount - 1));
 }
 
+/** Router state the planner reads once: open this attraction's card on the map. */
+export type PlannerState = { open: string };
+
+/** The attraction whose card a planner location's state asks to open, or null. */
+export function readPlannerOpen(state: unknown): string | null {
+  const open = (state as Partial<PlannerState> | null)?.open;
+  return typeof open === 'string' && open ? open : null;
+}
+
 /**
- * Where the page's Back button goes in planning: one step back in history when that entry is the
- * planner (so its history entry is reused), else to the planner's URL.
+ * How the attraction page goes back to the planner, on the bar's `day`, and with `open`'s card shown
+ * (the "See it on the map" button):
+ * - `back`: one step back in history; the planner entry there is exactly right.
+ * - `back-replace`: the planner is the previous entry but needs another day or a card: step back, then
+ *   replace that entry with `to` (and `state`), so history never holds the planner twice.
+ * - `push`: the planner isn't the previous entry; go to `to`.
  */
-export function backTarget(p: Planning): { delta: -1 } | { to: string } {
-  return p.hops === 1 ? { delta: -1 } : { to: plannerPath(p) };
+export type PlannerReturn = { kind: 'back' } | { kind: 'back-replace' | 'push'; to: string; state?: PlannerState };
+
+export function plannerReturn(p: Planning, opts: { day?: number | null; open?: string | null } = {}): PlannerReturn {
+  const to = plannerPath(p, opts.day ?? null);
+  const state = opts.open ? { open: opts.open } : undefined;
+  if (p.hops !== 1) return { kind: 'push', to, state };
+  if (to === plannerPath(p) && !state) return { kind: 'back' };
+  return { kind: 'back-replace', to, state };
 }

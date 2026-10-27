@@ -41,13 +41,26 @@ type Undo = { text: string; run: () => void };
 /**
  * The attraction page while planning a trip: a slim pinned bar with the trip, a day, the planner
  * card's add / remove / move action and the trip's Save toggle, and an expandable list of that day's
- * stops with its summary. Edits go to the trip, with Undo, as in the planner.
+ * stops with its summary. Edits go to the trip, with Undo, as in the planner. The page holds the day,
+ * so Back and onward links carry it.
  */
-export function TripBar({ trip, a, initialDay }: { trip: Trip; a: Attraction; initialDay: number }) {
+export function TripBar({
+  trip,
+  a,
+  day: pick,
+  onDay,
+  onMap,
+}: {
+  trip: Trip;
+  a: Attraction;
+  day: number;
+  onDay: (day: number) => void;
+  /** Back to the planner with this attraction's card on the map (the phone's map button; laptop has its own). */
+  onMap: () => void;
+}) {
   const { update } = useTrips();
   const id = useId();
   const edit = (fn: Edit) => update(trip.id, fn);
-  const [pick, setPick] = useState(initialDay);
   const day = Math.min(pick, trip.days.length - 1);
   const [open, setOpen] = useState(readOpen);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -148,7 +161,7 @@ export function TripBar({ trip, a, initialDay }: { trip: Trip; a: Attraction; in
             </span>
           </p>
           <div className="tbar-day">
-            <DayPicker options={options} value={day} onPick={setPick} />
+            <DayPicker options={options} value={day} onPick={onDay} />
           </div>
           <button type="button" className={`button is-compact tbar-add ${on === day ? 'is-quiet' : ''}`} onClick={addAction}>
             <Icon name={addIcon} />
@@ -164,6 +177,9 @@ export function TripBar({ trip, a, initialDay }: { trip: Trip; a: Attraction; in
             >
               <Icon name={saved ? 'check' : 'plus'} />
               {saved ? 'Saved' : 'Save'}
+            </button>
+            <button type="button" className="round-button tbar-map" onClick={onMap} aria-label="See it on the map" title="See it on the map">
+              <Icon name="map" size={18} />
             </button>
             <button
               ref={toggleRef}

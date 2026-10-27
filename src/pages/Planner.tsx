@@ -19,7 +19,7 @@ import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
-import { planningState } from '../lib/planning';
+import { planningState, readPlannerOpen } from '../lib/planning';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -102,7 +102,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const [params, setParams] = useSearchParams();
   // An attraction page opened from here gets this search with the trip, so it shows the trip bar and
   // its Back comes back to the same day, place, view and tab.
-  const { search } = useLocation();
+  const { search, state: navState, key: navKey } = useLocation();
   const dayIdx = indexParam(params.get('day'));
   const placeIdx = indexParam(params.get('place'));
   const setParam = useCallback(
@@ -524,6 +524,16 @@ function PlannerPage({ trip }: { trip: Trip }) {
     pendingOpen.current = sid;
     setViewed(home);
   };
+  // "See it on the map" on an attraction page in planning comes back here with { open: id } in router
+  // state: its card opens once per history entry, by the same path as the day list's.
+  const openedFor = useRef<string | null>(null);
+  useEffect(() => {
+    const sid = readPlannerOpen(navState);
+    if (!sid || openedFor.current === navKey) return;
+    openedFor.current = navKey;
+    openStop(sid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navKey]);
 
   const switcher = (
     <PlaceSwitcher

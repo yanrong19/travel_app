@@ -22,7 +22,7 @@ import { flags, readings, realTime } from '../lib/factors';
 import { clock, duration, durationRange, plural, yen } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
 import { photo, photoSet, creditFor } from '../lib/photos';
-import { backTarget, onwardState, planningDay, readPlanning } from '../lib/planning';
+import { onwardState, plannerReturn, planningDay, readPlanning } from '../lib/planning';
 import { MORPH_NAME, useGo } from '../lib/transition';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
@@ -83,12 +83,25 @@ function Detail({ a }: { a: A }) {
   const planning = readPlanning(state);
   const planTrip = planning ? get(planning.tripId) : undefined;
   const inPlan = planning && planTrip ? { p: planning, trip: planTrip } : null;
-  const back = () => {
-    if (!inPlan) return go(areaPath(a.area));
-    const to = backTarget(inPlan.p);
-    if ('delta' in to) navigate(to.delta);
-    else go(to.to);
+  // The trip bar's day: Back, "See it on the map" and the onward links carry it.
+  const [barDay, setBarDay] = useState(() => (inPlan ? planningDay(inPlan.p, inPlan.trip.days.length) : 0));
+  /** Back to the planner on the bar's day, with `open`'s card shown on the map when given. */
+  const toPlanner = (open?: string) => {
+    if (!inPlan) return;
+    const r = plannerReturn(inPlan.p, { day: barDay, open });
+    if (r.kind === 'push') return go(r.to, { state: r.state });
+    if (r.kind === 'back-replace') {
+      // The planner is the previous entry: step back onto it, then rewrite it (no second planner entry).
+      const onPop = () => {
+        window.removeEventListener('popstate', onPop);
+        navigate(r.to, { replace: true, state: r.state });
+      };
+      window.addEventListener('popstate', onPop);
+    }
+    navigate(-1);
   };
+  const back = () => (inPlan ? toPlanner() : go(areaPath(a.area)));
+  const toMap = () => (inPlan ? toPlanner(a.id) : go(areaPath(a.area)));
   const reduced = useReducedMotion();
   const narrow = useMedia('(max-width: 760px)');
   const lenis = useRef<Lenis | null>(null);
@@ -134,7 +147,7 @@ function Detail({ a }: { a: A }) {
   return (
     <div className={`detail ${inPlan ? 'is-planning' : ''}`}>
       {!narrow && <TopNav />}
-      {inPlan && <TripBar trip={inPlan.trip} a={a} initialDay={planningDay(inPlan.p.search, inPlan.trip.days.length)} />}
+      {inPlan && <TripBar trip={inPlan.trip} a={a} day={barDay} onDay={setBarDay} onMap={toMap} />}
       <div className="detail-grid">
         <section className="d-hero" aria-labelledby="d-title">
           <img
@@ -188,7 +201,7 @@ function Detail({ a }: { a: A }) {
                   <AddToTrip attractionId={a.id} place={place} />
                 </>
               )}
-              <button type="button" className="button is-quiet" onClick={() => go(areaPath(a.area))}>
+              <button type="button" className="button is-quiet" onClick={toMap}>
                 <Icon name="map" />
                 See it on the map
               </button>
@@ -273,7 +286,7 @@ function Detail({ a }: { a: A }) {
             >
               {others.map((o) => (
                 <SwiperSlide key={o.id}>
-                  <TileCard a={o} lens="any" linkState={inPlan ? onwardState(inPlan.p) : undefined} heart={!inPlan} />
+                  <TileCard a={o} lens="any" linkState={inPlan ? onwardState(inPlan.p, barDay) : undefined} heart={!inPlan} />
                 </SwiperSlide>
               ))}
             </Swiper>
