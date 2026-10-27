@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Navigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
 import type { MapBubble } from '../map/MapExplorer';
@@ -19,6 +19,7 @@ import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
+import { planningState } from '../lib/planning';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -99,6 +100,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // sub-tab as &tab=wet, and the map level being viewed as &view=region:kanto, so Back from an
   // attraction page comes back to them. Written with replace: switching days isn't a step in history.
   const [params, setParams] = useSearchParams();
+  // An attraction page opened from here gets this search with the trip, so it shows the trip bar and
+  // its Back comes back to the same day, place, view and tab.
+  const { search } = useLocation();
   const dayIdx = indexParam(params.get('day'));
   const placeIdx = indexParam(params.get('place'));
   const setParam = useCallback(
@@ -716,7 +720,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               exit={{ opacity: 0, y: 40 }}
               transition={{ duration: reduced ? 0 : 0.4, ease: EASE_OUT }}
             >
-              <PinCard a={picked} onOpen={(aid) => go(`/attraction/${aid}`)} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
+              <PinCard a={picked} onOpen={(aid) => go(`/attraction/${aid}`, { state: planningState(trip.id, search) })} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
             </motion.div>
           )}
         </AnimatePresence>

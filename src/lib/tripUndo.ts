@@ -1,7 +1,7 @@
 // What the planner's Undo buttons run: each builder returns an edit, (trip, now) => trip, to apply to
 // the trip as it is when Undo is pressed. An undo never overrides a change made since: if the plan has
 // moved on, it does nothing.
-import { addStop, dayOf, moveStop, removePlace, replaceStop, type PlaceRef, type Trip } from './trips';
+import { addStop, dayOf, moveStop, removePlace, removeStop, replaceStop, type PlaceRef, type Trip } from './trips';
 
 export type Edit = (t: Trip, now: number) => Trip;
 
@@ -29,6 +29,18 @@ export function undoRemoveStop(day: number, id: string, index: number): Edit {
     const back = addStop(t, day, id, now);
     const at = back.days[day]?.stops.indexOf(id) ?? -1;
     return at < 0 ? back : moveStop(back, day, at, Math.min(index, at), now);
+  };
+}
+
+/**
+ * A stop added to a day goes back off it; one moved there from another day goes back to that day at
+ * its old index (`from`). A no-op once it is no longer on `day` (removed or moved again since).
+ */
+export function undoAddStop(day: number, id: string, from: { day: number; index: number } | null): Edit {
+  return (t, now) => {
+    if (dayOf(t, id) !== day) return t;
+    const off = removeStop(t, day, id, now);
+    return from ? undoRemoveStop(from.day, id, from.index)(off, now) : off;
   };
 }
 

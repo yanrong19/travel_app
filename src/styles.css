@@ -7637,3 +7637,269 @@ button.lvl-crumb:hover {
     padding: 12px 16px 16px;
   }
 }
+
+/* ---------- Trip bar: the attraction page while planning ---------- */
+/* Pinned at the top, frosted as the planner's panels: the trip, a day, the planner card's action and
+   the trip's Save, and below it the day's plan. Only when the planner opened the page. */
+
+.tbar {
+  position: sticky;
+  top: 12px;
+  z-index: 25;
+  width: var(--page);
+  margin: 12px auto 0;
+  border-radius: 999px;
+  background: var(--frost);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--float);
+}
+.tbar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 280px) auto auto;
+  grid-template-areas: 'trip day add tools';
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 7px 8px 7px 20px;
+}
+.tbar-trip {
+  grid-area: trip;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--cedar);
+}
+.tbar-trip > svg {
+  flex: none;
+}
+.tbar-trip-text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+.tbar-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tbar-trip strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tbar-day {
+  grid-area: day;
+  min-width: 0;
+}
+.tbar-day .dp-button {
+  height: 44px;
+}
+.tbar-add {
+  grid-area: add;
+}
+.tbar-tools {
+  grid-area: tools;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 14px 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color 0.2s;
+}
+.tbar-toggle:hover {
+  border-color: var(--control);
+}
+.tbar-toggle[aria-expanded='true'] {
+  border-color: var(--cedar);
+}
+.tbar-toggle:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.tbar-toggle > svg {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.25s var(--ease-out);
+}
+.tbar-toggle[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+
+/* The day's plan: under the bar, on the right. Inside the bar's backdrop filter, a backdrop filter of
+   its own would blur nothing, so it is solid mist. Read-only but for each stop's remove. */
+.tbar-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(420px, 100%);
+  max-height: calc(100svh - 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-xl);
+  background: var(--mist);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--lift);
+  animation: tbar-in 0.3s var(--ease-out);
+}
+.tbar-panel[hidden] {
+  display: none;
+}
+@keyframes tbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.tbar-line {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 700;
+  text-wrap: balance;
+}
+.tbar-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tbar-flags li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 5px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.tbar-flags li .num {
+  font-weight: 500;
+}
+.tbar-flags li.is-on {
+  background: var(--soft);
+  color: var(--tone);
+}
+.tbar-stops {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+.tbar-stop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 6px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: var(--surface);
+}
+.tbar-stop.is-here {
+  border-color: var(--cedar);
+}
+.tbar-stop .dl-stop-text {
+  flex: 1;
+}
+.tbar-stop .dl-stop-photo img {
+  width: 52px;
+  height: 52px;
+}
+.tbar-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed var(--control);
+  border-radius: var(--r-md);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Laptop: the sticky photo starts under the bar. */
+@media (min-width: 1101px) {
+  .detail.is-planning .d-hero {
+    top: 88px;
+    height: calc(100svh - 108px);
+  }
+}
+@media (max-width: 1100px) {
+  .tbar-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 220px) auto auto;
+  }
+}
+
+/* Phone: two rows fixed over the top of the photo, the trip with Save and the plan toggle, then the
+   day and the action. The photo's back button moves down under it. */
+@media (max-width: 760px) {
+  .tbar {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    margin: 0;
+    border-radius: 28px;
+  }
+  .tbar-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'trip tools'
+      'day add';
+    gap: 6px 8px;
+    min-height: 0;
+    padding: 6px;
+  }
+  .tbar-trip {
+    padding-left: 10px;
+  }
+  .tbar-toggle {
+    width: 44px;
+    padding: 0;
+  }
+  .tbar-toggle-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .tbar-panel {
+    left: 0;
+    width: auto;
+    max-height: calc(100svh - 140px);
+  }
+  .detail.is-planning .d-top {
+    top: 132px;
+  }
+}

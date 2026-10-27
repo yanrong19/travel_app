@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import Lenis from 'lenis';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Keyboard, A11y, Navigation } from 'swiper/modules';
@@ -16,13 +16,16 @@ import { FactorSheet } from '../components/FactorSheet';
 import { Station } from '../components/Station';
 import { Icon } from '../components/Icon';
 import { AddToTrip } from '../components/planner/AddToTrip';
+import { TripBar } from '../components/planner/TripBar';
 import { Footer, HeartButton, TopNav } from '../components/Chrome';
 import { flags, readings, realTime } from '../lib/factors';
 import { clock, duration, durationRange, plural, yen } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
 import { photo, photoSet, creditFor } from '../lib/photos';
+import { backTarget, onwardState, planningDay, readPlanning } from '../lib/planning';
 import { MORPH_NAME, useGo } from '../lib/transition';
 import { useSaved } from '../lib/saved';
+import { useTrips } from '../lib/tripsStore';
 import { useMedia } from '../lib/useMedia';
 import type { PlaceRef } from '../lib/trips';
 
@@ -71,7 +74,21 @@ function chipNote(a: A, line: LineId) {
 
 function Detail({ a }: { a: A }) {
   const go = useGo();
+  const navigate = useNavigate();
   const trip = useSaved();
+  // In planning when the planner opened this page (router state) for a trip this browser has: the
+  // trip bar replaces the hearts and the save bar, and Back goes to the planner.
+  const { state } = useLocation();
+  const { get } = useTrips();
+  const planning = readPlanning(state);
+  const planTrip = planning ? get(planning.tripId) : undefined;
+  const inPlan = planning && planTrip ? { p: planning, trip: planTrip } : null;
+  const back = () => {
+    if (!inPlan) return go(areaPath(a.area));
+    const to = backTarget(inPlan.p);
+    if ('delta' in to) navigate(to.delta);
+    else go(to.to);
+  };
   const reduced = useReducedMotion();
   const narrow = useMedia('(max-width: 760px)');
   const lenis = useRef<Lenis | null>(null);
@@ -115,8 +132,9 @@ function Detail({ a }: { a: A }) {
   }, [a]);
 
   return (
-    <div className="detail">
+    <div className={`detail ${inPlan ? 'is-planning' : ''}`}>
       {!narrow && <TopNav />}
+      {inPlan && <TripBar trip={inPlan.trip} a={a} initialDay={planningDay(inPlan.p.search, inPlan.trip.days.length)} />}
       <div className="detail-grid">
         <section className="d-hero" aria-labelledby="d-title">
           <img
@@ -130,10 +148,11 @@ function Detail({ a }: { a: A }) {
           />
           <div className="d-scrim" aria-hidden="true" />
           <div className="d-top">
-            <button type="button" className="glass-button" onClick={() => go(areaPath(a.area))} aria-label={`Back to ${area.properties.name}`}>
+            <button type="button" className="glass-button" onClick={back} aria-label={`Back to ${inPlan ? inPlan.trip.name : area.properties.name}`}>
               <Icon name="arrowLeft" size={20} />
             </button>
-            <HeartButton id={a.id} name={a.name} size={44} />
+            {/* In planning, Save goes to the trip (the bar), not the Saved list. */}
+            {!inPlan && <HeartButton id={a.id} name={a.name} size={44} />}
           </div>
           <div className="d-title" id="d-title">
             <KineticTitle
@@ -160,11 +179,15 @@ function Detail({ a }: { a: A }) {
 
           {!narrow && (
             <div className="d-actions">
-              <button type="button" className={`button ${saved ? 'is-done' : ''}`} onClick={() => trip.toggle(a.id)} aria-pressed={saved}>
-                <Icon name="heart" filled={saved} />
-                {saved ? 'Saved' : 'Save to my list'}
-              </button>
-              <AddToTrip attractionId={a.id} place={place} />
+              {!inPlan && (
+                <>
+                  <button type="button" className={`button ${saved ? 'is-done' : ''}`} onClick={() => trip.toggle(a.id)} aria-pressed={saved}>
+                    <Icon name="heart" filled={saved} />
+                    {saved ? 'Saved' : 'Save to my list'}
+                  </button>
+                  <AddToTrip attractionId={a.id} place={place} />
+                </>
+              )}
               <button type="button" className="button is-quiet" onClick={() => go(areaPath(a.area))}>
                 <Icon name="map" />
                 See it on the map
@@ -250,7 +273,7 @@ function Detail({ a }: { a: A }) {
             >
               {others.map((o) => (
                 <SwiperSlide key={o.id}>
-                  <TileCard a={o} lens="any" />
+                  <TileCard a={o} lens="any" linkState={inPlan ? onwardState(inPlan.p) : undefined} heart={!inPlan} />
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -260,7 +283,8 @@ function Detail({ a }: { a: A }) {
 
       {!narrow && <Footer />}
 
-      {narrow && (
+      {/* In planning the trip bar at the top does this bar's work. */}
+      {narrow && !inPlan && (
         <div className="d-bar">
           <button type="button" className={`button is-wide ${saved ? 'is-done' : ''}`} onClick={() => trip.toggle(a.id)} aria-pressed={saved}>
             <Icon name="heart" filled={saved} />

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, unsaveFromTrip } from './trips';
-import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from './tripUndo';
+import { undoAddStop, undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from './tripUndo';
 
 const base = () => {
   let t = newTrip({ name: 'T', places: [{ level: 'prefecture', id: '13' }], startDate: null, days: 3, who: 'solo', pace: 'normal' }, 1, 't');
@@ -100,4 +100,32 @@ test('undoUnsave puts the attraction back in saved at its index', () => {
 test('undoUnsave is a no-op when the attraction is saved again already', () => {
   const t = saveToTrip(unsaveFromTrip(saveToTrip(base(), 'x', 1), 'x', 2), 'x', 2);
   expect(undoUnsave('x', 0)(t, 3)).toBe(t);
+});
+
+test('undoAddStop takes a newly added stop back off its day', () => {
+  const t = addStop(base(), 1, 'x', 2);
+  const r = undoAddStop(1, 'x', null)(t, 3);
+  expect(r.days[1].stops).toEqual([]);
+  expect(r.days[0].stops).toEqual(['a', 'b', 'c']);
+  expect(r.updatedAt).toBe(3);
+});
+
+test('undoAddStop puts a moved stop back on its old day at its old index', () => {
+  const t = addStop(base(), 2, 'b', 2);
+  expect(t.days[0].stops).toEqual(['a', 'c']);
+  const r = undoAddStop(2, 'b', { day: 0, index: 1 })(t, 3);
+  expect(r.days[0].stops).toEqual(['a', 'b', 'c']);
+  expect(r.days[2].stops).toEqual([]);
+});
+
+test('undoAddStop leaves saved alone', () => {
+  const t = addStop(saveToTrip(base(), 'x', 1), 1, 'x', 2);
+  expect(undoAddStop(1, 'x', null)(t, 3).saved).toEqual(['x']);
+});
+
+test('undoAddStop is a no-op once the stop has left that day', () => {
+  const removed = removeStop(addStop(base(), 1, 'x', 2), 1, 'x', 2);
+  expect(undoAddStop(1, 'x', null)(removed, 3)).toBe(removed);
+  const movedOn = addStop(addStop(base(), 1, 'x', 2), 2, 'x', 2);
+  expect(undoAddStop(1, 'x', null)(movedOn, 3)).toBe(movedOn);
 });

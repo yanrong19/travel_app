@@ -85,8 +85,11 @@ export function FeatureCard({ a, lens, eager = false }: { a: Attraction; lens: L
   );
 }
 
-/** Grid card: photo on top, details underneath. */
-export function TileCard({ a, lens }: { a: Attraction; lens: LensId }) {
+/**
+ * Grid card: photo on top, details underneath. `linkState` goes with its link as router state (the
+ * planning context, from an attraction page in planning); `heart: false` leaves out the Saved heart.
+ */
+export function TileCard({ a, lens, linkState, heart = true }: { a: Attraction; lens: LensId; linkState?: unknown; heart?: boolean }) {
   const go = useGo();
   const img = useRef<HTMLImageElement>(null);
   const r = readings(a);
@@ -98,7 +101,7 @@ export function TileCard({ a, lens }: { a: Attraction; lens: LensId }) {
         <img ref={img} src={photo(a.id, 720)} alt="" loading="lazy" draggable={false} />
         <div className="tile-top">
           <LensBadge a={a} lens={lens} />
-          <HeartButton id={a.id} name={a.name} size={36} />
+          {heart && <HeartButton id={a.id} name={a.name} size={36} />}
         </div>
         <div className="tile-chips">
           <span>
@@ -121,7 +124,7 @@ export function TileCard({ a, lens }: { a: Attraction; lens: LensId }) {
             href={`/attraction/${a.id}`}
             onClick={(e) => {
               e.preventDefault();
-              go(`/attraction/${a.id}`, { morph: img.current });
+              go(`/attraction/${a.id}`, { morph: img.current, state: linkState });
             }}
           >
             {a.name}
