@@ -8170,9 +8170,20 @@ button.lvl-crumb:hover {
   .planner.is-analysis .plan-levels > .lvl-crumbs {
     position: static;
   }
+  /* MapLibre's own credit, kept left of both panels (the day panel's 420px and the analysis's 372px). */
+  .planner.is-analysis .maplibregl-ctrl-bottom-right {
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 790px);
+  }
   .planner.is-analysis .pincard {
     top: 284px;
     right: calc(max(24px, calc((100vw - 1240px) / 2)) + 828px);
+  }
+}
+
+/* The credit sits beside the day panel, not under its edge. */
+@media (min-width: 761px) {
+  .planner .maplibregl-ctrl-bottom-right {
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 418px);
   }
 }
 
