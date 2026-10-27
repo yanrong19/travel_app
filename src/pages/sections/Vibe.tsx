@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { CROWD_START_HOUR, type Attraction } from '../../data/types';
 import { clock } from '../../lib/format';
-import { localWord, natureWord } from '../../lib/factors';
+import { localWord, natureWord, type Flag } from '../../lib/factors';
 import { EASE_OUT } from '../../lib/motion';
-import { Card, FactorSection, Note, RATING_WORD, RatingMark, Scale } from './parts';
+import { FactorRow, Notes, RATING_WORD, RatingMark, Scale, Tile, Tiles } from './parts';
 
 const ONLY_WORD = { 'only-tokyo': 'Only in Tokyo', 'only-japan': 'Only in Japan', common: 'Found elsewhere' };
 const SUITS = [
@@ -14,59 +14,57 @@ const SUITS = [
   { key: 'friends', label: 'Group of friends' },
 ] as const;
 
-export function Vibe({ a, weekend }: { a: Attraction; weekend: boolean }) {
+export function Vibe({ a, flags, weekend }: { a: Attraction; flags: Flag[]; weekend: boolean }) {
   const v = a.vibe;
-  const word = localWord(v.local);
-  const summary =
-    word === 'Local'
-      ? 'Mostly locals, and it feels like everyday Tokyo.'
-      : word === 'Mixed'
-        ? 'A mix of locals and visitors.'
-        : 'Firmly on the tourist trail. Expect company.';
 
   return (
-    <FactorSection line="vibe" summary={summary}>
-      <Crowds a={a} initialWeekend={weekend} />
+    <FactorRow line="vibe" headline={`${localWord(v.local)} · ${natureWord(v.nature)}`} visual={<Sliders local={v.local} nature={v.nature} />} flags={flags}>
+      <Tiles>
+        <Crowds a={a} initialWeekend={weekend} />
+        <Tile label="Energy" value={v.energy >= 65 ? 'Lively' : v.energy >= 35 ? 'Steady' : 'Calm'}>
+          <Scale value={v.energy} left="Calm" right="Lively" label="Calm to lively" />
+        </Tile>
+        <Tile label="Photo or experience" value={v.photo >= 70 ? 'Built for photos' : v.photo >= 40 ? 'Some of each' : 'About being there'}>
+          <Scale value={v.photo} left="Being there" right="The photo" label="Experience to photo" />
+        </Tile>
+        <Tile label="Who it suits" wide>
+          <dl className="ftile-suits">
+            {SUITS.map((s) => (
+              <div key={s.key}>
+                <dt>{s.label}</dt>
+                <dd>
+                  <RatingMark r={v.suits[s.key]} />
+                  {RATING_WORD[v.suits[s.key]]}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Tile>
+        <Tile label="Can you do it at home?" value={ONLY_WORD[v.onlyHere]} wide />
+      </Tiles>
+      <Notes items={[v.onlyHereNote]} />
+    </FactorRow>
+  );
+}
 
-      <Card title="Who it suits" span={2}>
-        <dl className="kv is-roomy">
-          {SUITS.map((s) => (
-            <div key={s.key}>
-              <dt>{s.label}</dt>
-              <dd className="kv-rating">
-                <RatingMark r={v.suits[s.key]} />
-                {RATING_WORD[v.suits[s.key]]}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Card>
-
-      <Card title="Who you'll be with" span={3}>
-        <p className="big-word">{word}</p>
-        <Scale value={v.local} left="Mostly tourists" right="Mostly locals" label="Touristy to local" />
-      </Card>
-
-      <Card title="Energy" span={3}>
-        <p className="big-word">{v.energy >= 65 ? 'Lively' : v.energy >= 35 ? 'Steady' : 'Calm'}</p>
-        <Scale value={v.energy} left="Calm" right="Lively" label="Calm to lively" />
-      </Card>
-
-      <Card title="City or nature" span={3}>
-        <p className="big-word">{natureWord(v.nature)}</p>
-        <Scale value={v.nature} left="City" right="Nature" label="City to nature" />
-      </Card>
-
-      <Card title="Photo or experience" span={3}>
-        <p className="big-word">{v.photo >= 70 ? 'Built for photos' : v.photo >= 40 ? 'Some of each' : 'About being there'}</p>
-        <Scale value={v.photo} left="The experience" right="The photo" label="Experience to photo" />
-      </Card>
-
-      <Card title="Can you do it at home?" span={3}>
-        <p className="big-word">{ONLY_WORD[v.onlyHere]}</p>
-        <Note>{v.onlyHereNote}</Note>
-      </Card>
-    </FactorSection>
+/** Touristy ↔ local and city ↔ nature, one marker each. */
+function Sliders({ local, nature }: { local: number; nature: number }) {
+  const rows = [
+    { left: 'Touristy', right: 'Local', value: local },
+    { left: 'City', right: 'Nature', value: nature },
+  ];
+  return (
+    <span className="fvis fsliders">
+      {rows.map((r) => (
+        <span key={r.left} className="fslider">
+          <span className="fslider-end">{r.left}</span>
+          <span className="ftrack">
+            <span className="ftrack-mark" style={{ left: `${r.value}%` }} />
+          </span>
+          <span className="fslider-end">{r.right}</span>
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -78,9 +76,9 @@ function Crowds({ a, initialWeekend }: { a: Attraction; initialWeekend: boolean 
   const busy = open.reduce((m, d) => (d.v > m.v ? d : m), open[0]);
 
   return (
-    <Card
-      title="Crowds by hour"
-      span={4}
+    <Tile
+      label="Crowds by hour"
+      wide
       aside={
         <div className="segmented" role="group" aria-label="Day type">
           <button type="button" aria-pressed={!weekend} onClick={() => setWeekend(false)}>
@@ -118,10 +116,9 @@ function Crowds({ a, initialWeekend }: { a: Attraction; initialWeekend: boolean 
           ))}
         </div>
       </div>
-      <Note>
-        Quietest around <strong className="num">{clock(quiet.h)}</strong>, busiest around{' '}
-        <strong className="num">{clock(busy.h)}</strong>. Gaps are hours it is closed.
-      </Note>
-    </Card>
+      <p className="ftile-quiet">
+        Quietest around <strong className="num">{clock(quiet.h)}</strong>, busiest around <strong className="num">{clock(busy.h)}</strong>. Gaps are hours it is closed.
+      </p>
+    </Tile>
   );
 }
