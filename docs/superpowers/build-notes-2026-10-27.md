@@ -160,3 +160,10 @@ Deferred:
 - bottom tab bar stays reachable while searching (not inert) — leaving the planner from search is legitimate — cost if wrong: Tab can leave search to the tabs.
 
 - Minor (deferred): phone detected by map width in MapExplorer (implicit 761); no component tests for search history; Mount Takao outside phone framing (accepted; when on today's plan, not visible at rest)
+
+## Planner map declutter: dot markers + Browse tab (branch planner-detail, 2026-10-27)
+
+- status shown via photo badge + action button (no separate status line); no pan on Browse-row hover when dot off-view; Saved tray stays under Browse; kind truncates first on phone; today's labels from zoom 10, others 12.5 — cost if wrong: small UX differences.
+
+- Minor (deferred): layoutDots O(n²) grid for hundreds of attractions; map keyboard order is data order, pills after dots
+- Minor (deferred): pill pick list (max zoom only) doesn't close on Escape and may linger on iOS after a tap; focusAfterSplit ref can go stale if still grouped at max zoom; label size cache slightly short while pick list open
