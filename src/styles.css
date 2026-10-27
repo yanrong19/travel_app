@@ -7896,14 +7896,6 @@ button.lvl-crumb:hover {
     width: 44px;
     height: 44px;
   }
-  .tbar-toggle-text {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
   .tbar-panel {
     left: 0;
     width: auto;

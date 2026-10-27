@@ -9,6 +9,7 @@ import { slotMismatch } from '../../lib/timeOfDay';
 import { dayPlace } from '../../lib/tripPlaces';
 import { addStop, dateOf, dayOf, removeStop, saveToTrip, unsaveFromTrip, type Trip } from '../../lib/trips';
 import { useTrips } from '../../lib/tripsStore';
+import { useMedia } from '../../lib/useMedia';
 import { undoAddStop, undoRemoveStop, undoUnsave, type Edit } from '../../lib/tripUndo';
 import { Icon } from '../Icon';
 import { Station } from '../Station';
@@ -59,6 +60,7 @@ export function TripBar({
   onMap: () => void;
 }) {
   const { update } = useTrips();
+  const narrow = useMedia('(max-width: 760px)');
   const id = useId();
   const edit = (fn: Edit) => update(trip.id, fn);
   const day = Math.min(pick, trip.days.length - 1);
@@ -190,7 +192,7 @@ export function TripBar({
               onClick={() => setOpenTo(!open)}
             >
               {/* On phone the text is for screen readers only. */}
-              <span className="tbar-toggle-text">Day {day + 1} plan</span>
+              <span className={narrow ? 'sr-only' : undefined}>Day {day + 1} plan</span>
               <Icon name="chevronDown" size={18} />
             </button>
           </div>

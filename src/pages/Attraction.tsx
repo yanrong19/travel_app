@@ -85,18 +85,35 @@ function Detail({ a }: { a: A }) {
   const inPlan = planning && planTrip ? { p: planning, trip: planTrip } : null;
   // The trip bar's day: Back, "See it on the map" and the onward links carry it.
   const [barDay, setBarDay] = useState(() => (inPlan ? planningDay(inPlan.p, inPlan.trip.days.length) : 0));
-  /** Back to the planner on the bar's day, with `open`'s card shown on the map when given. */
+  // Set once the page heads back to the planner: the router applies the move in a transition, so the
+  // page stays clickable for a moment, and a second Back would step back past the planner.
+  const leaving = useRef(false);
+  const onPop = useRef<(() => void) | null>(null);
+  // Leaving another way before the step back arrives: drop the listener, a tick later so a popstate
+  // already being dispatched (which can unmount this page) still reaches it.
+  useEffect(
+    () => () => {
+      const pending = onPop.current;
+      if (pending) setTimeout(() => window.removeEventListener('popstate', pending), 0);
+    },
+    [],
+  );
+  /** Back to the planner on the bar's day, with `open`'s card shown on the map when given. Once only. */
   const toPlanner = (open?: string) => {
-    if (!inPlan) return;
+    if (!inPlan || leaving.current) return;
+    leaving.current = true;
     const r = plannerReturn(inPlan.p, { day: barDay, open });
     if (r.kind === 'push') return go(r.to, { state: r.state });
     if (r.kind === 'back-replace') {
       // The planner is the previous entry: step back onto it, then rewrite it (no second planner entry).
-      const onPop = () => {
-        window.removeEventListener('popstate', onPop);
-        navigate(r.to, { replace: true, state: r.state });
+      const plannerAt = `/trips/${encodeURIComponent(inPlan.p.tripId)}`;
+      const handle = () => {
+        window.removeEventListener('popstate', handle);
+        onPop.current = null;
+        if (window.location.pathname === plannerAt) navigate(r.to, { replace: true, state: r.state });
       };
-      window.addEventListener('popstate', onPop);
+      onPop.current = handle;
+      window.addEventListener('popstate', handle);
     }
     navigate(-1);
   };

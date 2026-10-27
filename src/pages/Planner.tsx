@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Navigate, useLocation, useParams, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets } from '../map/camera';
 import type { MapBubble } from '../map/MapExplorer';
@@ -92,6 +92,7 @@ type Confirm = { ref: PlaceRef; ids: string[] };
 function PlannerPage({ trip }: { trip: Trip }) {
   const { update, saveFailed } = useTrips();
   const go = useGo();
+  const navigate = useNavigate();
   const narrow = useMedia('(max-width: 760px)');
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
@@ -525,15 +526,26 @@ function PlannerPage({ trip }: { trip: Trip }) {
     setViewed(home);
   };
   // "See it on the map" on an attraction page in planning comes back here with { open: id } in router
-  // state: its card opens once per history entry, by the same path as the day list's.
+  // state: its card opens once, by the same path as the day list's. The state is cleared first (same
+  // URL), so a reload or a later return to this entry doesn't open it again; openStop's own URL change,
+  // if any, comes after and keeps the search.
   const openedFor = useRef<string | null>(null);
   useEffect(() => {
     const sid = readPlannerOpen(navState);
     if (!sid || openedFor.current === navKey) return;
     openedFor.current = navKey;
+    navigate({ search }, { replace: true, state: null, preventScrollReset: true });
     openStop(sid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navKey]);
+
+  // "See the details" pushes once: a quick second click would push the attraction page twice.
+  const openingDetails = useRef(false);
+  const openDetails = (aid: string) => {
+    if (openingDetails.current) return;
+    openingDetails.current = true;
+    go(`/attraction/${aid}`, { state: planningState(trip.id, search) });
+  };
 
   const switcher = (
     <PlaceSwitcher
@@ -730,7 +742,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               exit={{ opacity: 0, y: 40 }}
               transition={{ duration: reduced ? 0 : 0.4, ease: EASE_OUT }}
             >
-              <PinCard a={picked} onOpen={(aid) => go(`/attraction/${aid}`, { state: planningState(trip.id, search) })} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
+              <PinCard a={picked} onOpen={openDetails} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
             </motion.div>
           )}
         </AnimatePresence>
