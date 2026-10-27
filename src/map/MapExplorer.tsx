@@ -132,6 +132,8 @@ interface Props {
   bubbles?: MapBubble[];
   /** Trip planning: a card over the map. When it covers the picked ticker, the map pans the ticker clear of it. */
   pickedClearOf?: RefObject<HTMLElement | null>;
+  /** The "N places outside the view" pill. On unless set to false (the trip planner turns it off). */
+  offscreenPill?: boolean;
 }
 
 /** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
@@ -169,6 +171,7 @@ export function MapExplorer(props: Props) {
     litCountries,
     bubbles,
     pickedClearOf,
+    offscreenPill = true,
   } = props;
   const tourRef = useRef(tour);
   tourRef.current = tour;
@@ -979,7 +982,7 @@ export function MapExplorer(props: Props) {
         )}
       </div>
 
-      {showPins && (
+      {showPins && offscreenPill && (
         <button ref={offscreen} type="button" className="map-offscreen" onClick={refit}>
           <span />
           <Icon name="zoomOut" size={15} />

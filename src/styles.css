@@ -6433,9 +6433,6 @@ button.lvl-crumb:hover {
 .planner > .explore-chrome > .msearch {
   top: 172px;
 }
-.planner > .explore-stage .map-offscreen {
-  top: 172px;
-}
 /* Below the map level row: one line (the breadcrumb) at the attraction level, where cards open;
    two when the chips wrap above it. */
 .planner .pincard {
@@ -7594,7 +7591,6 @@ button.lvl-crumb:hover {
     opacity: 0;
     visibility: hidden;
   }
-  .planner > .explore-stage .map-offscreen,
   .planner .map-controls {
     top: calc(var(--plan-head) + 4px);
   }
@@ -7604,8 +7600,7 @@ button.lvl-crumb:hover {
       opacity 0.2s,
       visibility 0.2s;
   }
-  .planner.has-card .map-controls,
-  .planner.has-card > .explore-stage .map-offscreen {
+  .planner.has-card .map-controls {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;

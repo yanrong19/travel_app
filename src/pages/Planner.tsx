@@ -827,6 +827,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               tones={tones}
               bubbles={bubbles}
               pickedClearOf={cardRef}
+              offscreenPill={false}
               tour={false}
               wheelScrollsPage={false}
               attributionHost={narrow ? attribHost : null}
