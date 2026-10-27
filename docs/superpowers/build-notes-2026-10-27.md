@@ -127,3 +127,14 @@ Each line: what was decided — why — what it costs if wrong. Collected from t
 - Task 9: minor (deferred): Escape doesn't leave replace mode while typing in search; Unplanned tray open-default fixed at mount; memo deps eslint-disable for date
 - Task 9: minor (deferred): Undo silently no-ops if the plan changed after a replace (no "can't undo" message); toast+undo offered even when replace was a no-op
 - Task 10: minor (deferred): README lists fitline.lastTripDay under localStorage (it's sessionStorage); phone docked card can cover its own pin; .plan-places row blocks map touches full-width (pointer-events); expanded OSM credit floats over sheet content; wet-switch transition without reduced-motion override; landscape phone gets cramped laptop layout
+
+## Planner revisions (2026-10-27): trip Saved, day dropdown, wet sub-tab, level navigation
+
+- region bubbles anchor at the land centroid, not regionAnchor (Kyūshū & Okinawa landed at sea) — cost if wrong: bubble positions differ from Explore's region card tether.
+- phone peek 164 / sheet top 280 so dropdown, summary and full sub-tabs show — cost if wrong: ~300px map on a 844 phone, ~115px on a 667 phone.
+- attractionHome pure fn; breadcrumb beside search ≥1168px so card back at 240; pickedClearOf pans map when card covers selected pin — cost if wrong: extra MapExplorer prop. Deferred: phone card leaves ~60px map (needs design call: shorter phone card or hide level row while card open).
+
+Deferred:
+- Deferred: view not held inside the trip place (Taitō trip can view Kansai via breadcrumb); counts global vs search trip-scoped; small-phone map height; chip block wraps tall on 800–1024px laptops; Save toggle visible text vs name; same-tree trip places pill highlight; later regions colliding when more data exists.
+- Ruling: attractionHome pure fn; breadcrumb beside search ≥1168px so card back at 240; pickedClearOf pans map when card covers selected pin — cost if wrong: extra MapExplorer prop. Deferred: phone card leaves ~60px map (needs design call: shorter phone card or hide level row while card open).
+- Part C: complete (c029ad0..689cd14, fix round 1/5 all addressed). Deferred: rapid double-open could open the earlier card (practically unreachable); 761–1167px card at 284px may cover other tickers.
