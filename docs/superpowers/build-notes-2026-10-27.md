@@ -138,3 +138,17 @@ Deferred:
 - Deferred: view not held inside the trip place (Taitō trip can view Kansai via breadcrumb); counts global vs search trip-scoped; small-phone map height; chip block wraps tall on 800–1024px laptops; Save toggle visible text vs name; same-tree trip places pill highlight; later regions colliding when more data exists.
 - Ruling: attractionHome pure fn; breadcrumb beside search ≥1168px so card back at 240; pickedClearOf pans map when card covers selected pin — cost if wrong: extra MapExplorer prop. Deferred: phone card leaves ~60px map (needs design call: shorter phone card or hide level row while card open).
 - Part C: complete (c029ad0..689cd14, fix round 1/5 all addressed). Deferred: rapid double-open could open the earlier card (practically unreachable); 761–1167px card at 284px may cover other tickers.
+
+## Attraction page while planning + morning/afternoon/evening factor (branch planner-detail, 2026-10-27)
+
+- teamLab morning stays ok (its data says first slots are calmest); flag tests use a tweaked copy; screenshots use Golden Gai at 10:00 — the brief's teamLab example contradicted the data — cost if wrong: none.
+- Sensō-ji evening 'ok' (grounds never close, lit up after dark); Tokyo National Museum evening 'poor' (late only on Fridays) — cost if wrong: one rating.
+- slot logic in shared pure src/lib/timeOfDay.ts used by daySummary and DayList.
+- router state carries `hops`; Back steps history only when hops===1 — cost if wrong: none.
+- bar's selected day carries back to the planner and to other attractions; "See it on the map" while planning returns to the planner with the card open — user expectation — pre-review fix sent.
+- phone trip bar gets a map button (phone save bar hidden while planning); browser Back gesture returns to planner's original day (only the page's back button carries the bar day) — cost if wrong: gesture Back lands on earlier day.
+
+Deferred:
+- Part 1: minor (deferred): ratings aren't weekday-aware (National Museum Friday late opening flagged); starts before 06:00 count as morning; Sensō-ji evening ok vs 17:00 hours; Todoroki note says "unlit" (data only says daylight only); "Best part of the day" vs "Best time of day" titles near-duplicate; slot hour strings hardcoded in Conditions.tsx; no UI tests for chip/pills
+- Part 2: minor (deferred): bar day lost on reload; push adds a second planner entry when hops ≥ 2 (follows ruling); day-option building duplicated from DayList
+- Part 2: complete (71981c2..be0f001, fix round 1/5 all addressed). Part 2: minor (deferred): Back/map dead if navigate(-1) yields no popstate (stale hops, unlikely)
