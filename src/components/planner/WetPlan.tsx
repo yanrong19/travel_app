@@ -4,7 +4,7 @@ import { getRainChance } from '../../lib/forecast';
 import { duration, plural, yen } from '../../lib/format';
 import { photo } from '../../lib/photos';
 import { dayPlace } from '../../lib/tripPlaces';
-import { dateOf, type Trip } from '../../lib/trips';
+import { DAY_END, DAY_START, dateOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
 import { shortDate, stopsOf } from './DayList';
 
@@ -23,13 +23,15 @@ interface Props {
 export function WetPlan({ trip, day, onRemove, onOpen }: Props) {
   const ids = trip.days[day]?.wet ?? [];
   const items = useMemo(() => stopsOf(ids), [ids]);
+  const start = trip.days[day]?.start ?? DAY_START;
+  const end = trip.days[day]?.end ?? DAY_END;
   const date = dateOf(trip, day);
   const chance = getRainChance(dayPlace(trip, day), date);
   const sum = useMemo(
-    () => summarizeDay(items, { dayStart: trip.dayStart, pace: trip.pace, date, who: trip.who }),
+    () => summarizeDay(items, { start, end, date }),
     // A Date is new every render; its time stands in for it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, trip.dayStart, trip.pace, trip.who, date?.getTime()],
+    [items, start, end, date?.getTime()],
   );
 
   return (

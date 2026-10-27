@@ -2,12 +2,13 @@
 // Every operation returns a new Trip (inputs are never mutated) with updatedAt set from `now`.
 
 export type PlaceRef = { level: 'country' | 'region' | 'prefecture' | 'area'; id: string };
-export type Pace = 'relaxed' | 'normal' | 'packed';
-export type Who = 'solo' | 'couple' | 'family' | 'friends';
 
 export interface DayPlan {
   stops: string[];
   wet: string[];
+  /** When the day starts and ends, 'HH:MM'. The end is after the start, on the same day (see setDayTimes). */
+  start: string;
+  end: string;
 }
 
 export interface Trip {
@@ -19,9 +20,6 @@ export interface Trip {
   days: DayPlan[];
   /** The trip's shortlist: attractions saved for this trip, planned on a day or not. Never duplicated. */
   saved: string[];
-  who: Who;
-  pace: Pace;
-  dayStart: string; // 'HH:MM'
   createdAt: number;
   updatedAt: number;
 }
@@ -29,24 +27,45 @@ export interface Trip {
 /** Most days a trip can have. */
 export const MAX_DAYS = 60;
 
-export const PACE_HOURS: Record<Pace, number> = { relaxed: 8, normal: 10, packed: 12 };
+/** A new day's times. */
+export const DAY_START = '09:00';
+export const DAY_END = '19:00';
+
+/**
+ * How long a day was at each of the old trip-wide paces. Only for reading trips saved before each day
+ * had its own start and end (see repair).
+ */
+export const PACE_HOURS = { relaxed: 8, normal: 10, packed: 12 } as const;
+type Pace = keyof typeof PACE_HOURS;
 
 const LEVELS: PlaceRef['level'][] = ['country', 'region', 'prefecture', 'area'];
-const PACES: Pace[] = ['relaxed', 'normal', 'packed'];
-const WHOS: Who[] = ['solo', 'couple', 'family', 'friends'];
+
+// ---------- clock times ----------
+
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+/** True for a 'HH:MM' clock time, 00:00 to 23:59. */
+export const isClock = (v: unknown): v is string => typeof v === 'string' && HHMM.test(v);
+/** 'HH:MM' → minutes from midnight. */
+export const clockMin = (t: string): number => {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+};
+const LAST_MIN = 23 * 60 + 59;
+const pad = (n: number) => String(n).padStart(2, '0');
+/** Minutes from midnight → 'HH:MM', clamped to 00:00..23:59. */
+const toClock = (min: number) => {
+  const m = Math.min(LAST_MIN, Math.max(0, Math.round(min)));
+  return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+};
 
 // ---------- creating and dates ----------
 
 /** A whole number of days within 1..MAX_DAYS; anything that isn't a finite number becomes 1. */
 const clampDays = (n: number) => (Number.isFinite(n) ? Math.min(MAX_DAYS, Math.max(1, Math.floor(n))) : 1);
 
-const emptyDay = (): DayPlan => ({ stops: [], wet: [] });
+const emptyDay = (): DayPlan => ({ stops: [], wet: [], start: DAY_START, end: DAY_END });
 
-export function newTrip(
-  init: { name: string; places: PlaceRef[]; startDate: string | null; days: number; who: Who; pace: Pace; dayStart?: string },
-  now: number,
-  id: string,
-): Trip {
+export function newTrip(init: { name: string; places: PlaceRef[]; startDate: string | null; days: number }, now: number, id: string): Trip {
   const n = clampDays(init.days);
   return {
     version: 1,
@@ -56,9 +75,6 @@ export function newTrip(
     startDate: init.startDate,
     days: Array.from({ length: n }, emptyDay),
     saved: [],
-    who: init.who,
-    pace: init.pace,
-    dayStart: init.dayStart ?? '09:00',
     createdAt: now,
     updatedAt: now,
   };
@@ -79,7 +95,6 @@ export function parseDate(s: string): Date | null {
   return date.getFullYear() === y && date.getMonth() === mo - 1 && date.getDate() === d ? date : null;
 }
 
-const pad = (n: number) => String(n).padStart(2, '0');
 const fmtDate = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 /** The calendar date of a day (0-based), or null when the trip has no start date. */
@@ -133,6 +148,27 @@ export function setDays(trip: Trip, n: number, now: number): Trip {
   }
   const orphans = trip.days.slice(count).flatMap((d) => d.stops);
   return stamp(trip, now, { days: trip.days.slice(0, count), saved: withAll(trip.saved, orphans) });
+}
+
+/** Sets or clears the start date (the end follows the number of days). A string that isn't a date is a no-op. */
+export function setStartDate(trip: Trip, date: string | null, now: number): Trip {
+  if ((date !== null && !parseDate(date)) || date === trip.startDate) return trip;
+  return stamp(trip, now, { startDate: date });
+}
+
+/**
+ * Sets a day's start, end or both ('HH:MM'). A day doesn't run past midnight: the end must be later
+ * than the start on the same clock, so a late night ends at 23:59 at the latest. Bad input (not a
+ * clock time, an end not after the start, a day that doesn't exist) is a no-op, as is no change.
+ */
+export function setDayTimes(trip: Trip, day: number, times: { start?: string; end?: string }, now: number): Trip {
+  if (!hasDay(trip, day)) return trip;
+  const d = trip.days[day];
+  const start = times.start ?? d.start;
+  const end = times.end ?? d.end;
+  if (!isClock(start) || !isClock(end) || clockMin(end) <= clockMin(start)) return trip;
+  if (start === d.start && end === d.end) return trip;
+  return stamp(trip, now, { days: withDay(trip.days, day, { start, end }) });
 }
 
 /** How many attractions cutting the trip to `n` days adds to saved: stops past day n that saved doesn't hold yet. */
@@ -213,6 +249,7 @@ export function removePlace(trip: Trip, ref: PlaceRef, removeStops: string[], no
   const drop = new Set(removeStops);
   const places = trip.places.filter((p) => !(p.level === ref.level && p.id === ref.id));
   const days = trip.days.map((d) => ({
+    ...d,
     stops: d.stops.filter((x) => !drop.has(x)),
     wet: d.wet.filter((x) => !drop.has(x)),
   }));
@@ -246,13 +283,25 @@ function isPlaceRef(v: unknown): v is PlaceRef {
   return !!p && typeof p === 'object' && LEVELS.includes(p.level) && typeof p.id === 'string';
 }
 
-function isDayPlan(v: unknown): v is DayPlan {
-  const d = v as DayPlan | null;
+/** A day as stored. Builds before per-day times wrote none; repair fills them in. */
+type StoredDay = Pick<DayPlan, 'stops' | 'wet'> & { start?: unknown; end?: unknown };
+
+function isDayPlan(v: unknown): v is StoredDay {
+  const d = v as StoredDay | null;
   return !!d && typeof d === 'object' && isStrings(d.stops) && isStrings(d.wet);
 }
 
-/** A trip as stored. Builds before the saved list wrote `unplanned` instead; repair migrates it. */
-type StoredTrip = Omit<Trip, 'saved'> & { saved?: string[]; unplanned?: string[] };
+/**
+ * A trip as stored. Builds before the saved list wrote `unplanned` instead. Builds before per-day
+ * times had a trip-wide `dayStart` and `pace`, and `who`, which is dropped. Repair migrates them.
+ */
+type StoredTrip = Omit<Trip, 'saved' | 'days'> & {
+  days: StoredDay[];
+  saved?: string[];
+  unplanned?: string[];
+  dayStart?: unknown;
+  pace?: unknown;
+};
 
 /**
  * The structure a trip can't be read without. Dates, times and attraction ids are repaired instead
@@ -272,28 +321,51 @@ function isTrip(v: unknown): v is StoredTrip {
     t.days.length >= 1 &&
     t.days.every(isDayPlan) &&
     (isStrings(t.saved) || isStrings(t.unplanned)) &&
-    WHOS.includes(t.who) &&
-    PACES.includes(t.pace) &&
     isNum(t.createdAt) &&
     isNum(t.updatedAt)
   );
 }
 
-const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+const isPace = (v: unknown): v is Pace => typeof v === 'string' && Object.hasOwn(PACE_HOURS, v);
 
 /**
- * Fixes what can be fixed without losing the trip: an unreadable start date becomes no date, an
- * unreadable day start becomes 09:00, attraction ids the data no longer has are dropped, and an old
- * `unplanned` list becomes `saved` (a trip with both gets the two joined, so nothing is lost).
+ * A stored day's times. Readable ones (an end after the start) stand. Otherwise they come from the old
+ * trip-wide fields: the start from `dayStart`, the end that many pace hours later, up to 23:59. Without
+ * a pace the end is 19:00, or 10 h after a start that late. With neither, or with no time left in the
+ * day after its start, 09:00 to 19:00.
  */
-function repair(stored: StoredTrip, isKnown?: (id: string) => boolean): Trip {
-  const { unplanned, ...t } = stored; // `t.saved` keeps its key position, so a round trip serializes the same
+function dayTimes(d: StoredDay, dayStart: unknown, pace: unknown): Pick<DayPlan, 'start' | 'end'> {
+  const start = isClock(d.start) ? d.start : isClock(dayStart) ? dayStart : DAY_START;
+  const from = clockMin(start);
+  if (isClock(d.end) && clockMin(d.end) > from) return { start, end: d.end };
+  let end = isPace(pace) ? toClock(from + PACE_HOURS[pace] * 60) : DAY_END;
+  if (clockMin(end) <= from) end = toClock(from + PACE_HOURS.normal * 60);
+  return clockMin(end) > from ? { start, end } : { start: DAY_START, end: DAY_END };
+}
+
+/**
+ * Fixes what can be fixed without losing the trip: an unreadable start date becomes no date,
+ * attraction ids the data no longer has are dropped, an old `unplanned` list becomes `saved` (a trip
+ * with both gets the two joined, so nothing is lost), and days without readable times get them (see
+ * dayTimes). Only a Trip's own fields are kept, in newTrip's order, so anything else (`who`, `pace`,
+ * `dayStart`, fields from a later build) is gone on the next save.
+ */
+function repair(t: StoredTrip, isKnown?: (id: string) => boolean): Trip {
   const startDate = typeof t.startDate === 'string' && parseDate(t.startDate) ? t.startDate : null;
-  const dayStart = typeof t.dayStart === 'string' && HHMM.test(t.dayStart) ? t.dayStart : '09:00';
   const keep = (list: string[]) => (isKnown ? list.filter(isKnown) : list);
-  const days = t.days.map((d) => ({ stops: keep(d.stops), wet: keep(d.wet) }));
-  const saved = withAll([], [...(isStrings(t.saved) ? t.saved : []), ...(isStrings(unplanned) ? unplanned : [])]);
-  return { ...t, startDate, dayStart, days, saved: keep(saved) };
+  const days = t.days.map((d) => ({ stops: keep(d.stops), wet: keep(d.wet), ...dayTimes(d, t.dayStart, t.pace) }));
+  const saved = withAll([], [...(isStrings(t.saved) ? t.saved : []), ...(isStrings(t.unplanned) ? t.unplanned : [])]);
+  return {
+    version: 1,
+    id: t.id,
+    name: t.name,
+    places: t.places.map((p) => ({ level: p.level, id: p.id })),
+    startDate,
+    days,
+    saved: keep(saved),
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  };
 }
 
 /**

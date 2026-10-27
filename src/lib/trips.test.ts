@@ -19,6 +19,8 @@ import {
   saveToTrip,
   serializeTrips,
   setDays,
+  setDayTimes,
+  setStartDate,
   unsaveFromTrip,
   type Trip,
 } from './trips';
@@ -29,23 +31,58 @@ function init(o: Partial<Parameters<typeof newTrip>[0]> = {}) {
     places: [{ level: 'prefecture' as const, id: '13' }],
     startDate: null as string | null,
     days: 3,
-    who: 'couple' as const,
-    pace: 'normal' as const,
     ...o,
   };
 }
 const make = (o: Partial<Parameters<typeof newTrip>[0]> = {}) => newTrip(init(o), 1, 't1');
+const EMPTY_DAY = { stops: [], wet: [], start: '09:00', end: '19:00' };
 
-test('newTrip makes one empty DayPlan per day', () =>
-  expect(newTrip(init({ days: 3 }), 1, 't1').days).toEqual([
-    { stops: [], wet: [] },
-    { stops: [], wet: [] },
-    { stops: [], wet: [] },
-  ]));
+test('newTrip makes one empty DayPlan per day, 09:00 to 19:00', () =>
+  expect(newTrip(init({ days: 3 }), 1, 't1').days).toEqual([EMPTY_DAY, EMPTY_DAY, EMPTY_DAY]));
 
 test('newTrip fills defaults and stamps times', () => {
   const t = newTrip(init(), 5, 'abc');
-  expect(t).toMatchObject({ version: 1, id: 'abc', saved: [], dayStart: '09:00', createdAt: 5, updatedAt: 5 });
+  expect(t).toMatchObject({ version: 1, id: 'abc', saved: [], createdAt: 5, updatedAt: 5 });
+  // Who's going, pace and the trip-wide day start are gone: each day has its own times.
+  for (const k of ['who', 'pace', 'dayStart']) expect(k in t).toBe(false);
+});
+
+test('setDayTimes sets a day’s start and end, alone or together', () => {
+  const t = make();
+  const both = setDayTimes(t, 1, { start: '08:30', end: '21:15' }, 7);
+  expect(both.days[1]).toEqual({ ...EMPTY_DAY, start: '08:30', end: '21:15' });
+  expect(both.days[0]).toBe(t.days[0]);
+  expect(both.updatedAt).toBe(7);
+  expect(setDayTimes(t, 0, { start: '10:00' }, 7).days[0]).toEqual({ ...EMPTY_DAY, start: '10:00' });
+  expect(setDayTimes(t, 0, { end: '23:59' }, 7).days[0]).toEqual({ ...EMPTY_DAY, end: '23:59' });
+  expect(setDayTimes(t, 0, { start: '00:00', end: '00:01' }, 7).days[0]).toEqual({ ...EMPTY_DAY, start: '00:00', end: '00:01' });
+});
+
+test('setDayTimes is a no-op on bad input: not HH:MM, end not after start, no such day, nothing new', () => {
+  const t = make();
+  for (const bad of ['24:00', '9:00', '09:60', '', '09:00:00', 'soon']) {
+    expect(setDayTimes(t, 0, { start: bad }, 7)).toBe(t);
+    expect(setDayTimes(t, 0, { end: bad }, 7)).toBe(t);
+  }
+  // A day doesn't run past midnight: the end must be after the start on the same clock.
+  expect(setDayTimes(t, 0, { start: '19:00' }, 7)).toBe(t); // the end is 19:00
+  expect(setDayTimes(t, 0, { end: '09:00' }, 7)).toBe(t);
+  expect(setDayTimes(t, 0, { start: '22:00', end: '01:00' }, 7)).toBe(t);
+  expect(setDayTimes(t, 3, { start: '08:00' }, 7)).toBe(t);
+  expect(setDayTimes(t, -1, { start: '08:00' }, 7)).toBe(t);
+  expect(setDayTimes(t, 0, {}, 7)).toBe(t);
+  expect(setDayTimes(t, 0, { start: '09:00', end: '19:00' }, 7)).toBe(t);
+});
+
+test('setStartDate sets or clears the dates and ignores a non-date', () => {
+  const t = make();
+  const dated = setStartDate(t, '2027-04-10', 5);
+  expect(dated.startDate).toBe('2027-04-10');
+  expect(dated.updatedAt).toBe(5);
+  expect(setStartDate(dated, '2027-04-10', 6)).toBe(dated);
+  expect(setStartDate(dated, null, 6).startDate).toBeNull();
+  expect(setStartDate(t, null, 6)).toBe(t);
+  for (const bad of ['0027-04-10', '2027-02-30', 'soon', '']) expect(setStartDate(dated, bad, 6)).toBe(dated);
 });
 
 test('daysBetween is inclusive', () => expect(daysBetween('2027-04-10', '2027-04-14')).toBe(5));
@@ -96,7 +133,7 @@ test('addWet does not remove it from the day plan', () => {
 
 test('removeWet takes it off the wet list only', () => {
   const t = removeWet(addWet(addStop(make(), 0, 'a', 2), 0, 'a', 3), 0, 'a', 4);
-  expect(t.days[0]).toEqual({ stops: ['a'], wet: [] });
+  expect(t.days[0]).toEqual({ ...EMPTY_DAY, stops: ['a'] });
 });
 
 test('removeStop removes from the day', () => {
@@ -184,7 +221,25 @@ test('setDays grows with empty days', () => {
   const t = setDays(addStop(make(), 0, 'a', 2), 5, 3);
   expect(t.days).toHaveLength(5);
   expect(t.days[0].stops).toEqual(['a']);
-  expect(t.days[4]).toEqual({ stops: [], wet: [] });
+  expect(t.days[4]).toEqual(EMPTY_DAY);
+});
+
+test('setDays adds days at 09:00 to 19:00 and keeps the times of the days it keeps', () => {
+  const t = setDayTimes(setDayTimes(make({ days: 2 }), 0, { start: '07:00', end: '22:00' }, 2), 1, { start: '10:00' }, 2);
+  const grown = setDays(t, 4, 3);
+  expect(grown.days.map((d) => [d.start, d.end])).toEqual([
+    ['07:00', '22:00'],
+    ['10:00', '19:00'],
+    ['09:00', '19:00'],
+    ['09:00', '19:00'],
+  ]);
+  expect(setDays(grown, 1, 4).days).toEqual([{ ...EMPTY_DAY, start: '07:00', end: '22:00' }]);
+});
+
+test('removePlace keeps each day’s times', () => {
+  const t = addStop(setDayTimes(make(), 0, { start: '07:00', end: '22:00' }, 2), 0, 'a', 2);
+  const r = removePlace(t, { level: 'prefecture', id: '13' }, ['a'], 3);
+  expect(r.days[0]).toEqual({ ...EMPTY_DAY, start: '07:00', end: '22:00' });
 });
 
 test('setDays never goes below one day', () => expect(setDays(make(), 0, 2).days).toHaveLength(1));
@@ -203,7 +258,7 @@ test('removePlace drops the place and the listed stops', () => {
   const r = removePlace(t, { level: 'prefecture', id: '13' }, ['b', 'c'], 3);
   expect(r.places).toEqual([]);
   expect(r.days[0].stops).toEqual(['a']);
-  expect(r.days[1]).toEqual({ stops: [], wet: [] });
+  expect(r.days[1]).toEqual(EMPTY_DAY);
   expect(r.saved).toEqual(['a']);
 });
 
@@ -239,7 +294,7 @@ test('operations stamp updatedAt from now', () => {
 test('loadTrips round-trips serializeTrips', () => {
   const trips: Trip[] = [
     addStop(make({ startDate: '2027-04-10' }), 0, 'a', 2),
-    newTrip(init({ name: 'Two', days: 1, who: 'solo', pace: 'packed', dayStart: '07:30' }), 3, 't2'),
+    setDayTimes(newTrip(init({ name: 'Two', days: 1 }), 3, 't2'), 0, { start: '07:30', end: '21:30' }, 4),
   ];
   expect(loadTrips(serializeTrips(trips))).toEqual({ trips, notice: null });
 });
@@ -289,12 +344,67 @@ test('loadTrips repairs an unreadable start date or day start instead of droppin
   for (const startDate of ['0027-04-18', '0999-01-01', '2027-02-30', 'soon', 5]) {
     expect(loadTrips(raw({ startDate }))).toEqual({ trips: [{ ...good, startDate: null }], notice: null });
   }
-  for (const dayStart of ['24:00', '9:00', '09:60', '', 900, null]) {
-    expect(loadTrips(raw({ dayStart }))).toEqual({ trips: [{ ...good, dayStart: '09:00' }], notice: null });
-  }
-  expect(loadTrips(raw({ dayStart: '23:59' })).trips[0].dayStart).toBe('23:59');
   // Structural damage still drops the trip.
   expect(loadTrips(raw({ days: [] })).trips).toEqual([]);
+});
+
+/** A trip as builds before per-day times wrote it: who's going, a pace and one day start, and days without times. */
+const legacy = (t: Trip, o: { who?: unknown; pace?: unknown; dayStart?: unknown }) => ({
+  ...t,
+  days: t.days.map(({ stops, wet }) => ({ stops, wet })),
+  ...o,
+});
+const loadOne = (stored: object) => loadTrips(JSON.stringify({ version: 1, trips: [stored] }));
+
+test('loadTrips migrates the old day start and pace into each day’s start and end', () => {
+  const t = addStop(make(), 0, 'a', 2);
+  const r = loadOne(legacy(t, { who: 'family', pace: 'packed', dayStart: '07:30' }));
+  expect(r.notice).toBeNull();
+  expect(r.trips).toEqual([{ ...t, days: t.days.map((d) => ({ ...d, start: '07:30', end: '19:30' })) }]);
+  const times = (o: Parameters<typeof legacy>[1]) => loadOne(legacy(t, o)).trips[0].days.map((d) => `${d.start}–${d.end}`);
+  expect(times({ pace: 'relaxed', dayStart: '09:00' })).toEqual(Array(3).fill('09:00–17:00'));
+  expect(times({ pace: 'normal', dayStart: '08:15' })).toEqual(Array(3).fill('08:15–18:15'));
+  // A pace that would run past midnight stops at 23:59.
+  expect(times({ pace: 'packed', dayStart: '15:00' })).toEqual(Array(3).fill('15:00–23:59'));
+});
+
+test('loadTrips gives the defaults where the old fields are missing or unreadable', () => {
+  const t = make();
+  const times = (o: Parameters<typeof legacy>[1]) => loadOne(legacy(t, o)).trips[0].days.map((d) => `${d.start}–${d.end}`);
+  expect(times({})).toEqual(Array(3).fill('09:00–19:00'));
+  expect(times({ who: 'nobody', pace: 'frantic', dayStart: '9:00' })).toEqual(Array(3).fill('09:00–19:00'));
+  for (const dayStart of ['24:00', '09:60', '', 900, null]) expect(times({ dayStart, pace: 'normal' })).toEqual(Array(3).fill('09:00–19:00'));
+  // Only one of the two: the other is the default, or (a late start) the normal 10 h, up to 23:59.
+  expect(times({ dayStart: '07:00' })).toEqual(Array(3).fill('07:00–19:00'));
+  expect(times({ pace: 'packed' })).toEqual(Array(3).fill('09:00–21:00'));
+  expect(times({ dayStart: '20:00' })).toEqual(Array(3).fill('20:00–23:59'));
+  // A start at 23:59 leaves no day after it: the defaults.
+  expect(times({ dayStart: '23:59', pace: 'normal' })).toEqual(Array(3).fill('09:00–19:00'));
+});
+
+test('loadTrips keeps good per-day times and repairs bad ones day by day', () => {
+  const t = setDayTimes(make(), 1, { start: '06:00', end: '23:00' }, 2);
+  expect(loadTrips(serializeTrips([t])).trips).toEqual([t]);
+  const stored = {
+    ...t,
+    pace: 'relaxed',
+    dayStart: '10:00',
+    days: [
+      { stops: [], wet: [], start: '25:00', end: '18:00' }, // bad start: the old start, and its end stands
+      { stops: [], wet: [], start: '08:00', end: '07:00' }, // end not after start: the end from the old pace
+      { stops: [], wet: [], start: '08:00' }, // no end
+    ],
+  };
+  expect(loadOne(stored).trips[0].days.map((d) => `${d.start}–${d.end}`)).toEqual(['10:00–18:00', '08:00–16:00', '08:00–16:00']);
+});
+
+test('loadTrips drops fields it doesn’t know, so they are gone on the next save', () => {
+  const t = make();
+  const stored = { ...legacy(t, { who: 'solo', pace: 'normal', dayStart: '09:00' }), colour: 'red', unplanned: [] };
+  const [r] = loadOne({ ...stored, days: stored.days.map((d) => ({ ...d, mood: 'sunny' })) }).trips;
+  expect(Object.keys(r).sort()).toEqual(['createdAt', 'days', 'id', 'name', 'places', 'saved', 'startDate', 'updatedAt', 'version']);
+  expect(Object.keys(r.days[0]).sort()).toEqual(['end', 'start', 'stops', 'wet']);
+  expect(serializeTrips([r])).toBe(serializeTrips([t]));
 });
 
 test('loadTrips prunes attraction ids the data no longer has', () => {

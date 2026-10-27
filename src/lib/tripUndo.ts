@@ -1,7 +1,7 @@
 // What the planner's Undo buttons run: each builder returns an edit, (trip, now) => trip, to apply to
 // the trip as it is when Undo is pressed. An undo never overrides a change made since: if the plan has
 // moved on, it does nothing.
-import { addStop, dayOf, moveStop, removePlace, removeStop, replaceStop, type PlaceRef, type Trip } from './trips';
+import { addStop, dayOf, moveStop, removePlace, removeStop, replaceStop, setDays, type PlaceRef, type Trip } from './trips';
 
 export type Edit = (t: Trip, now: number) => Trip;
 
@@ -62,6 +62,11 @@ export function undoRemoveWet(day: number, id: string, index: number): Edit {
 /** A removed place: the places, days and saved go back as they were, unless they have changed since. */
 export function undoRemovePlace(before: Trip, ref: PlaceRef, removeStops: string[]): Edit {
   return restoreIfUnchanged(before, removePlace(before, ref, removeStops, 0), ['places', 'days', 'saved']);
+}
+
+/** Fewer days: the cut days come back (stops, wet plans, times) and saved goes back as it was, unless either has changed since. */
+export function undoSetDays(before: Trip, n: number): Edit {
+  return restoreIfUnchanged(before, setDays(before, n, 0), ['days', 'saved']);
 }
 
 /** An attraction taken off saved goes back where it was, unless it is saved again already. */

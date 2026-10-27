@@ -35,6 +35,7 @@ const PATHS = {
   chevronDown: 'M6 9l6 6 6-6',
   swap: 'M5 8h13l-3.5-3.5M19 16H6l3.5 3.5',
   sliders: 'M4 7h9M17 7h3M15 5v4M4 17h3M11 17h9M9 15v4',
+  calendar: 'M5 6.5h14V20H5zM5 10.5h14M9 4v4.5M15 4v4.5',
 } as const;
 
 export type IconName = keyof typeof PATHS;

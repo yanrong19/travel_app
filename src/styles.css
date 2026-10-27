@@ -5912,54 +5912,10 @@ button.area-card {
   outline: none;
 }
 .tnew-lead {
-  max-width: 60ch;
+  max-width: 70ch;
   margin-top: 8px;
   font-size: 16px;
   color: var(--muted);
-}
-.tnew-steps {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-.tnew-steps li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.tnew-steps li + li::before {
-  content: '';
-  width: 28px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--control);
-}
-.tnew-steps [aria-current='step'] {
-  color: var(--ink);
-}
-.tnew-step-mark {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  border: 1px solid var(--control);
-  background: var(--surface);
-  font-size: 12px;
-  font-weight: 700;
-}
-.tnew-steps [aria-current='step'] .tnew-step-mark {
-  border-color: var(--cedar);
-  background: var(--cedar);
-  color: #fff;
-}
-.tnew-steps .is-done .tnew-step-mark {
-  border-color: var(--cedar-soft);
-  background: var(--cedar-soft);
-  color: var(--cedar);
 }
 .tnew-actions {
   display: flex;
@@ -5991,7 +5947,7 @@ button.area-card {
   margin-top: 3px;
 }
 
-/* Step 1: the place picker. Laptop: a side column beside the globe. Phone: one column. */
+/* The place picker. Laptop: a side column beside the globe. Phone: one column. */
 .pp {
   display: grid;
   grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
@@ -6158,34 +6114,31 @@ button.area-card {
   pointer-events: none;
 }
 
-/* Step 2: settings beside a preview of the trip's card. */
-.tnew-settings {
+/* The new trip's name, dates and "Create trip", at the end of the picker's side column: beside the
+   globe on laptop, under it on phone. */
+.tnew-details {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 32px;
-  align-items: start;
-}
-.tnew-card {
-  min-width: 0;
-  padding: 28px;
-  border-radius: var(--r-xl);
+  gap: 18px;
+  padding: 22px;
+  border-radius: var(--r-lg);
   background: var(--surface);
+  border: 1px solid var(--line);
 }
-.tnew-side {
-  position: sticky;
-  top: 24px;
-  display: grid;
-  gap: 20px;
+.tnew-details .tset {
+  gap: 18px;
 }
-.tnew-preview {
-  display: grid;
-  gap: 12px;
+/* The side column is narrow: start and end share a row, the days go under them. */
+.tnew-details .tset-dates,
+.tdates-panel .tset-dates {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
-.tnew-preview .pp-label {
-  margin: 0;
+.tnew-details .tset-dates > :last-child,
+.tdates-panel .tset-dates > :last-child {
+  grid-column: 1 / -1;
 }
-.tnew-preview .trip-card-name {
-  margin: 0;
+.tnew-details .tset-stepper,
+.tdates-panel .tset-stepper {
+  max-width: 200px;
 }
 
 .tset {
@@ -6303,67 +6256,6 @@ button.area-card {
 .tset-warn:empty {
   margin: 0;
 }
-.tset-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.tset-pill {
-  position: relative;
-}
-.tset-pill input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  margin: 0;
-  cursor: pointer;
-}
-.tset-pill span {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 42px;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s;
-}
-.tset-pill small {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-}
-.tset-pill:hover input:not(:checked) + span {
-  border-color: var(--control);
-}
-.tset-pill input:checked + span {
-  border-color: var(--cedar);
-  background: var(--cedar);
-  color: #fff;
-}
-.tset-pill input:checked + span small {
-  color: rgba(255, 255, 255, 0.78);
-}
-.tset-pill input:focus-visible + span {
-  outline: 2px solid var(--cedar);
-  outline-offset: 2px;
-}
-.tset-time {
-  max-width: 200px;
-}
-
-@media (max-width: 1100px) {
-  .tnew-settings {
-    grid-template-columns: minmax(0, 1fr) 300px;
-  }
-}
 
 @media (max-width: 760px) {
   .tnew {
@@ -6427,17 +6319,8 @@ button.area-card {
     width: 100%;
     text-align: center;
   }
-  .tnew-settings {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-  }
-  .tnew-side {
-    position: static;
-  }
-  .tnew-card {
-    padding: 20px;
-    border-radius: var(--r-lg);
+  .tnew-details {
+    padding: 18px;
   }
   .tset-dates {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -6447,9 +6330,6 @@ button.area-card {
   }
   .tset-stepper {
     max-width: 200px;
-  }
-  .tset-pill span {
-    padding: 0 16px;
   }
 }
 
@@ -6474,15 +6354,26 @@ button.area-card {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--float);
+  /* Over the search under it, so the dates popover opens on top. */
+  z-index: 13;
 }
 .plan-back {
   width: 44px;
   height: 44px;
 }
+/* The name and the dates button: side by side on laptop, stacked on phone. */
+.plan-title {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .plan-name {
-  flex: none;
+  /* Gives way before the dates button does, on a narrow laptop. */
+  flex: 0 1 auto;
   field-sizing: content;
-  min-width: 6ch;
+  min-width: 8ch;
   max-width: 300px;
   height: 44px;
   padding: 0 12px;
@@ -6506,8 +6397,88 @@ button.area-card {
   background: var(--surface);
   border-color: var(--cedar);
 }
-.plan-settings {
-  margin-left: auto;
+/* The trip's dates: "10–12 Nov · 3 days". Opens the dates popover (phone: a sheet). */
+.tdates {
+  position: relative;
+  flex: none;
+  min-width: 0;
+}
+.tdates-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.tdates-btn svg {
+  flex: none;
+  color: var(--cedar);
+}
+.tdates-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tdates-btn:hover {
+  border-color: var(--control);
+  background: var(--surface);
+}
+.tdates-btn[aria-expanded='true'] {
+  border-color: var(--cedar);
+  background: var(--surface);
+}
+.tdates-pop {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 0;
+  width: 380px;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--float);
+  animation: tdates-in 0.2s var(--ease-out);
+}
+@keyframes tdates-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.tdates-cut {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.tdates-cut .plan-warn {
+  align-items: flex-start;
+}
+.tdates-cut .plan-warn svg {
+  flex: none;
+  margin-top: 3px;
+}
+.tdates-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tdates-pop {
+    animation: none;
+  }
 }
 
 /* The place switcher: pills for the trip's places, then "+ Add place". */
@@ -6617,9 +6588,8 @@ button.area-card {
   background: var(--cedar-soft);
 }
 
-/* The map level under the search: a breadcrumb up the viewed place's tree (Japan › Kantō › Tokyo),
-   then a chip per child place, the bubbles' keyboard and phone twin. One row, scrolling sideways;
-   only the crumbs and chips take clicks, the gaps go to the map. */
+/* The map level under the search: a breadcrumb up the viewed place's tree (Japan › Kantō › Tokyo).
+   The map's bubbles drill in. Only the crumbs take clicks, the gaps go to the map. */
 .plan-levels {
   position: absolute;
   top: 232px;
@@ -6634,8 +6604,7 @@ button.area-card {
 .explore-chrome > .plan-levels {
   pointer-events: none;
 }
-.lvl-crumbs,
-.lvl-chip {
+.lvl-crumbs {
   pointer-events: auto;
 }
 .lvl-crumbs {
@@ -6686,62 +6655,17 @@ button.lvl-crumb:hover {
   color: var(--muted);
   font-size: 15px;
 }
-.lvl-sep.is-lead {
-  margin-right: 8px;
-}
-.lvl-chips {
-  flex: 1 1 280px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  pointer-events: none;
-}
-.lvl-chip {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: var(--float);
-  transition:
-    border-color 0.2s,
-    background-color 0.2s;
-}
-.lvl-chip:hover {
-  border-color: var(--control);
-}
-.lvl-chip-count {
-  color: var(--muted);
-  font-size: 12px;
-}
-.lvl-chip.is-live .lvl-chip-count {
-  color: var(--cedar);
-  font-weight: 700;
-}
 
 /* Scoped to the page's own search and map: the place picker in a sheet has its own. */
 .planner > .explore-chrome > .msearch {
   top: 172px;
 }
-/* Below the map level row: one line (the breadcrumb) at the attraction level, where cards open;
-   two when the chips wrap above it. */
+/* Below the breadcrumb's row. */
 .planner .pincard {
   top: 284px;
 }
-.planner.has-level-chips .pincard {
-  top: 324px;
-}
-/* Wide laptops: the breadcrumb sits on the search's line, beside it, and the chips get the row
-   under the search to themselves. The attraction level then adds no row, so its card stays at 240,
-   clear of the tickers west of Tokyo (Mount Takao, the Ghibli Museum). */
+/* Wide laptops: the breadcrumb sits on the search's line, beside it, so it adds no row and the card
+   stays at 240, clear of the tickers west of Tokyo (Mount Takao, the Ghibli Museum). */
 @media (min-width: 1168px) {
   .plan-levels {
     display: contents;
@@ -6751,21 +6675,8 @@ button.lvl-crumb:hover {
     top: 180px;
     left: calc(var(--search-left) + var(--search-w) + 12px);
   }
-  .plan-levels > .lvl-chips {
-    position: absolute;
-    top: 232px;
-    left: var(--search-left);
-    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 444px);
-    padding: 2px 2px 10px;
-  }
-  .lvl-sep.is-lead {
-    display: none;
-  }
   .planner .pincard {
     top: 240px;
-  }
-  .planner.has-level-chips .pincard {
-    top: 324px;
   }
 }
 /* Notes drop below the trip bar instead of covering it. */
@@ -8058,7 +7969,7 @@ button.lvl-crumb:hover {
 }
 
 /* Phone: one header over the map and the day panel as a bottom sheet, as on the map page. The
-   header is the trip bar (back, the trip's name, search, settings), then the trip's place pills,
+   header is the trip bar (back, the trip's name with its dates under it, search), then the trip's place pills,
    then the breadcrumb; --plan-head is where it ends (lib/planSheet's HEAD_PHONE). The page scrolls
    and the sheet slides up over the fixed map (useGuideScroll writes --gp and --vh). It peeks
    --plan-peek tall above the tab bar (--sheet-clear) with the day dropdown and the one-line
@@ -8088,16 +7999,46 @@ button.lvl-crumb:hover {
     width: 40px;
     height: 40px;
   }
-  .plan-name {
+  /* Two lines in the bar's height: the name, and the dates as a smaller line under it. */
+  .plan-title {
     flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .plan-name {
+    align-self: stretch;
     min-width: 0;
     max-width: none;
-    height: 40px;
-    padding: 0 8px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 8px;
     font-size: 16px;
+    line-height: 22px;
   }
-  .plan-search-btn,
-  .plan-settings {
+  .tdates {
+    max-width: 100%;
+  }
+  .tdates-btn {
+    height: 22px;
+    gap: 5px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .tdates-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+  .tdates-btn:hover,
+  .tdates-btn[aria-expanded='true'] {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink);
+  }
+  .plan-search-btn {
     width: 40px;
     height: 40px;
   }

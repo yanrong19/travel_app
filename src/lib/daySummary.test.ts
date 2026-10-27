@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import { attractionById } from '../data/attractions';
 import type { Attraction, Rating } from '../data/types';
 import { summarizeDay } from './daySummary';
-import type { Pace, Who } from './trips';
+import { duration as durationOf } from './format';
 
 const get = (id: string) => attractionById(id)!;
 /** A copy of an attraction with some fields changed. */
@@ -20,13 +20,16 @@ const shimokita = get('shimokitazawa');
 const goldenGai = get('golden-gai'); // poor for families, opens 19:00
 const yanaka = get('yanaka-ginza'); // cash only
 
-const opts = (o: Partial<{ dayStart: string; pace: Pace; date: Date | null; who: Who }> = {}) => ({
-  dayStart: '09:00',
-  pace: 'normal' as Pace,
+/** The day's own start and end (09:00 to 19:00 unless changed) and its date. */
+const opts = (o: Partial<{ start: string; end: string; date: Date | null }> = {}) => ({
+  start: '09:00',
+  end: '19:00',
   date: null as Date | null,
-  who: 'couple' as Who,
   ...o,
 });
+// The old paces' lengths, as a day from 09:00.
+const RELAXED = { end: '17:00' };
+const PACKED = { end: '21:00' };
 
 const MONDAY = new Date(2026, 9, 26);
 const WEDNESDAY = new Date(2026, 9, 28);
@@ -53,10 +56,10 @@ test('effort lists every stop in order with its level', () => {
 
 test('back-to-back hard stops are flagged', () => {
   const hardMuseum = tweak(museum, (a) => (a.effort.level = 4));
-  const s = summarizeDay([takao, hardMuseum], opts({ pace: 'packed' }));
+  const s = summarizeDay([takao, hardMuseum], opts(PACKED));
   expect(s.flags.some((f) => f.factor === 'effort' && /back to back/i.test(f.text))).toBe(true);
   // With an easy stop between them they aren't back to back.
-  const apart = summarizeDay([takao, teamlab, hardMuseum], opts({ pace: 'packed' }));
+  const apart = summarizeDay([takao, teamlab, hardMuseum], opts(PACKED));
   expect(apart.flags.some((f) => /back to back/i.test(f.text))).toBe(false);
 });
 
@@ -115,12 +118,12 @@ test('summary without dates skips date checks', () => {
 });
 
 test('over budget is flagged', () => {
-  // Takao and teamLab alone fill a relaxed day exactly (480 min with the train); Sensō-ji tips it over.
-  const relaxed = summarizeDay([takao, teamlab, get('senso-ji')], opts({ pace: 'relaxed' }));
+  // Takao and teamLab alone fill a 09:00–17:00 day exactly (480 min with the train); Sensō-ji tips it over.
+  const relaxed = summarizeDay([takao, teamlab, get('senso-ji')], opts(RELAXED));
   expect(relaxed.logistics.budgetMin).toBe(480);
   expect(relaxed.logistics.usedMin).toBeGreaterThan(480);
   expect(relaxed.flags.some((f) => f.factor === 'logistics' && /over/i.test(f.text))).toBe(true);
-  const packed = summarizeDay([takao, teamlab], opts({ pace: 'packed' }));
+  const packed = summarizeDay([takao, teamlab], opts(PACKED));
   expect(packed.flags.some((f) => f.factor === 'logistics' && /over/i.test(f.text))).toBe(false);
 });
 
@@ -131,24 +134,36 @@ test('time budget counts travel', () => {
 });
 
 test('book ahead flag when booking is required', () => {
-  const s = summarizeDay([takao, teamlab], opts({ pace: 'packed' }));
+  const s = summarizeDay([takao, teamlab], opts(PACKED));
   const book = s.flags.filter((f) => /book ahead/i.test(f.text));
   expect(book).toHaveLength(1);
   expect(book[0]).toMatchObject({ factor: 'logistics', stopId: 'teamlab-planets' });
 });
 
 test('a stop planned outside its opening hours is flagged', () => {
-  const morning = summarizeDay([goldenGai], opts({ dayStart: '09:00' }));
+  const morning = summarizeDay([goldenGai], opts({ start: '09:00' }));
   expect(morning.flags.some((f) => f.factor === 'logistics' && /opening hours/i.test(f.text))).toBe(true);
-  const night = summarizeDay([goldenGai], opts({ dayStart: '20:00' }));
+  const night = summarizeDay([goldenGai], opts({ start: '20:00' }));
   expect(night.flags.some((f) => /opening hours/i.test(f.text))).toBe(false);
 });
 
-test('a stop rated poor for who is going gets a vibe flag', () => {
-  const family = summarizeDay([goldenGai], opts({ who: 'family', dayStart: '20:00' }));
-  expect(family.flags.some((f) => f.factor === 'vibe' && f.stopId === 'golden-gai' && /famil/i.test(f.text))).toBe(true);
-  const friends = summarizeDay([goldenGai], opts({ who: 'friends', dayStart: '20:00' }));
-  expect(friends.flags.some((f) => f.factor === 'vibe')).toBe(false);
+test('the budget is the day’s own start to end, and the schedule starts at its start', () => {
+  const s = summarizeDay([takao, teamlab], opts({ start: '07:30', end: '22:15' }));
+  expect(s.logistics.budgetMin).toBe(14 * 60 + 45);
+  expect(summarizeDay([], opts({ start: '10:00', end: '12:00' })).logistics.budgetMin).toBe(120);
+  // Golden Gai opens at 19:00: from a 20:00 start it's inside its hours, from 09:00 it isn't.
+  expect(summarizeDay([goldenGai], opts({ start: '20:00', end: '23:59' })).flags.some((f) => /opening hours/i.test(f.text))).toBe(false);
+});
+
+test('over budget says by how much, in hours and minutes', () => {
+  const s = summarizeDay([takao, teamlab], opts({ start: '09:00', end: '12:30' }));
+  const over = s.flags.find((f) => f.factor === 'logistics' && /^Over/.test(f.text));
+  expect(over?.text).toBe(`Over your 3 h 30 min day by ${durationOf(s.logistics.usedMin - 210)}`);
+});
+
+test('no who’s-going flag: a stop poor for families is not flagged for it', () => {
+  const s = summarizeDay([goldenGai], opts({ start: '20:00', end: '23:59' }));
+  expect(s.flags.some((f) => f.factor === 'vibe' && /not great/i.test(f.text))).toBe(false);
 });
 
 test('cost range runs from mustPay to withExtras; cash-only flagged', () => {
@@ -156,14 +171,14 @@ test('cost range runs from mustPay to withExtras; cash-only flagged', () => {
   // Takao: train 800 (+ cable car 950, soba 1200 optional). teamLab: 3,800 + 700 transport.
   expect(s.cost).toEqual({ min: 5300, max: 7450, cashOnly: false, cash: 'mostly-cash' });
   expect(s.flags.some((f) => f.factor === 'cost')).toBe(false);
-  const cash = summarizeDay([yanaka], opts({ dayStart: '10:00' }));
+  const cash = summarizeDay([yanaka], opts({ start: '10:00' }));
   expect(cash.cost.cashOnly).toBe(true);
   expect(cash.flags.some((f) => f.factor === 'cost' && f.stopId === 'yanaka-ginza')).toBe(true);
 });
 
 test('vibe gives a local word from the weighted local value', () => {
   expect(summarizeDay([teamlab], opts()).vibe.localWord).toBe('Touristy');
-  expect(summarizeDay([shimokita], opts({ dayStart: '12:00' })).vibe.localWord).toBe('Local');
+  expect(summarizeDay([shimokita], opts({ start: '12:00' })).vibe.localWord).toBe('Local');
 });
 
 test('line is short and mentions the shape of the day', () => expect(summarizeDay([takao, teamlab], opts()).line).toMatch(/morning/i));
@@ -174,13 +189,13 @@ test('line for one stop is "A <effort> <setting> day"', () => {
 });
 
 test('line keeps the hard part instead of averaging it away', () => {
-  expect(summarizeDay([takao, teamlab], opts({ pace: 'packed' })).line).toBe('Big outdoor morning, easy city afternoon'); // Takao to teamLab is now about 1 h 40, not 3 h 55
+  expect(summarizeDay([takao, teamlab], opts(PACKED)).line).toBe('Big outdoor morning, easy city afternoon'); // Takao to teamLab is now about 1 h 40, not 3 h 55
 });
 
 test('line says long and packed when over budget or more than 4 stops', () => {
-  expect(summarizeDay([takao, teamlab, get('senso-ji')], opts({ pace: 'relaxed' })).line).toMatch(/^A long, packed day/);
+  expect(summarizeDay([takao, teamlab, get('senso-ji')], opts(RELAXED)).line).toMatch(/^A long, packed day/);
   const five = [get('senso-ji'), get('tokyo-skytree'), get('kiyosumi-gardens'), get('ryogoku-sumo'), teamlab];
-  const s = summarizeDay(five, opts({ pace: 'packed' }));
+  const s = summarizeDay(five, opts(PACKED));
   expect(s.line).toMatch(/^A long, packed day/);
   expect(s.line.length).toBeLessThan(60);
 });
@@ -189,8 +204,8 @@ test('line stays under 60 characters', () => {
   const ids = ['senso-ji', 'meiji-jingu', 'tokyo-national-museum', 'todoroki-valley', 'kiyosumi-gardens', 'mount-takao'];
   for (const a of ids) for (const b of ids) {
     if (a === b) continue;
-    for (const pace of ['relaxed', 'packed'] as Pace[]) {
-      const line = summarizeDay([get(a), get(b)], opts({ pace })).line;
+    for (const day of [RELAXED, PACKED]) {
+      const line = summarizeDay([get(a), get(b)], opts(day)).line;
       expect(line.length, line).toBeLessThan(60);
     }
   }
@@ -214,30 +229,30 @@ const slots = (a: Attraction, morning: Rating, afternoon: Rating, evening: Ratin
 test('a stop in a poor slot is flagged and pointed to its best slot', () => {
   // A teamLab whose morning is poor, at 10:00: best in the evening.
   const nightTeamlab = slots(teamlab, 'poor', 'ok', 'good');
-  const s = summarizeDay([nightTeamlab], opts({ dayStart: '10:00' }));
+  const s = summarizeDay([nightTeamlab], opts({ start: '10:00' }));
   expect(todFlags(s)).toEqual([{ factor: 'conditions', text: 'teamLab Planets is best in the evening', stopId: 'teamlab-planets' }]);
   // Golden Gai, for real, at 10:00.
-  const gai = summarizeDay([goldenGai], opts({ dayStart: '10:00' }));
+  const gai = summarizeDay([goldenGai], opts({ start: '10:00' }));
   expect(todFlags(gai).map((f) => f.text)).toEqual(['Golden Gai is best in the evening']);
 });
 
 test('a stop in a good or ok slot is not flagged', () => {
-  expect(todFlags(summarizeDay([goldenGai], opts({ dayStart: '20:00' })))).toEqual([]);
-  expect(todFlags(summarizeDay([tsukiji], opts({ dayStart: '08:00' })))).toEqual([]);
+  expect(todFlags(summarizeDay([goldenGai], opts({ start: '20:00' })))).toEqual([]);
+  expect(todFlags(summarizeDay([tsukiji], opts({ start: '08:00' })))).toEqual([]);
   // Afternoon rated ok: not flagged.
-  expect(todFlags(summarizeDay([slots(teamlab, 'poor', 'ok', 'good')], opts({ dayStart: '13:00' })))).toEqual([]);
+  expect(todFlags(summarizeDay([slots(teamlab, 'poor', 'ok', 'good')], opts({ start: '13:00' })))).toEqual([]);
 });
 
 test('a stop poor at every time of day says so', () => {
-  const s = summarizeDay([slots(teamlab, 'poor', 'poor', 'poor')], opts({ dayStart: '10:00' }));
+  const s = summarizeDay([slots(teamlab, 'poor', 'poor', 'poor')], opts({ start: '10:00' }));
   expect(todFlags(s).map((f) => f.text)).toEqual(["teamLab Planets isn't great at any time of day"]);
 });
 
 test('time-of-day boundaries: 11:59 is morning, 12:00 afternoon, 17:00 evening', () => {
   const amOnly = slots(teamlab, 'good', 'poor', 'poor');
-  expect(todFlags(summarizeDay([amOnly], opts({ dayStart: '11:59' })))).toEqual([]);
-  expect(todFlags(summarizeDay([amOnly], opts({ dayStart: '12:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the morning']);
+  expect(todFlags(summarizeDay([amOnly], opts({ start: '11:59' })))).toEqual([]);
+  expect(todFlags(summarizeDay([amOnly], opts({ start: '12:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the morning']);
   const pmOnly = slots(teamlab, 'poor', 'good', 'poor');
-  expect(todFlags(summarizeDay([pmOnly], opts({ dayStart: '16:59' })))).toEqual([]);
-  expect(todFlags(summarizeDay([pmOnly], opts({ dayStart: '17:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the afternoon']);
+  expect(todFlags(summarizeDay([pmOnly], opts({ start: '16:59' })))).toEqual([]);
+  expect(todFlags(summarizeDay([pmOnly], opts({ start: '17:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the afternoon']);
 });

@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react';
-import { MAX_DAYS, PACE_HOURS, daysBetween, parseDate, type Pace, type Who } from '../../lib/trips';
+import { MONTHS } from '../../lib/format';
+import { MAX_DAYS, dateOf, daysBetween, parseDate, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
 
 export interface TripSettingsValue {
@@ -7,9 +8,6 @@ export interface TripSettingsValue {
   startDate: string | null;
   endDate: string | null;
   days: number;
-  who: Who;
-  pace: Pace;
-  dayStart: string;
 }
 
 // ---------- dates (pure, so they can be tested) ----------
@@ -29,7 +27,9 @@ export function shiftDate(date: string, n: number): string | null {
 }
 
 const clampDays = (n: number) => Math.min(MAX_DAYS, Math.max(1, Math.round(n)));
-type Dates = Pick<TripSettingsValue, 'startDate' | 'endDate' | 'days'>;
+/** A trip's dates as the fields show them: start, end and the number of days, kept in step. */
+export type TripDatesValue = Pick<TripSettingsValue, 'startDate' | 'endDate' | 'days'>;
+type Dates = TripDatesValue;
 
 /** A new start keeps the number of days and moves the end with it. Clearing it clears both dates. */
 export function withStart(v: Dates, start: string): Dates {
@@ -86,30 +86,39 @@ export function withDays(v: Dates, days: number): Dates {
   return { ...v, days: n, endDate: v.startDate ? shiftDate(v.startDate, n - 1) : null };
 }
 
-// ---------- the form ----------
+// ---------- the header's label ----------
 
-const WHO: { id: Who; label: string }[] = [
-  { id: 'solo', label: 'Solo' },
-  { id: 'couple', label: 'Couple' },
-  { id: 'family', label: 'Family' },
-  { id: 'friends', label: 'Friends' },
-];
-const PACE: { id: Pace; label: string }[] = [
-  { id: 'relaxed', label: 'Relaxed' },
-  { id: 'normal', label: 'Normal' },
-  { id: 'packed', label: 'Packed' },
-];
-
-interface Props {
-  value: TripSettingsValue;
-  onChange: (next: TripSettingsValue) => void;
-  /** Shown in the empty name field, and used when it's left empty. */
-  namePlaceholder?: string;
+/**
+ * The trip's dates for the planner's header: "10–12 Nov · 3 days", "28 Nov – 2 Dec · 5 days",
+ * "10 Nov · 1 day", or "3 days" when the trip has no dates.
+ */
+export function datesLabel(trip: Trip): string {
+  const n = trip.days.length;
+  const count = `${n} ${n === 1 ? 'day' : 'days'}`;
+  const a = dateOf(trip, 0);
+  const b = dateOf(trip, n - 1);
+  if (!a || !b) return count;
+  const dm = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  const range =
+    n === 1 ? dm(a) : a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear() ? `${a.getDate()}–${dm(b)}` : `${dm(a)} – ${dm(b)}`;
+  return `${range} · ${count}`;
 }
 
-export function TripSettings({ value, onChange, namePlaceholder }: Props) {
+// ---------- the fields ----------
+
+interface DatesProps {
+  value: Dates;
+  onChange: (next: Dates) => void;
+}
+
+/**
+ * Start date, end date and number of days, kept in step: a start keeps the days and moves the end, an
+ * end sets the days, the days move the end. Typing is safe: a date that isn't whole yet, or an end that
+ * isn't usable, waits in its field (see typeStart and typeEnd) instead of moving the others.
+ */
+export function TripDates({ value, onChange }: DatesProps) {
   const id = useId();
-  const set = (patch: Partial<TripSettingsValue>) => onChange({ ...value, ...patch });
+  const set = (patch: Partial<Dates>) => onChange({ ...value, ...patch });
   // The days field keeps what's typed until it's a number in range, so "12" can be typed over "1".
   const [daysText, setDaysText] = useState(String(value.days));
   useEffect(() => setDaysText(String(value.days)), [value.days]);
@@ -120,7 +129,7 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
   const [endNote, setEndNote] = useState<string | null>(null);
 
   /** Dates changed from anywhere but the end field: whatever was pending there is gone. */
-  const setDates = (d: Partial<TripSettingsValue>) => {
+  const setDates = (d: Partial<Dates>) => {
     setEndDraft(null);
     setEndNote(null);
     set(d);
@@ -169,6 +178,98 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
   };
 
   return (
+    <div className="tset-when">
+      <div className="tset-dates">
+        <div className="tset-field">
+          <label htmlFor={`${id}-start`}>Start date</label>
+          <input
+            id={`${id}-start`}
+            className="tset-input num"
+            type="date"
+            value={startDraft ?? value.startDate ?? ''}
+            onChange={(e) => onStart(e.target.value)}
+            onBlur={leaveStartField}
+          />
+        </div>
+        <div className="tset-field">
+          <label htmlFor={`${id}-end`}>End date</label>
+          <input
+            id={`${id}-end`}
+            className="tset-input num"
+            type="date"
+            value={endDraft ?? value.endDate ?? ''}
+            min={value.startDate ?? undefined}
+            max={value.startDate ? (shiftDate(value.startDate, MAX_DAYS - 1) ?? undefined) : undefined}
+            aria-describedby={`${id}-end-note`}
+            onChange={(e) => onEnd(e.target.value)}
+            onBlur={leaveEndField}
+          />
+        </div>
+        <div className="tset-field">
+          <label htmlFor={`${id}-days`}>Number of days</label>
+          <div className="tset-stepper">
+            <button
+              type="button"
+              className="tset-step"
+              onClick={() => setDates(withDays(value, value.days - 1))}
+              disabled={value.days <= 1}
+              aria-label="One day fewer"
+            >
+              <Icon name="minus" size={16} />
+            </button>
+            <input
+              id={`${id}-days`}
+              className="tset-input num"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={MAX_DAYS}
+              value={daysText}
+              onChange={(e) => typeDays(e.target.value)}
+              onBlur={() => setDaysText(String(value.days))}
+            />
+            <button
+              type="button"
+              className="tset-step"
+              onClick={() => setDates(withDays(value, value.days + 1))}
+              disabled={value.days >= MAX_DAYS}
+              aria-label="One day more"
+            >
+              <Icon name="plus" size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+      <p id={`${id}-end-note`} className="tset-warn" role="status">
+        {endNote}
+      </p>
+      <p className="tset-hint">
+        {hasDates ? (
+          <>
+            The days follow the dates.{' '}
+            <button type="button" className="text-button" onClick={() => setDates({ startDate: null, endDate: null })}>
+              Clear dates
+            </button>
+          </>
+        ) : (
+          'No dates yet? Set the number of days and add dates later.'
+        )}
+      </p>
+    </div>
+  );
+}
+
+interface Props {
+  value: TripSettingsValue;
+  onChange: (next: TripSettingsValue) => void;
+  /** Shown in the empty name field, and used when it's left empty. */
+  namePlaceholder?: string;
+}
+
+/** The new trip's name and dates. In the planner, the dates alone (TripDates) sit in the header. */
+export function TripSettings({ value, onChange, namePlaceholder }: Props) {
+  const id = useId();
+  return (
     <div className="tset">
       <div className="tset-field">
         <label htmlFor={`${id}-name`}>Trip name</label>
@@ -180,141 +281,14 @@ export function TripSettings({ value, onChange, namePlaceholder }: Props) {
           placeholder={namePlaceholder}
           maxLength={80}
           autoComplete="off"
-          onChange={(e) => set({ name: e.target.value })}
+          onChange={(e) => onChange({ ...value, name: e.target.value })}
         />
       </div>
 
       <fieldset className="tset-group">
         <legend>When</legend>
-        <div className="tset-dates">
-          <div className="tset-field">
-            <label htmlFor={`${id}-start`}>Start date</label>
-            <input
-              id={`${id}-start`}
-              className="tset-input num"
-              type="date"
-              value={startDraft ?? value.startDate ?? ''}
-              onChange={(e) => onStart(e.target.value)}
-              onBlur={leaveStartField}
-            />
-          </div>
-          <div className="tset-field">
-            <label htmlFor={`${id}-end`}>End date</label>
-            <input
-              id={`${id}-end`}
-              className="tset-input num"
-              type="date"
-              value={endDraft ?? value.endDate ?? ''}
-              min={value.startDate ?? undefined}
-              max={value.startDate ? (shiftDate(value.startDate, MAX_DAYS - 1) ?? undefined) : undefined}
-              aria-describedby={`${id}-end-note`}
-              onChange={(e) => onEnd(e.target.value)}
-              onBlur={leaveEndField}
-            />
-          </div>
-          <div className="tset-field">
-            <label htmlFor={`${id}-days`}>Number of days</label>
-            <div className="tset-stepper">
-              <button
-                type="button"
-                className="tset-step"
-                onClick={() => setDates(withDays(value, value.days - 1))}
-                disabled={value.days <= 1}
-                aria-label="One day fewer"
-              >
-                <Icon name="minus" size={16} />
-              </button>
-              <input
-                id={`${id}-days`}
-                className="tset-input num"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={MAX_DAYS}
-                value={daysText}
-                onChange={(e) => typeDays(e.target.value)}
-                onBlur={() => setDaysText(String(value.days))}
-              />
-              <button
-                type="button"
-                className="tset-step"
-                onClick={() => setDates(withDays(value, value.days + 1))}
-                disabled={value.days >= MAX_DAYS}
-                aria-label="One day more"
-              >
-                <Icon name="plus" size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-        <p id={`${id}-end-note`} className="tset-warn" role="status">
-          {endNote}
-        </p>
-        <p className="tset-hint">
-          {hasDates ? (
-            <>
-              The days follow the dates.{' '}
-              <button type="button" className="text-button" onClick={() => setDates({ startDate: null, endDate: null })}>
-                Clear dates
-              </button>
-            </>
-          ) : (
-            'No dates yet? Set the number of days and add dates later.'
-          )}
-        </p>
+        <TripDates value={value} onChange={(d) => onChange({ ...value, ...d })} />
       </fieldset>
-
-      <PillRadios legend="Who’s going" name={`${id}-who`} options={WHO} value={value.who} onChange={(who) => set({ who })} />
-
-      <PillRadios
-        legend="Pace"
-        name={`${id}-pace`}
-        options={PACE.map((p) => ({ ...p, sub: `${PACE_HOURS[p.id]} h days` }))}
-        value={value.pace}
-        onChange={(pace) => set({ pace })}
-      />
-
-      <div className="tset-field tset-time">
-        <label htmlFor={`${id}-start-time`}>Day starts at</label>
-        <input
-          id={`${id}-start-time`}
-          className="tset-input num"
-          type="time"
-          value={value.dayStart}
-          onChange={(e) => e.target.value && set({ dayStart: e.target.value })}
-        />
-      </div>
     </div>
-  );
-}
-
-function PillRadios<T extends string>({
-  legend,
-  name,
-  options,
-  value,
-  onChange,
-}: {
-  legend: string;
-  name: string;
-  options: { id: T; label: string; sub?: string }[];
-  value: T;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <fieldset className="tset-group">
-      <legend>{legend}</legend>
-      <div className="tset-pills">
-        {options.map((o) => (
-          <label key={o.id} className="tset-pill">
-            <input type="radio" name={name} value={o.id} checked={value === o.id} onChange={() => onChange(o.id)} />
-            <span>
-              {o.label}
-              {o.sub && <small className="num">{o.sub}</small>}
-            </span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
   );
 }

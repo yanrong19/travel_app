@@ -5,7 +5,6 @@ import { isRainProof, localWord, mustPay, withExtras } from './factors';
 import { DAYS_LONG, duration } from './format';
 import { dayLengthMin, schedule, type ScheduledStop } from './schedule';
 import { EVENING, NOON, slotMismatch } from './timeOfDay';
-import type { Pace, Who } from './trips';
 
 /** How much cash the day needs: the most cash-bound stop decides. */
 export type CashLevel = 'cash-only' | 'mostly-cash' | 'cards';
@@ -28,12 +27,6 @@ const MAX_ON_FEET = 6 * 60;
 const BUSY = 70;
 const MAX_STOPS = 4;
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const WHO_POOR: Record<Who, string> = {
-  solo: 'Not great solo',
-  couple: 'Not great for couples',
-  family: 'Not great for families',
-  friends: 'Not great for a group of friends',
-};
 
 /** Average of `value` over the stops, weighted by how long each one is planned for. */
 function weighted(stops: ScheduledStop[], value: (a: Attraction) => number): number {
@@ -117,11 +110,9 @@ function outsideHours(s: ScheduledStop, [o, c]: [string, string]): boolean {
 
 // ---------- the summary ----------
 
-export function summarizeDay(
-  stops: Attraction[],
-  opts: { dayStart: string; pace: Pace; date: Date | null; who: Who },
-): DaySummary {
-  const budgetMin = dayLengthMin(opts.pace);
+/** A day's stops read factor by factor, scheduled from the day's `start`, with `start` to `end` ('HH:MM') as its time budget. */
+export function summarizeDay(stops: Attraction[], opts: { start: string; end: string; date: Date | null }): DaySummary {
+  const budgetMin = dayLengthMin(opts.start, opts.end);
   if (!stops.length) {
     return {
       empty: true,
@@ -135,7 +126,7 @@ export function summarizeDay(
     };
   }
 
-  const plan = schedule(stops, opts.dayStart);
+  const plan = schedule(stops, opts.start);
   const { date } = opts;
   // logistics.hours is Monday first; getDay() is Sunday = 0.
   const weekday = date ? (date.getDay() + 6) % 7 : null;
@@ -178,12 +169,11 @@ export function summarizeDay(
     const busy = curve[hour - CROWD_START_HOUR];
     if (busy != null && busy >= BUSY) flag('vibe', `Busy around ${String(hour).padStart(2, '0')}:00`, s.a);
   }
-  for (const a of stops) if (a.vibe.suits[opts.who] === 'poor') flag('vibe', WHO_POOR[opts.who], a);
 
   // Logistics
   const travelMin = plan.reduce((s, x) => s + x.travelBefore, 0);
   const usedMin = plan[plan.length - 1].end - plan[0].start;
-  if (usedMin > budgetMin) flag('logistics', `Over your ${budgetMin / 60} h day by ${duration(usedMin - budgetMin)}`);
+  if (usedMin > budgetMin) flag('logistics', `Over your ${duration(budgetMin)} day by ${duration(usedMin - budgetMin)}`);
   for (const s of plan) {
     const hours = hoursFor(s.a, weekday);
     if (hours === null) flag('logistics', `Closed on ${DAYS_LONG[weekday!]}s`, s.a);

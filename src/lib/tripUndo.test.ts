@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest';
-import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, unsaveFromTrip } from './trips';
-import { undoAddStop, undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from './tripUndo';
+import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, setDays, setDayTimes, unsaveFromTrip } from './trips';
+import { undoAddStop, undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from './tripUndo';
 
 const base = () => {
-  let t = newTrip({ name: 'T', places: [{ level: 'prefecture', id: '13' }], startDate: null, days: 3, who: 'solo', pace: 'normal' }, 1, 't');
+  let t = newTrip({ name: 'T', places: [{ level: 'prefecture', id: '13' }], startDate: null, days: 3 }, 1, 't');
   for (const id of ['a', 'b', 'c']) t = addStop(t, 0, id, 1);
   return t;
 };
@@ -128,4 +128,23 @@ test('undoAddStop is a no-op once the stop has left that day', () => {
   expect(undoAddStop(1, 'x', null)(removed, 3)).toBe(removed);
   const movedOn = addStop(addStop(base(), 1, 'x', 2), 2, 'x', 2);
   expect(undoAddStop(1, 'x', null)(movedOn, 3)).toBe(movedOn);
+});
+
+test('undoSetDays puts the cut days back, with their stops, wet plans and times, and takes the moved stops out of saved', () => {
+  let before = setDayTimes(addWet(addStop(base(), 2, 'z', 1), 2, 'w', 1), 2, { start: '07:00', end: '22:00' }, 1);
+  before = saveToTrip(before, 's', 1);
+  const t = setDays(before, 1, 2);
+  expect(t.saved).toEqual(['s', 'z']);
+  const r = undoSetDays(before, 1)(t, 3);
+  expect([r.days, r.saved]).toEqual([before.days, before.saved]);
+  expect(r.updatedAt).toBe(3);
+});
+
+test('undoSetDays is a no-op when the days or saved changed since', () => {
+  const before = addStop(base(), 2, 'z', 1);
+  const t = setDays(before, 1, 2);
+  const changed = unsaveFromTrip(t, 'z', 2);
+  expect(undoSetDays(before, 1)(changed, 3)).toBe(changed);
+  const retimed = setDayTimes(t, 0, { start: '10:00' }, 2);
+  expect(undoSetDays(before, 1)(retimed, 3)).toBe(retimed);
 });

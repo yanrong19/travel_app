@@ -7,7 +7,7 @@ import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
 import { slotMismatch } from '../../lib/timeOfDay';
 import { dayPlace } from '../../lib/tripPlaces';
-import { dateOf, type Trip } from '../../lib/trips';
+import { DAY_START, dateOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
 import { DayPicker } from './DayPicker';
 
@@ -104,7 +104,7 @@ export function DayList({
   const id = useId();
   const tabs = useRef<HTMLDivElement>(null);
   const plan = trip.days[day];
-  const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), trip.dayStart), [plan, trip.dayStart]);
+  const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), plan?.start ?? DAY_START), [plan]);
   // Stops starting in a part of the day rated poor for them, by position in `timed`.
   const misses = useMemo(() => timed.map((s) => slotMismatch(s.a, s.start)), [timed]);
   const date = dateOf(trip, day);

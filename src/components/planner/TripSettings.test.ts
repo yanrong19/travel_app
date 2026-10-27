@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
-import { leaveEnd, leaveStart, shiftDate, typeEnd, typeStart, withDays, withStart } from './TripSettings';
+import { newTrip } from '../../lib/trips';
+import { datesLabel, leaveEnd, leaveStart, shiftDate, typeEnd, typeStart, withDays, withStart } from './TripSettings';
 
 const none = { startDate: null, endDate: null, days: 5 };
 
@@ -69,4 +70,14 @@ test('a two-digit year is still being typed: held as a draft, the dates stay put
   // Leaving the field: a partial year is dropped, an empty field clears the dates.
   expect(leaveStart(v, '0027-04-18')).toBe(v);
   expect(leaveStart(v, '')).toEqual({ startDate: null, endDate: null, days: 5 });
+});
+
+test('datesLabel: the range and the number of days, or the days alone without dates', () => {
+  const trip = (startDate: string | null, days: number) => newTrip({ name: 'T', places: [], startDate, days }, 1, 't');
+  expect(datesLabel(trip('2026-11-10', 3))).toBe('10–12 Nov · 3 days');
+  expect(datesLabel(trip('2026-11-28', 5))).toBe('28 Nov – 2 Dec · 5 days');
+  expect(datesLabel(trip('2026-12-30', 4))).toBe('30 Dec – 2 Jan · 4 days');
+  expect(datesLabel(trip('2026-11-10', 1))).toBe('10 Nov · 1 day');
+  expect(datesLabel(trip(null, 3))).toBe('3 days');
+  expect(datesLabel(trip(null, 1))).toBe('1 day');
 });

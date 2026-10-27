@@ -2,7 +2,7 @@
 // not a routing service. Short hops are walked; longer ones go by train, with a fixed allowance for
 // getting to the platform, waiting and changing.
 import type { Attraction } from '../data/types';
-import { PACE_HOURS, type Pace } from './trips';
+import { clockMin, isClock } from './trips';
 
 const EARTH_KM = 6371;
 const DETOUR = 1.3; // walking: streets are longer than the straight line
@@ -43,10 +43,9 @@ export interface ScheduledStop {
   travelBefore: number;
 }
 
-/** Lays stops end to end from `dayStart` ('HH:MM'), with travel between them. */
-export function schedule(stops: Attraction[], dayStart: string): ScheduledStop[] {
-  const [h, m] = dayStart.split(':').map(Number);
-  let clock = (Number.isFinite(h) ? h : 9) * 60 + (Number.isFinite(m) ? m : 0);
+/** Lays stops end to end from the day's start ('HH:MM'; 09:00 if it isn't one), with travel between them. */
+export function schedule(stops: Attraction[], start: string): ScheduledStop[] {
+  let clock = clockMin(isClock(start) ? start : '09:00');
   return stops.map((a, i) => {
     const travelBefore = i === 0 ? 0 : travelMin(stops[i - 1].lonlat, a.lonlat);
     const start = clock + travelBefore;
@@ -56,5 +55,6 @@ export function schedule(stops: Attraction[], dayStart: string): ScheduledStop[]
   });
 }
 
-/** How many minutes a day can hold at this pace. */
-export const dayLengthMin = (pace: Pace): number => PACE_HOURS[pace] * 60;
+/** How many minutes a day holds: from its start to its end ('HH:MM'). Never below 0. */
+export const dayLengthMin = (start: string, end: string): number =>
+  isClock(start) && isClock(end) ? Math.max(0, clockMin(end) - clockMin(start)) : 0;

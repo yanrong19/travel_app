@@ -7,7 +7,7 @@ import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
 import { slotMismatch } from '../../lib/timeOfDay';
 import { dayPlace } from '../../lib/tripPlaces';
-import { addStop, dateOf, dayOf, removeStop, saveToTrip, unsaveFromTrip, type Trip } from '../../lib/trips';
+import { addStop, DAY_END, DAY_START, dateOf, dayOf, removeStop, saveToTrip, unsaveFromTrip, type Trip } from '../../lib/trips';
 import { useTrips } from '../../lib/tripsStore';
 import { useMedia } from '../../lib/useMedia';
 import { undoAddStop, undoRemoveStop, undoUnsave, type Edit } from '../../lib/tripUndo';
@@ -100,12 +100,14 @@ export function TripBar({
   const plan = trip.days[day];
   const date = dateOf(trip, day);
   const stops = useMemo(() => stopsOf(plan?.stops ?? []), [plan]);
-  const timed = useMemo(() => schedule(stops, trip.dayStart), [stops, trip.dayStart]);
+  const start = plan?.start ?? DAY_START;
+  const end = plan?.end ?? DAY_END;
+  const timed = useMemo(() => schedule(stops, start), [stops, start]);
   const summary = useMemo(
-    () => summarizeDay(stops, { dayStart: trip.dayStart, pace: trip.pace, date, who: trip.who }),
+    () => summarizeDay(stops, { start, end, date }),
     // A Date is new every render; its time stands in for it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [stops, trip.dayStart, trip.pace, trip.who, date?.getTime()],
+    [stops, start, end, date?.getTime()],
   );
   const nameOf = (sid: string) => stopsOf([sid])[0]?.name ?? 'That stop';
 

@@ -13,7 +13,8 @@ import { DaySummaryPanel } from '../components/planner/DaySummaryPanel';
 import { PlacePicker } from '../components/planner/PlacePicker';
 import { PlaceSwitcher } from '../components/planner/PlaceSwitcher';
 import { Sheet } from '../components/planner/Sheet';
-import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
+import { HeaderDates, TripDatesPanel, cutsPlans } from '../components/planner/HeaderDates';
+import type { TripDatesValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
 import { WetPlan } from '../components/planner/WetPlan';
 import { browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
@@ -29,9 +30,10 @@ import {
   addPlace,
   addStop,
   addWet,
+  DAY_END,
+  DAY_START,
   dateOf,
   dayOf,
-  endDate,
   movedToSaved,
   moveStop,
   removePlace,
@@ -40,6 +42,7 @@ import {
   replaceStop,
   saveToTrip,
   setDays,
+  setStartDate,
   unsaveFromTrip,
   type PlaceRef,
   type Trip,
@@ -48,7 +51,7 @@ import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, 
 import { attractionHome, countFor, nodeOf, parseRefKey, pathTo, placeAnchor, refKey, sameTree } from '../lib/placeTree';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
-import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from '../lib/tripUndo';
+import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from '../lib/tripUndo';
 import { useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 import { useSafeTop } from '../lib/useSafeTop';
@@ -142,7 +145,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const [replace, setReplace] = useState<{ day: number; id: string } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [undo, setUndo] = useState<Undo | null>(null);
-  const [sheet, setSheet] = useState<'places' | 'settings' | null>(null);
+  const [sheet, setSheet] = useState<'places' | null>(null);
+  const [datesOpen, setDatesOpen] = useState(false);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const undoTimer = useRef<number | undefined>(undefined);
 
@@ -156,7 +160,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const place = trip.places[pi] ?? null;
 
   // The viewed place: the map's level, kept apart from the trip's places. It starts at the trip place
-  // and moves up and down that place's tree (the breadcrumb, bubbles and chips); a view from another
+  // and moves up and down that place's tree (the breadcrumb and the bubbles); a view from another
   // tree (the place it came from was removed) falls back to the trip place.
   const viewParam = parseRefKey(params.get('view'));
   const viewed = place && viewParam && sameTree(viewParam, place) ? viewParam : place;
@@ -239,7 +243,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
 
-  // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
+  // Replace mode only while its stop is still on its day (an undo, another tab or fewer days can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
   useEffect(() => {
     if (replace && !target) setReplace(null);
@@ -248,10 +252,10 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const plan = trip.days[day];
   const date = dateOf(trip, day);
   const summary = useMemo(
-    () => summarizeDay(stopsOf(plan?.stops ?? []), { dayStart: trip.dayStart, pace: trip.pace, date, who: trip.who }),
+    () => summarizeDay(stopsOf(plan?.stops ?? []), { start: plan?.start ?? DAY_START, end: plan?.end ?? DAY_END, date }),
     // A Date is new every render; its time stands in for it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plan, trip.dayStart, trip.pace, trip.who, date?.getTime()],
+    [plan, date?.getTime()],
   );
   const wetDay = isLikelyWet(getRainChance(dayPlace(trip, day), date));
   const toWet = tab === 'wet';
@@ -446,36 +450,24 @@ function PlannerPage({ trip }: { trip: Trip }) {
     } else if (gone) askRemovePlace(gone);
   };
 
-  // ---- settings ----
-  const [draft, setDraft] = useState<TripSettingsValue | null>(null);
-  const openSettings = () => {
-    setDraft({
-      name: trip.name,
-      startDate: trip.startDate,
-      endDate: endDate(trip),
-      days: trip.days.length,
-      who: trip.who,
-      pace: trip.pace,
-      dayStart: trip.dayStart,
-    });
-    setSheet('settings');
+  // ---- the dates, in the header ----
+  /**
+   * New dates from the header: the start date, and the number of days through setDays (stops on cut
+   * days move to Saved). A cut that took stops or wet-weather plans off their days can be undone.
+   */
+  const applyDates = (next: TripDatesValue) => {
+    const before = trip;
+    const n = next.days;
+    const cut = cutsPlans(before, n);
+    const moved = movedToSaved(before, n);
+    edit((t, now) => setStartDate(setDays(t, n, now), next.startDate, now));
+    if (cut)
+      offerUndo({
+        text: moved > 0 ? `${plural(moved, 'stop')} moved to Saved` : `Trip cut to ${plural(n, 'day')}`,
+        run: () => edit(undoSetDays(before, n)),
+      });
   };
-  const dropped = draft ? trip.days.slice(draft.days).reduce((n, d) => n + d.stops.length, 0) : 0;
-  // Only the stops Saved doesn't already hold are news.
-  const moved = draft ? movedToSaved(trip, draft.days) : 0;
-  const droppedWet = draft ? trip.days.slice(draft.days).some((d) => d.wet.length > 0) : false;
-  const saveSettings = () => {
-    if (!draft) return;
-    const v = draft;
-    edit((t, now) => {
-      const n = setDays(t, v.days, now);
-      const name = v.name.trim() || t.name;
-      const same = name === n.name && v.startDate === n.startDate && v.who === n.who && v.pace === n.pace && v.dayStart === n.dayStart;
-      return same ? n : { ...n, name, startDate: v.startDate, who: v.who, pace: v.pace, dayStart: v.dayStart, updatedAt: now };
-    });
-    if (moved) setNotice(`${plural(moved, 'stop')} moved to Saved.`);
-    setSheet(null);
-  };
+  const closeDates = useCallback(() => setDatesOpen(false), []);
 
   // ---- the name, edited in place ----
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -573,7 +565,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     root: rootRef,
     barH: sheetBarH(safeTop),
     levelKey: trip.id,
-    paused: drawerOpen || !!sheet || !!confirm || searching,
+    paused: drawerOpen || !!sheet || (narrow && datesOpen) || !!confirm || searching,
     peek: PEEK_PHONE,
   });
   // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
@@ -632,10 +624,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
     />
   );
 
-  // The map level: a breadcrumb up the viewed place's tree, then on laptops a chip per child for the
-  // keyboard. Phones keep the breadcrumb alone, as a slim line under the pills: the bubbles drill in.
+  // The map level: a breadcrumb up the viewed place's tree. The map's bubbles drill in.
   const path = viewed ? pathTo(viewed) : [];
-  const chips = !narrow && !!bubbles && bubbles.length > 0;
   const levels = viewed && (
     <div className="plan-levels" inert={searching}>
       <nav className="lvl-crumbs" aria-label="Map level">
@@ -654,33 +644,15 @@ function PlannerPage({ trip }: { trip: Trip }) {
                     </span>
                   </>
                 ) : (
-                  <>
-                    <span className="lvl-crumb is-current" aria-current="location">
-                      {name}
-                    </span>
-                    {/* Leads into the chips: Japan › Hokkaidō, Tōhoku, Kantō… */}
-                    {chips && (
-                      <span className="lvl-sep is-lead" aria-hidden="true">
-                        ›
-                      </span>
-                    )}
-                  </>
+                  <span className="lvl-crumb is-current" aria-current="location">
+                    {name}
+                  </span>
                 )}
               </li>
             );
           })}
         </ol>
       </nav>
-      {chips && bubbles && (
-        <div className="lvl-chips" role="group" aria-label={`Places in ${viewedName}`}>
-          {bubbles.map((b) => (
-            <button key={b.id} type="button" className={`lvl-chip ${b.count ? 'is-live' : ''}`} onClick={b.onPick}>
-              {b.label}
-              <span className="lvl-chip-count num">{b.count || 'Soon'}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 
@@ -747,7 +719,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className={`explore planner ${chips ? 'has-level-chips' : ''} ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''}`}
+      className={`explore planner ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''}`}
       style={
         {
           '--sheet-clear': `${SHEET_CLEAR}px`,
@@ -786,22 +758,26 @@ function PlannerPage({ trip }: { trip: Trip }) {
               <button type="button" className="icon-button plan-back" onClick={() => go('/trips')} aria-label="All trips" title="All trips">
                 <Icon name="arrowLeft" size={18} />
               </button>
-              <input
-                className="plan-name"
-                value={nameDraft ?? trip.name}
-                onChange={(e) => typeName(e.target.value)}
-                onBlur={() => setNameDraft(null)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') e.currentTarget.blur();
-                  if (e.key === 'Escape') {
-                    e.currentTarget.blur();
-                  }
-                }}
-                aria-label="Trip name"
-                maxLength={80}
-                spellCheck={false}
-                autoComplete="off"
-              />
+              {/* Laptop: the name, then the dates beside it. Phone: the dates as a second, smaller line. */}
+              <div className="plan-title">
+                <input
+                  className="plan-name"
+                  value={nameDraft ?? trip.name}
+                  onChange={(e) => typeName(e.target.value)}
+                  onBlur={() => setNameDraft(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') e.currentTarget.blur();
+                    if (e.key === 'Escape') {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  aria-label="Trip name"
+                  maxLength={80}
+                  spellCheck={false}
+                  autoComplete="off"
+                />
+                <HeaderDates trip={trip} onApply={applyDates} open={datesOpen} onOpenChange={setDatesOpen} popover={!narrow} />
+              </div>
               {!narrow && switcher}
               {narrow && view && (
                 <button
@@ -815,9 +791,6 @@ function PlannerPage({ trip }: { trip: Trip }) {
                   <Icon name="search" size={18} />
                 </button>
               )}
-              <button type="button" className="round-button plan-settings" onClick={openSettings} aria-label="Trip settings" title="Trip settings">
-                <Icon name="sliders" size={18} />
-              </button>
             </>
           )}
         </div>
@@ -927,32 +900,21 @@ function PlannerPage({ trip }: { trip: Trip }) {
         />
       </Sheet>
 
+      {/* Phone: the header's dates open as a sheet (laptop: a popover under the button). */}
       <Sheet
-        open={sheet === 'settings' && !!draft}
-        title="Trip settings"
-        onClose={() => setSheet(null)}
+        open={narrow && datesOpen}
+        title="Trip dates"
+        size="small"
+        onClose={closeDates}
         footer={
-          <>
-            {(dropped > 0 || droppedWet) && draft && (
-              <p className="plan-warn" role="status">
-                <Icon name="alert" size={16} />
-                {dropped > 0
-                  ? `${moved > 0 ? `${plural(moved, 'stop')} after Day ${draft.days} will move to Saved` : `The stops after Day ${draft.days} come off their days and stay in Saved`}${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
-                  : `The wet-weather plans after Day ${draft.days} will be removed.`}
-              </p>
-            )}
-            <div className="psheet-actions">
-              <button type="button" className="button is-quiet" onClick={() => setSheet(null)}>
-                Cancel
-              </button>
-              <button type="button" className="button" onClick={saveSettings}>
-                Save changes
-              </button>
-            </div>
-          </>
+          <div className="psheet-actions">
+            <button type="button" className="button is-wide" onClick={closeDates}>
+              Done
+            </button>
+          </div>
         }
       >
-        {draft && <TripSettings value={draft} onChange={setDraft} namePlaceholder={trip.name} />}
+        <TripDatesPanel trip={trip} onApply={applyDates} />
       </Sheet>
 
       <Sheet open={!!confirm} title="Remove this place?" size="small" onClose={() => setConfirm(null)}>

@@ -22,13 +22,10 @@ const trip = (over: Partial<Trip> = {}): Trip => ({
   places: [{ level: 'prefecture', id: '13' }],
   startDate: null,
   days: [
-    { stops: ['senso-ji', 'tokyo-national-museum', 'yanaka-ginza'], wet: [] },
-    { stops: ['meiji-jingu', 'shibuya-sky'], wet: ['teamlab-planets'] },
+    { stops: ['senso-ji', 'tokyo-national-museum', 'yanaka-ginza'], wet: [], start: '09:00', end: '19:00' },
+    { stops: ['meiji-jingu', 'shibuya-sky'], wet: ['teamlab-planets'], start: '09:00', end: '19:00' },
   ],
   saved: ['golden-gai'],
-  who: 'couple',
-  pace: 'normal',
-  dayStart: '09:00',
   createdAt: 1,
   updatedAt: 1,
   ...over,
@@ -58,7 +55,7 @@ describe('markers', () => {
   });
 
   test('ids the data no longer has are skipped, so the numbers match the day list', () => {
-    const m = markersFor(trip({ days: [{ stops: ['gone', 'senso-ji'], wet: [] }] }), 0);
+    const m = markersFor(trip({ days: [{ stops: ['gone', 'senso-ji'], wet: [], start: '09:00', end: '19:00' }] }), 0);
     expect(m['senso-ji']).toEqual({ kind: 'today', day: 0, n: 1 });
     expect(m.gone).toBeUndefined();
   });
@@ -170,7 +167,7 @@ describe('frozen order', () => {
     const before = browseRows(ATTRACTIONS, trip(), 0, [], null);
     const frozen = before.map((r) => r.a.id);
     // Golden Gai goes on Day 1: by the sort it would drop to the planned group.
-    const t = trip({ days: [{ stops: ['senso-ji', 'tokyo-national-museum', 'yanaka-ginza', 'golden-gai'], wet: [] }, trip().days[1]] });
+    const t = trip({ days: [{ stops: ['senso-ji', 'tokyo-national-museum', 'yanaka-ginza', 'golden-gai'], wet: [], start: '09:00', end: '19:00' }, trip().days[1]] });
     const after = freezeOrder(browseRows(ATTRACTIONS, t, 0, [], null), frozen);
     expect(after.map((r) => r.a.id)).toEqual(frozen);
     expect(after.find((r) => r.a.id === 'golden-gai')!.action).toEqual({ kind: 'remove', label: 'Remove from Day 1' });

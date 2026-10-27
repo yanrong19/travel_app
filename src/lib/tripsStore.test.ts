@@ -24,7 +24,7 @@ test('an unknown version is backed up', () => {
 });
 
 test('partly bad data keeps the good trips and backs up the original', () => {
-  const good = newTrip({ name: 'A', places: [], startDate: null, days: 1, who: 'solo', pace: 'normal' }, 1, 'a');
+  const good = newTrip({ name: 'A', places: [], startDate: null, days: 1 }, 1, 'a');
   const raw = JSON.stringify({ version: 1, trips: [good, { id: 1 }] });
   const s = fake({ [KEY]: raw });
   expect(readStored(s).trips).toEqual([good]);
@@ -59,8 +59,8 @@ function counting(initial: Record<string, string> = {}) {
   };
   return { ...s, writes, setItem };
 }
-const tripA = newTrip({ name: 'A', places: [], startDate: null, days: 1, who: 'solo', pace: 'normal' }, 1, 'a');
-const tripB = newTrip({ name: 'B', places: [], startDate: null, days: 2, who: 'solo', pace: 'normal' }, 2, 'b');
+const tripA = newTrip({ name: 'A', places: [], startDate: null, days: 1 }, 1, 'a');
+const tripB = newTrip({ name: 'B', places: [], startDate: null, days: 2 }, 2, 'b');
 
 test('no write until the first change', () => {
   const s = counting({ [KEY]: serializeTrips([tripA]) });
@@ -122,4 +122,21 @@ test('a storage event with older trips is migrated too', () => {
   const sync = tripsSync(fake(), (id) => id !== 'gone');
   const next = sync.receive({ key: KEY, newValue: oldRaw([tripB], ['senso-ji', 'gone']) });
   expect(next).toEqual([{ ...tripB, saved: ['senso-ji'] }]);
+});
+
+test('a trip saved before per-day times loads with each day timed, and the next save drops the old fields', () => {
+  const t = addStop(newTrip({ name: 'Old', places: [], startDate: '2027-04-10', days: 2 }, 1, 'old'), 0, 'senso-ji', 1);
+  const old = { ...t, days: t.days.map(({ stops, wet }) => ({ stops, wet })), who: 'family', pace: 'relaxed', dayStart: '08:00' };
+  const s = counting({ [KEY]: JSON.stringify({ version: 1, trips: [old] }) });
+  const sync = tripsSync(s);
+  expect(sync.initial.notice).toBeNull();
+  expect(sync.initial.trips[0].days.map((d) => [d.start, d.end])).toEqual([
+    ['08:00', '16:00'],
+    ['08:00', '16:00'],
+  ]);
+  expect(s.writes).toEqual([]); // opening the app doesn't rewrite it
+  sync.save([...sync.initial.trips]);
+  const saved = JSON.parse(s.m.get(KEY)!).trips[0];
+  for (const k of ['who', 'pace', 'dayStart']) expect(k in saved).toBe(false);
+  expect(saved.days[0]).toEqual({ stops: ['senso-ji'], wet: [], start: '08:00', end: '16:00' });
 });

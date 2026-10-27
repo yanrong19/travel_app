@@ -23,7 +23,7 @@ test('visitMin is the visit midpoint plus the queue midpoint', () => {
   expect(visitMin(sensoji)).toBe(83);
 });
 
-test('schedule starts at dayStart and adds travel between stops', () => {
+test('schedule starts at the day’s start and adds travel between stops', () => {
   const [a, b] = schedule([sensoji, sky], '09:00');
   expect(a).toMatchObject({ start: 540, end: 540 + visitMin(sensoji), travelBefore: 0 });
   const t = travelMin(sensoji.lonlat, sky.lonlat);
@@ -41,6 +41,7 @@ test('schedule of one stop has no travel', () => {
   expect(schedule([], '09:00')).toEqual([]);
 });
 
-test('dayLengthMin follows pace', () => {
-  expect([dayLengthMin('relaxed'), dayLengthMin('normal'), dayLengthMin('packed')]).toEqual([480, 600, 720]);
+test('dayLengthMin is the minutes from a day’s start to its end', () => {
+  expect(dayLengthMin('09:00', '19:00')).toBe(600);
+  expect(dayLengthMin('07:30', '23:59')).toBe(16 * 60 + 29);
 });

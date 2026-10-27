@@ -94,7 +94,7 @@ test('coveringPlace finds Japan for a Tokyo attraction; null when nothing covers
 });
 
 test('dayPlace uses the first stop, else the first place', () => {
-  const t0 = newTrip({ name: 't', places: [{ level: 'country', id: '380' }, JAPAN], startDate: null, days: 2, who: 'solo', pace: 'normal' }, 0, 't');
+  const t0 = newTrip({ name: 't', places: [{ level: 'country', id: '380' }, JAPAN], startDate: null, days: 2 }, 0, 't');
   expect(dayPlace(t0, 0)).toEqual({ level: 'country', id: '380' }); // empty day: first place
   const t1 = addStop(t0, 1, 'senso-ji', 1);
   expect(dayPlace(t1, 1)).toEqual(JAPAN); // covered by Japan, not by Italy
