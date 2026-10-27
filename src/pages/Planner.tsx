@@ -7,6 +7,7 @@ import { BottomTabs, TopNav } from '../components/Chrome';
 import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
+import { Browse } from '../components/planner/Browse';
 import { DayList, stopsOf, type PlanTab } from '../components/planner/DayList';
 import { DaySummaryPanel } from '../components/planner/DaySummaryPanel';
 import { PlacePicker } from '../components/planner/PlacePicker';
@@ -15,6 +16,7 @@ import { Sheet } from '../components/planner/Sheet';
 import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
 import { WetPlan } from '../components/planner/WetPlan';
+import { browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
 import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
@@ -95,8 +97,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
 
-  // The day and place shown live in the URL (?day=3&place=2, 1-based), the Wet-weather plan
-  // sub-tab as &tab=wet, and the map level being viewed as &view=region:kanto, so Back from an
+  // The day and place shown live in the URL (?day=3&place=2, 1-based), the Browse and Wet-weather
+  // plan sub-tabs as &tab=browse and &tab=wet, and the map level being viewed as &view=region:kanto, so Back from an
   // attraction page comes back to them. Written with replace: switching days isn't a step in history.
   const [params, setParams] = useSearchParams();
   // An attraction page opened from here gets this search with the trip, so it shows the trip bar and
@@ -120,14 +122,15 @@ function PlannerPage({ trip }: { trip: Trip }) {
   );
   const setDayIdx = useCallback((d: number) => setParam('day', d), [setParam]);
   const setPlaceIdx = useCallback((i: number) => setParam('place', i), [setParam]);
-  const tab: PlanTab = params.get('tab') === 'wet' ? 'wet' : 'plan';
+  const tabParam = params.get('tab');
+  const tab: PlanTab = tabParam === 'wet' || tabParam === 'browse' ? tabParam : 'plan';
   const setTab = useCallback(
     (to: PlanTab) =>
       setParams(
         (p) => {
           const q = new URLSearchParams(p);
-          if (to === 'wet') q.set('tab', 'wet');
-          else q.delete('tab');
+          if (to === 'plan') q.delete('tab');
+          else q.set('tab', to);
           return q;
         },
         { replace: true, preventScrollReset: true },
@@ -211,11 +214,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
         : undefined,
     [node],
   );
-  const tones = useMemo(() => {
-    const t: Record<string, 'today' | 'other'> = {};
-    trip.days.forEach((d, i) => d.stops.forEach((s) => (t[s] = i === day ? 'today' : 'other')));
-    return t;
-  }, [trip.days, day]);
+  // The map's calm dots: today's stops numbered in route order, other days' stops in their colour.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const dots = useMemo(() => markersFor(trip, day), [trip.days, day]);
   // The search covers the viewed place; above the attraction level, every attraction in the trip.
   const placesKey = trip.places.map(refKey).join(',');
   const scope = useMemo(() => {
@@ -225,12 +226,18 @@ function PlannerPage({ trip }: { trip: Trip }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, viewedName, pins, placesKey]);
   const picked = selected ? (stopsOf([selected])[0] ?? null) : null;
+  // The Browse sub-tab: what the map shows (the trip's places' attractions above the attraction
+  // level), and its chips, kept here so they survive a visit to the other sub-tabs.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const pool = useMemo(() => browsePool(viewed, trip.places), [viewKey, placesKey]);
+  const [browseFilters, setBrowseFilters] = useState<BrowseFilterId[]>([]);
 
   // A new day leaves replace mode (the sub-tab stays). A new viewed place closes the card, unless
   // the search moved the map there to open one (below).
   useEffect(() => setReplace(null), [day]);
   const pendingOpen = useRef<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
@@ -311,7 +318,10 @@ function PlannerPage({ trip }: { trip: Trip }) {
     });
   };
 
-  /** The sub-tabs: the wet-weather plan and replace mode don't mix (replace works on the Plan sub-tab only). */
+  /**
+   * The sub-tabs: the wet-weather plan and replace mode don't mix. Replace starts on the Plan sub-tab;
+   * Browse can pick the replacement, as the Saved tray does.
+   */
   const pickTab = (to: PlanTab) => {
     setTab(to);
     if (to === 'wet') setReplace(null);
@@ -325,6 +335,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     edit((t, now) => unsaveFromTrip(t, sid, now));
     offerUndo({ text: `Removed ${nameOf(sid)} from Saved`, run: () => edit(undoUnsave(sid, at)) });
   };
+  const toggleSave = (sid: string) => (trip.saved.includes(sid) ? unsave(sid) : edit((t, now) => saveToTrip(t, sid, now)));
   /** The card's Save toggle, in place of the heart: saves to this trip, not the global hearted list. */
   const saveToggle = (sid: string) => {
     const on = trip.saved.includes(sid);
@@ -335,7 +346,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
         className={`button is-compact plan-save ${on ? 'is-done' : 'is-quiet'}`}
         aria-pressed={on}
         aria-label={`Save ${name} to this trip`}
-        onClick={() => (on ? unsave(sid) : edit((t, now) => saveToTrip(t, sid, now)))}
+        onClick={() => toggleSave(sid)}
       >
         <Icon name={on ? 'check' : 'plus'} />
         {on ? 'Saved' : 'Save'}
@@ -698,6 +709,24 @@ function PlannerPage({ trip }: { trip: Trip }) {
       peek={narrow && <p className="dl-peek">{summary.empty ? 'No stops yet. Add them from the map or search.' : summary.line}</p>}
       after={<DaySummaryPanel summary={summary} />}
       wet={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} />}
+      browse={
+        <Browse
+          trip={trip}
+          day={day}
+          pool={pool}
+          placeName={scope.name === 'this trip' ? 'This trip' : viewedName}
+          filters={browseFilters}
+          onFilters={setBrowseFilters}
+          replacing={target?.id ?? null}
+          hotId={selected ?? hoverId}
+          onHover={setHoverId}
+          onOpen={openStop}
+          onAdd={addToDay}
+          onRemove={(sid) => removeFromDay(day, sid, trip.days[day].stops.indexOf(sid))}
+          onSave={toggleSave}
+          quietEmpty={empty}
+        />
+      }
       tray={<Trays trip={trip} day={day} tab={tab} onPlan={add} onRemove={unsave} replacing={target?.id ?? null} />}
       note={
         empty && (
@@ -824,9 +853,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
               pins={pins}
               hoverId={hoverId}
               selectedId={selected}
-              tones={tones}
+              markers="dot"
+              dots={dots}
               bubbles={bubbles}
               pickedClearOf={cardRef}
+              cardClearOf={narrow ? undefined : panelRef}
               offscreenPill={false}
               tour={false}
               wheelScrollsPage={false}
@@ -843,7 +874,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
         )}
 
         {!narrow && (
-          <aside className="panel plan-panel" aria-label="Days">
+          <aside ref={panelRef} className="panel plan-panel" aria-label="Days">
             {days}
           </aside>
         )}

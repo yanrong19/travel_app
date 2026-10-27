@@ -3370,6 +3370,196 @@ h2:focus {
   opacity: 0.6;
 }
 
+/* ---------- Dots: the trip planner's calm markers at the attraction level ---------- */
+/* A small white dot with a grey ring for each attraction, other days' stops in the muted cedar, and
+   today's stops as numbered cedar circles in route order. Labels (name and price) show beside the
+   dot on hover, focus and pick, and where the zoom leaves room (MapExplorer's layoutDots). Each dot
+   is a 32px target, whatever it shows. */
+
+.mdot {
+  --r: 6px;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  z-index: 1;
+}
+.mdot.is-other {
+  z-index: 2;
+}
+.mdot.is-today {
+  --r: 11px;
+  z-index: 3;
+}
+.mdot.is-labelled {
+  z-index: 4;
+}
+.mdot:hover,
+.mdot.is-hot,
+.mdot:focus-visible {
+  z-index: 5;
+  outline: none;
+}
+.mdot.is-picked {
+  z-index: 6;
+}
+.mdot-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 2px #74848a,
+    0 2px 6px rgba(16, 25, 27, 0.35);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  transform: translate(-50%, -50%);
+  transition:
+    transform 0.2s var(--ease-out),
+    background-color 0.2s,
+    box-shadow 0.2s;
+  animation: mdot-in 0.4s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 18ms);
+}
+@keyframes mdot-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+}
+/* The target: 32px round, centred on the point. */
+.mdot-mark::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border-radius: 50%;
+}
+.mdot.is-other .mdot-mark {
+  background: var(--c-plan-other);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 2px 6px rgba(16, 25, 27, 0.35);
+}
+.mdot.is-today .mdot-mark {
+  background: var(--cedar);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 4px 10px -2px rgba(16, 25, 27, 0.5);
+}
+.mdot:hover .mdot-mark,
+.mdot.is-hot .mdot-mark,
+.mdot:focus-visible .mdot-mark,
+.mdot.is-picked .mdot-mark {
+  transform: translate(-50%, -50%) scale(1.4);
+}
+.mdot.is-today:hover .mdot-mark,
+.mdot.is-today.is-hot .mdot-mark,
+.mdot.is-today:focus-visible .mdot-mark,
+.mdot.is-today.is-picked .mdot-mark {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+.mdot.is-free.is-hot .mdot-mark,
+.mdot.is-free:hover .mdot-mark,
+.mdot.is-free:focus-visible .mdot-mark {
+  box-shadow:
+    0 0 0 2px var(--cedar),
+    0 2px 6px rgba(16, 25, 27, 0.35);
+}
+.mdot.is-picked .mdot-mark {
+  background: var(--ink);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 4px 10px -2px rgba(16, 25, 27, 0.5);
+}
+.mdot:focus-visible .mdot-mark {
+  outline: 2px solid var(--cedar);
+  outline-offset: 4px;
+}
+.mdot-label {
+  position: absolute;
+  left: calc(var(--r) + 7px);
+  top: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  white-space: nowrap;
+  box-shadow: 0 6px 16px -8px rgba(16, 25, 27, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-4px, -50%);
+  transition:
+    opacity 0.15s,
+    transform 0.2s var(--ease-out);
+}
+.mdot.is-left .mdot-label {
+  left: auto;
+  right: calc(var(--r) + 7px);
+  transform: translate(4px, -50%);
+}
+.mdot-name {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 700;
+}
+.mdot-value {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mdot.is-labelled .mdot-label,
+.mdot:hover .mdot-label,
+.mdot.is-hot .mdot-label,
+.mdot:focus-visible .mdot-label,
+.mdot.is-picked .mdot-label {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+/* A raised one's label moves out a little with its grown dot. */
+.mdot:hover .mdot-label,
+.mdot.is-hot .mdot-label,
+.mdot:focus-visible .mdot-label,
+.mdot.is-picked .mdot-label {
+  transform: translate(3px, -50%);
+}
+.mdot.is-left:hover .mdot-label,
+.mdot.is-left.is-hot .mdot-label,
+.mdot.is-left:focus-visible .mdot-label,
+.mdot.is-left.is-picked .mdot-label {
+  transform: translate(-3px, -50%);
+}
+.mdot.is-picked .mdot-label {
+  background: var(--ink);
+  color: #fff;
+}
+.mdot.is-picked .mdot-value {
+  color: rgba(255, 255, 255, 0.75);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mdot-mark,
+  .mdot-label {
+    transition: none;
+    animation: none;
+  }
+}
+
 /* ---------- Count bubbles: the trip planner above the attraction level ---------- */
 /* One per child place, centred on it: "Kantō · 16" in cedar, "Kansai · coming soon" in white.
    A bubble that would overlap one placed before it folds to a dot and opens on hover or focus. */
@@ -6641,11 +6831,11 @@ button.lvl-crumb:hover {
   flex: none;
   color: var(--cedar);
 }
-/* Plan / Wet-weather plan: two halves of one pill, cedar for the open one. */
+/* Plan / Browse / Wet-weather plan: one pill, cedar for the open one. Each takes its label's width
+   and shares out the rest. */
 .dl-subtabs {
   flex: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   padding: 3px;
   border-radius: 999px;
   background: var(--raised);
@@ -6654,6 +6844,7 @@ button.lvl-crumb:hover {
 .dl-subtab {
   /* Positioned, so its screen-reader text stays inside. */
   position: relative;
+  flex: 1 1 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -6689,6 +6880,316 @@ button.lvl-crumb:hover {
 }
 .dl-subtab[aria-selected='true'] svg {
   color: #fff;
+}
+.dl-subtab-short {
+  display: none;
+}
+@media (max-width: 760px) {
+  .dl-subtab {
+    padding: 0 10px;
+  }
+  .dl-subtab-long {
+    display: none;
+  }
+  .dl-subtab-short {
+    display: inline;
+  }
+}
+
+/* ---------- Browse: everything the map shows, as a compact list ---------- */
+
+.br {
+  display: grid;
+  gap: 10px;
+}
+.br-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.br-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+.br-chip:hover {
+  border-color: var(--cedar);
+}
+.br-chip[aria-pressed='true'] {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.br-chip:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.br-chip-n {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.br-chip[aria-pressed='true'] .br-chip-n {
+  color: rgba(255, 255, 255, 0.8);
+}
+.br-chip.is-none {
+  color: var(--muted);
+  border-style: dashed;
+}
+.br-none {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--r-md);
+  background: var(--raised);
+  font-size: 14px;
+  font-weight: 600;
+}
+.br-list {
+  display: grid;
+  gap: 2px;
+  margin: 0 -8px;
+}
+/* A row: photo, name and Japanese name, quick facts, then its action; the Save toggle top right.
+   The whole row opens the card (.br-open sits under the text, the buttons sit over it). */
+.br-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'photo name save'
+    'photo facts facts'
+    'photo foot foot';
+  column-gap: 10px;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: var(--r-sm);
+  transition: background-color 0.15s;
+}
+.br-row:hover {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+/* Lit from the map (its dot hovered), or hovered here: its dot on the map is lit too. */
+.br-row.is-hot {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--cedar);
+}
+.br-row.is-replacing {
+  background: var(--cedar-soft);
+}
+.br-row > :not(.br-open) {
+  pointer-events: none;
+}
+.br-row > .br-save,
+.br-foot > .br-act {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+.br-open {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+}
+.br-open:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: -2px;
+}
+.br-photo {
+  grid-area: photo;
+  position: relative;
+  align-self: start;
+}
+.br-photo img {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+/* The same marks as the map: today's stop number in cedar, another day's in the muted cedar. */
+.br-badge {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--cedar);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+.br-badge.is-other {
+  width: 14px;
+  height: 14px;
+  top: -3px;
+  left: -3px;
+  background: var(--c-plan-other);
+}
+.br-name {
+  grid-area: name;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.br-name strong {
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+}
+.br-ja {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-ja);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.br-facts {
+  grid-area: facts;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.br-facts > span {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.br-facts > span + span::before {
+  content: '·';
+  margin: 0 5px;
+}
+/* The rain-proof mark and the best part of the day are icons: a little space instead of a dot. */
+.br-facts > .br-rain,
+.br-facts > .br-best {
+  margin-left: 8px;
+}
+.br-facts > .br-rain::before,
+.br-facts > .br-best::before {
+  content: none;
+}
+.br-facts > .br-kind {
+  flex: 0 1 auto;
+  min-width: 4em;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.br-rain {
+  color: var(--c-conditions-ink);
+}
+.br-foot {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-top: 2px;
+}
+.br-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--cedar);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.br-act:hover {
+  border-color: var(--cedar);
+  background: var(--cedar-soft);
+}
+.br-act.is-remove {
+  color: var(--muted);
+}
+.br-act.is-remove:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+  background: var(--surface);
+}
+.br-act.is-replace {
+  border-color: var(--cedar);
+  background: var(--cedar);
+  color: #fff;
+}
+.br-act.is-replace:hover {
+  background: var(--cedar-hover);
+}
+.br-act:focus-visible,
+.br-save:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.br-foot .tray-note {
+  height: 26px;
+  padding: 0;
+}
+.br-save {
+  grid-area: save;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px -4px -6px 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.br-save:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+.br-save.is-on {
+  color: var(--cedar);
 }
 .dl-panel {
   flex: 1;

@@ -29,8 +29,8 @@ export function dayLabel(trip: Trip, day: number) {
   return `Day ${day + 1}${d ? ` · ${shortDate(d)}` : ''}`;
 }
 
-/** The panel's two sub-tabs: the day's plan, and its wet-weather plan. */
-export type PlanTab = 'plan' | 'wet';
+/** The panel's sub-tabs: the day's plan, a list of everything on the map to pick from, and the day's wet-weather plan. */
+export type PlanTab = 'plan' | 'browse' | 'wet';
 
 interface Props {
   trip: Trip;
@@ -55,6 +55,8 @@ interface Props {
   after?: ReactNode;
   /** The Wet-weather plan sub-tab's content. */
   wet?: ReactNode;
+  /** The Browse sub-tab's content. */
+  browse?: ReactNode;
   /** Shown last on either sub-tab (the trip's Saved tray). */
   tray?: ReactNode;
   /** Stops to flag for rain (on a likely-wet day, the summary's rain-sensitive stops), worded from their rain rating. */
@@ -65,14 +67,16 @@ interface Props {
   banner?: ReactNode;
 }
 
-const TABS: { id: PlanTab; label: string }[] = [
+/** `short` is the phone's label, where three sub-tabs share a narrow pill. */
+const TABS: { id: PlanTab; label: string; short?: string }[] = [
   { id: 'plan', label: 'Plan' },
-  { id: 'wet', label: 'Wet-weather plan' },
+  { id: 'browse', label: 'Browse' },
+  { id: 'wet', label: 'Wet-weather plan', short: 'Wet weather' },
 ];
 
 /**
- * The day dropdown, then the Plan and Wet-weather plan sub-tabs. Plan lists the day's stops in order
- * with their planned times and the travel between them.
+ * The day dropdown, then the Plan, Browse and Wet-weather plan sub-tabs. Plan lists the day's stops in
+ * order with their planned times and the travel between them; Browse lists what the map shows.
  */
 export function DayList({
   trip,
@@ -91,6 +95,7 @@ export function DayList({
   note,
   after,
   wet,
+  browse,
   tray,
   rainFlags = [],
   peek,
@@ -127,6 +132,19 @@ export function DayList({
     requestAnimationFrame(() => tabs.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus());
   };
 
+  // Replace mode starts on Plan; Browse can pick the replacement too.
+  const replaceBanner = replacingName && (
+    <div className="dl-replace" role="status">
+      <Icon name="swap" size={16} />
+      <span>
+        Pick a replacement for <strong>{replacingName}</strong>
+      </span>
+      <button type="button" className="text-button" onClick={onCancelReplace}>
+        Cancel
+      </button>
+    </div>
+  );
+
   return (
     <div className="dl">
       {banner}
@@ -148,7 +166,14 @@ export function DayList({
             onClick={() => onTab(t.id)}
           >
             {t.id === 'wet' && wetDay && <Icon name="rain" size={15} />}
-            {t.label}
+            {t.short ? (
+              <>
+                <span className="dl-subtab-long">{t.label}</span>
+                <span className="dl-subtab-short">{t.short}</span>
+              </>
+            ) : (
+              t.label
+            )}
             {t.id === 'wet' && wetDay && <span className="sr-only">, {rain[day]}% rain</span>}
           </button>
         ))}
@@ -159,6 +184,12 @@ export function DayList({
           <>
             {note}
             {wet}
+          </>
+        ) : tab === 'browse' ? (
+          <>
+            {replaceBanner}
+            {note}
+            {browse}
           </>
         ) : (
           <>
@@ -171,17 +202,7 @@ export function DayList({
               </p>
             </div>
 
-            {replacingName && (
-              <div className="dl-replace" role="status">
-                <Icon name="swap" size={16} />
-                <span>
-                  Pick a replacement for <strong>{replacingName}</strong>
-                </span>
-                <button type="button" className="text-button" onClick={onCancelReplace}>
-                  Cancel
-                </button>
-              </div>
-            )}
+            {replaceBanner}
 
             {note}
 

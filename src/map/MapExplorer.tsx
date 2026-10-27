@@ -9,6 +9,7 @@ import { regionBounds } from '../data/regions';
 import { prefersReducedMotion } from '../lib/motion';
 import { photo } from '../lib/photos';
 import { readings } from '../lib/factors';
+import { markerName, markerOf, type Marker } from '../lib/browse';
 import { lensRating, type LensId } from '../lib/lens';
 import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
@@ -104,7 +105,7 @@ interface Props {
   attributionHost?: HTMLElement | null;
   /** Phone: the room under the docked card, for whatever sits at the bottom of the page. */
   cardBottom?: number;
-  /** Laptop: a panel over the map's right side (Japan's region list) that the card must stay clear of. */
+  /** Laptop: a panel over the map's right side (Japan's region list, the planner's day panel) that the card, and dot labels, must stay clear of. */
   cardClearOf?: RefObject<HTMLElement | null>;
   onHover: (id: string | null) => void;
   /** The prefecture under the pointer at country level, so a list can follow the map. */
@@ -134,6 +135,14 @@ interface Props {
   pickedClearOf?: RefObject<HTMLElement | null>;
   /** The "N places outside the view" pill. On unless set to false (the trip planner turns it off). */
   offscreenPill?: boolean;
+  /**
+   * How attractions are marked: photo tickers (the map page), or calm dots (the trip planner): a
+   * small dot each, today's stops as numbered circles from `dots`, and a label on hover, focus,
+   * pick, or where the zoom leaves room.
+   */
+  markers?: 'ticker' | 'dot';
+  /** Dot mode: each planned attraction's marker (today's numbered stops, other days'); the rest are unplanned. */
+  dots?: Record<string, Marker>;
 }
 
 /** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
@@ -172,6 +181,8 @@ export function MapExplorer(props: Props) {
     bubbles,
     pickedClearOf,
     offscreenPill = true,
+    markers = 'ticker',
+    dots,
   } = props;
   const tourRef = useRef(tour);
   tourRef.current = tour;
@@ -210,6 +221,10 @@ export function MapExplorer(props: Props) {
   const planning = litCountries !== undefined;
   const toneKey = tones ? Object.entries(tones).map(([id, t]) => `${id}:${t}`).sort().join(',') : '';
   const bubbleKey = bubbles ? bubbles.map((b) => `${b.id}:${b.count}`).join(',') : '';
+  const dotKey = dots ? Object.entries(dots).map(([id, m]) => `${id}:${m.kind}:${m.kind === 'today' ? m.n : ''}`).sort().join(',') : '';
+  const dotMode = markers === 'dot';
+  const dotModeRef = useRef(dotMode);
+  dotModeRef.current = dotMode;
 
   // The tour: one destination lit at a time while the globe turns.
   const [current, setCurrent] = useState<Destination>(DESTINATIONS[0]);
@@ -362,6 +377,7 @@ export function MapExplorer(props: Props) {
     const W = el.clientWidth;
     const H = el.clientHeight;
     const tickers: { el: HTMLElement; sx: number; sy: number }[] = [];
+    const dotEls: { el: HTMLElement; sx: number; sy: number }[] = [];
     const bubbleEls: { el: HTMLElement; sx: number; sy: number }[] = [];
     el.querySelectorAll<HTMLElement>('[data-ll]').forEach((node) => {
       const [lng, lat] = node.dataset.ll!.split(',').map(Number);
@@ -369,11 +385,19 @@ export function MapExplorer(props: Props) {
       node.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
       if (node.dataset.flip !== undefined) node.classList.toggle('is-flipped', p.x > W - 140);
       if (node.classList.contains('ticker')) tickers.push({ el: node, sx: p.x, sy: p.y });
+      if (node.classList.contains('mdot')) dotEls.push({ el: node, sx: p.x, sy: p.y });
       if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
+    if (dotEls.length) {
+      // Labels stay left of a panel over the map's right side (its own edge, or the right inset).
+      const panel = clearOfRef.current?.current?.getBoundingClientRect();
+      const left0 = wrap.current?.getBoundingClientRect().left ?? 0;
+      const free = panel && panel.width ? panel.left - left0 - 8 : W - insetsRef.current.right;
+      layoutDots(dotEls, map.getZoom(), free);
+    }
     if (bubbleEls.length) layoutBubbles(bubbleEls, insetsRef.current.top, H - insetsRef.current.bottom);
-    const off = tickers.filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
+    const off = [...tickers, ...dotEls].filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
     if (offscreen.current) {
       offscreen.current.dataset.on = off ? '1' : '';
       offscreen.current.firstElementChild!.textContent = off === 1 ? '1 place outside the view' : `${off} places outside the view`;
@@ -534,7 +558,7 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers]);
 
   // ---- Keep the picked ticker clear of a card over the map (trip planning) ----
   useEffect(() => {
@@ -549,8 +573,9 @@ export function MapExplorer(props: Props) {
       done = true;
       const c = cardEl.getBoundingClientRect();
       const p = map.project(a.lonlat);
-      // The ticker's pill and tail sit above its point: about 140 wide and 52 tall, picked.
-      const [hw, up, down] = [70, 52, 0];
+      // The ticker's pill and tail sit above its point: about 140 wide and 52 tall, picked. A dot sits
+      // on its point with its label beside it: keep about a label's width either side.
+      const [hw, up, down] = dotModeRef.current ? [96, 18, 18] : [70, 52, 0];
       const px = box.left + p.x;
       const py = box.top + p.y;
       const ins = insetsRef.current;
@@ -591,7 +616,7 @@ export function MapExplorer(props: Props) {
   // Ticker widths change once the web fonts arrive: measure again.
   useEffect(() => {
     document.fonts?.ready.then(() => {
-      overlay.current?.querySelectorAll<HTMLElement>('.ticker, .mbubble').forEach((t) => delete t.dataset.w);
+      overlay.current?.querySelectorAll<HTMLElement>('.ticker, .mbubble, .mdot').forEach((t) => delete t.dataset.w);
       place();
     });
   }, []);
@@ -900,6 +925,40 @@ export function MapExplorer(props: Props) {
           </button>
         )}
         {showTickers &&
+          dotMode &&
+          pins.map((a, i) => {
+            const m = markerOf(dots, a.id);
+            const raised = selectedId === a.id || hoverId === a.id;
+            // Raised first, then today's stops in route order, then other days', then the rest.
+            const prio = raised ? 0 : m.kind === 'today' ? 0.2 + m.n / 1000 : m.kind === 'other' ? 0.5 + i / 10000 : 1 + i / 100;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                className={`mdot is-${m.kind} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''}`}
+                data-ll={a.lonlat.join(',')}
+                data-prio={prio}
+                data-tier={m.kind === 'today' ? 'today' : 'rest'}
+                style={{ ['--i' as string]: i }}
+                onPointerEnter={() => props.onHover(a.id)}
+                onPointerLeave={() => props.onHover(null)}
+                onFocus={() => props.onHover(a.id)}
+                onBlur={() => props.onHover(null)}
+                onClick={() => props.onAttraction(a.id)}
+                aria-label={markerName(a, m)}
+              >
+                <span className="mdot-mark num" aria-hidden="true">
+                  {m.kind === 'today' ? m.n : null}
+                </span>
+                <span className="mdot-label" aria-hidden="true">
+                  <span className="mdot-name">{a.name}</span>
+                  <span className="mdot-value num">{readings(a).cost}</span>
+                </span>
+              </button>
+            );
+          })}
+        {showTickers &&
+          !dotMode &&
           pins.map((a, i) => {
             const rating = lensRating(a, lens);
             const raised = selectedId === a.id || hoverId === a.id;
@@ -1167,6 +1226,54 @@ function layoutTickers(list: { el: HTMLElement; sx: number; sy: number }[]) {
       t.el.classList.add('is-compact');
       placed.push({ x0: t.sx - 20, x1: t.sx + 20, y0: t.sy - 50, y1: t.sy });
     }
+  }
+}
+
+/** Dot mode: the zooms from which labels show where there's room, today's numbered stops first. */
+const DOT_LABEL_ZOOM = { today: 10, rest: 12.5 } as const;
+
+/**
+ * Dot mode. Dots never fold or hide; only their labels come and go. The hovered, focused or picked
+ * one always has its label; then, highest priority first (today's stops in route order, then the
+ * rest), a label shows to the right of its dot, or failing that to the left, when the zoom allows
+ * it and it would overlap no dot and no label placed before it.
+ */
+function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: number, right: number) {
+  type Box = { x0: number; x1: number; y0: number; y1: number };
+  const radius = (el: HTMLElement) => (el.classList.contains('is-today') ? 11 : 6);
+  for (const t of list) {
+    if (t.el.dataset.w) continue;
+    const label = t.el.querySelector<HTMLElement>('.mdot-label');
+    if (!label) continue;
+    t.el.dataset.w = String(label.offsetWidth);
+    t.el.dataset.h = String(label.offsetHeight);
+  }
+  // Every dot is in the way of every label but its own.
+  const dotsAt: Box[] = list.map((t) => {
+    const r = radius(t.el) + 2;
+    return { x0: t.sx - r, x1: t.sx + r, y0: t.sy - r, y1: t.sy + r };
+  });
+  const overlap = (b: Box, p: Box) => !(b.x1 < p.x0 || b.x0 > p.x1 || b.y1 < p.y0 || b.y0 > p.y1);
+  const placed: Box[] = [];
+  const hits = (b: Box, self: number) => placed.some((p) => overlap(b, p)) || dotsAt.some((p, i) => i !== self && overlap(b, p));
+  const order = list.map((t, i) => ({ t, i })).sort((a, b) => Number(a.t.el.dataset.prio) - Number(b.t.el.dataset.prio));
+  for (const { t, i } of order) {
+    const w = Number(t.el.dataset.w);
+    const h = Number(t.el.dataset.h);
+    const gap = radius(t.el) + 6;
+    const toRight: Box = { x0: t.sx + gap - 2, x1: t.sx + gap + w + 2, y0: t.sy - h / 2 - 2, y1: t.sy + h / 2 + 2 };
+    const toLeft: Box = { x0: t.sx - gap - w - 2, x1: t.sx - gap + 2, y0: toRight.y0, y1: toRight.y1 };
+    const raised = t.el.dataset.prio === '0';
+    const tier = t.el.dataset.tier === 'today' ? 'today' : 'rest';
+    // Near the right edge of the free area (a panel can cover the map's right side), left first.
+    const sides = toRight.x1 > right - 8 ? [toLeft, toRight] : [toRight, toLeft];
+    let pick: Box | null = null;
+    if (raised) pick = sides.find((b) => !hits(b, i)) ?? sides[0];
+    // A dot under a panel or off the map keeps its label to itself.
+    else if (zoom >= DOT_LABEL_ZOOM[tier] && t.sx >= 0 && t.sx <= right) pick = sides.find((b) => !hits(b, i)) ?? null;
+    t.el.classList.toggle('is-labelled', !!pick);
+    t.el.classList.toggle('is-left', pick === toLeft);
+    if (pick) placed.push(pick);
   }
 }
 
