@@ -51,3 +51,11 @@ export function undoRemoveWet(day: number, id: string, index: number): Edit {
 export function undoRemovePlace(before: Trip, ref: PlaceRef, removeStops: string[]): Edit {
   return restoreIfUnchanged(before, removePlace(before, ref, removeStops, 0), ['places', 'days', 'saved']);
 }
+
+/** An attraction taken off saved goes back where it was, unless it is saved again already. */
+export function undoUnsave(id: string, index: number): Edit {
+  return (t, now) => {
+    if (t.saved.includes(id)) return t;
+    return { ...t, saved: [...t.saved.slice(0, index), id, ...t.saved.slice(index)], updatedAt: now };
+  };
+}

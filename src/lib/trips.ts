@@ -135,6 +135,12 @@ export function setDays(trip: Trip, n: number, now: number): Trip {
   return stamp(trip, now, { days: trip.days.slice(0, count), saved: withAll(trip.saved, orphans) });
 }
 
+/** How many attractions cutting the trip to `n` days adds to saved: stops past day n that saved doesn't hold yet. */
+export function movedToSaved(trip: Trip, n: number): number {
+  const orphans = trip.days.slice(clampDays(n)).flatMap((d) => d.stops);
+  return withAll(trip.saved, orphans).length - trip.saved.length;
+}
+
 /**
  * Puts a stop at the end of a day. On another day it moves; already on this day it's a no-op. Saved is
  * a shortlist, so planning a saved attraction leaves it in saved.
@@ -278,7 +284,7 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 /**
  * Fixes what can be fixed without losing the trip: an unreadable start date becomes no date, an
  * unreadable day start becomes 09:00, attraction ids the data no longer has are dropped, and an old
- * `unplanned` list becomes `saved` (a trip with both keeps `saved`).
+ * `unplanned` list becomes `saved` (a trip with both gets the two joined, so nothing is lost).
  */
 function repair(stored: StoredTrip, isKnown?: (id: string) => boolean): Trip {
   const { unplanned, ...t } = stored; // `t.saved` keeps its key position, so a round trip serializes the same
@@ -286,8 +292,8 @@ function repair(stored: StoredTrip, isKnown?: (id: string) => boolean): Trip {
   const dayStart = typeof t.dayStart === 'string' && HHMM.test(t.dayStart) ? t.dayStart : '09:00';
   const keep = (list: string[]) => (isKnown ? list.filter(isKnown) : list);
   const days = t.days.map((d) => ({ stops: keep(d.stops), wet: keep(d.wet) }));
-  const saved = isStrings(t.saved) ? t.saved : (unplanned ?? []);
-  return { ...t, startDate, dayStart, days, saved: [...new Set(keep(saved))] };
+  const saved = withAll([], [...(isStrings(t.saved) ? t.saved : []), ...(isStrings(unplanned) ? unplanned : [])]);
+  return { ...t, startDate, dayStart, days, saved: keep(saved) };
 }
 
 /**

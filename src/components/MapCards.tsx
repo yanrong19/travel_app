@@ -71,18 +71,21 @@ export function PanelRow({
 
 /**
  * The card that slides up when a ticker is tapped. `action` replaces the "Add to trip" button: the
- * planner passes its own ("Add to Day 2", "Remove from Day 1", "On Day 2: move here").
+ * planner passes its own ("Add to Day 2", "Remove from Day 1", "On Day 2: move here"). `save` replaces
+ * the heart: the planner passes its trip's Save toggle.
  */
 export function PinCard({
   a,
   onOpen,
   onClose,
   action,
+  save,
 }: {
   a: Attraction;
   onOpen: (id: string) => void;
   onClose: () => void;
   action?: ReactNode;
+  save?: ReactNode;
 }) {
   const r = readings(a);
   return (
@@ -123,7 +126,7 @@ export function PinCard({
             See the details
             <Icon name="arrowRight" />
           </button>
-          <HeartButton id={a.id} name={a.name} tone="solid" size={40} />
+          {save ?? <HeartButton id={a.id} name={a.name} tone="solid" size={40} />}
           {action ?? <AddToTrip attractionId={a.id} place={{ level: 'area', id: a.area }} />}
         </div>
       </div>

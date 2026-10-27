@@ -8,6 +8,7 @@ import {
   daysBetween,
   endDate,
   loadTrips,
+  movedToSaved,
   MAX_DAYS,
   moveStop,
   newTrip,
@@ -329,9 +330,29 @@ test('loadTrips prunes unknown ids from a migrated unplanned list', () => {
   expect(loadTrips(raw, (id) => id !== 'gone').trips[0].saved).toEqual(['ok']);
 });
 
-test('loadTrips prefers saved when a trip has both fields, and drops one with neither', () => {
+test('loadTrips unions saved and unplanned when a trip has both, so nothing is lost', () => {
   const t = saveToTrip(make(), 's', 2);
-  expect(loadTrips(JSON.stringify({ version: 1, trips: [{ ...t, unplanned: ['u'] }] })).trips).toEqual([t]);
+  expect(loadTrips(JSON.stringify({ version: 1, trips: [{ ...t, unplanned: ['u'] }] })).trips).toEqual([{ ...t, saved: ['s', 'u'] }]);
+  // Duplicates across and within the two lists are kept once, saved's order first.
+  const both = { ...saveToTrip(t, 'x', 2), unplanned: ['u', 'x', 'u', 's', 'v'] };
+  const [r] = loadTrips(JSON.stringify({ version: 1, trips: [both] })).trips;
+  expect(r.saved).toEqual(['s', 'x', 'u', 'v']);
+  expect('unplanned' in r).toBe(false);
+});
+
+test('loadTrips dedupes a migrated unplanned list and drops a trip with neither field', () => {
+  const r = loadTrips(JSON.stringify({ version: 1, trips: [oldShape(make(), ['a', 'b', 'a', 'b'])] }));
+  expect(r.trips[0].saved).toEqual(['a', 'b']);
   const { saved: _saved, ...neither } = make();
   expect(loadTrips(JSON.stringify({ version: 1, trips: [neither] })).trips).toEqual([]);
+});
+
+test('movedToSaved counts only the cut days’ stops that saved doesn’t already hold', () => {
+  let t = setDays(make(), 4, 2);
+  t = addStop(addStop(addStop(t, 2, 'a', 2), 2, 'b', 2), 3, 'c', 2);
+  t = saveToTrip(t, 'b', 2);
+  expect(movedToSaved(t, 2)).toBe(2); // a and c; b is already saved
+  expect(movedToSaved(t, 3)).toBe(1);
+  expect(movedToSaved(t, 4)).toBe(0);
+  expect(movedToSaved(saveToTrip(saveToTrip(t, 'a', 2), 'c', 2), 2)).toBe(0);
 });

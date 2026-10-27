@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip } from './trips';
-import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace } from './tripUndo';
+import { addPlace, addStop, addWet, newTrip, removePlace, removeStop, removeWet, replaceStop, saveToTrip, unsaveFromTrip } from './trips';
+import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from './tripUndo';
 
 const base = () => {
   let t = newTrip({ name: 'T', places: [{ level: 'prefecture', id: '13' }], startDate: null, days: 3, who: 'solo', pace: 'normal' }, 1, 't');
@@ -85,4 +85,19 @@ test('undoRemovePlace is a no-op when the plan changed since', () => {
   const before = addPlace(base(), osaka, 1);
   const t = addStop(removePlace(before, osaka, ['b'], 2), 2, 'z', 2);
   expect(undoRemovePlace(before, osaka, ['b'])(t, 3)).toBe(t);
+});
+
+test('undoUnsave puts the attraction back in saved at its index', () => {
+  const before = ['x', 'y', 'z'].reduce((t, id) => saveToTrip(t, id, 1), base());
+  const t = unsaveFromTrip(before, 'y', 2);
+  const r = undoUnsave('y', 1)(t, 3);
+  expect(r.saved).toEqual(['x', 'y', 'z']);
+  expect(r.updatedAt).toBe(3);
+  // An index past the end (the list shrank since) appends.
+  expect(undoUnsave('y', 9)(t, 3).saved).toEqual(['x', 'z', 'y']);
+});
+
+test('undoUnsave is a no-op when the attraction is saved again already', () => {
+  const t = saveToTrip(unsaveFromTrip(saveToTrip(base(), 'x', 1), 'x', 2), 'x', 2);
+  expect(undoUnsave('x', 0)(t, 3)).toBe(t);
 });

@@ -6201,6 +6201,19 @@ button.area-card {
   text-align: center;
 }
 
+/* The card's Save toggle (this trip's Saved list), in place of the heart. */
+.plan-save {
+  flex: none;
+  padding: 0 14px;
+}
+.plan-save.is-done {
+  border-color: var(--cedar-soft);
+}
+.plan-save.is-done:hover {
+  background: var(--cedar-soft);
+  border-color: var(--cedar);
+}
+
 /* ---------- Day list ---------- */
 
 .dl {
@@ -6210,65 +6223,73 @@ button.area-card {
   flex-direction: column;
   gap: 14px;
 }
-.dl-tabs {
-  /* Positioned, so the tabs' screen-reader text scrolls inside it instead of widening the page. */
+/* The day dropdown: a select-only combobox, its list a popover as the map search's is. */
+.dp {
   position: relative;
-  flex: none;
+}
+.dp-button {
   display: flex;
-  gap: 6px;
-  margin: 0 -16px;
-  padding: 2px 16px 4px;
-  overflow-x: auto;
-  scroll-padding: 0 16px;
-  scrollbar-width: none;
-}
-.dl-tabs::-webkit-scrollbar {
-  display: none;
-}
-.dl-tab {
-  flex: none;
-  display: inline-flex;
   align-items: center;
-  height: 38px;
-  padding: 0 14px;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  padding: 0 14px 0 16px;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s;
+  font-size: 15px;
+  text-align: left;
+  transition: border-color 0.2s;
 }
-.dl-tab:hover {
+.dp-button:hover {
   border-color: var(--control);
 }
-.dl-tab[aria-selected='true'] {
-  background: var(--cedar);
+.dp.is-open .dp-button {
   border-color: var(--cedar);
-  color: #fff;
 }
-.dl-tab:focus-visible {
+.dp-button:focus-visible {
   outline: 2px solid var(--cedar);
   outline-offset: 2px;
 }
-.dl-tab-date {
+.dp-button > svg {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.25s var(--ease-out);
+}
+.dp.is-open .dp-button > svg {
+  transform: rotate(180deg);
+}
+.dp-value,
+.dp-option-text {
+  /* Positioned, so the screen-reader text stays inside instead of widening the page. */
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.dp-day {
+  flex: none;
+  font-weight: 700;
+}
+.dp-date {
+  min-width: 0;
   font-weight: 500;
   color: var(--muted);
   white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.dl-tab[aria-selected='true'] .dl-tab-date {
-  color: rgba(255, 255, 255, 0.8);
-}
-.dl-tab-count {
+.dp-count {
+  flex: none;
   display: grid;
   place-items: center;
   min-width: 20px;
   height: 20px;
-  margin-left: 8px;
+  margin-left: auto;
   padding: 0 6px;
   border-radius: 999px;
   background: var(--c-plan-other);
@@ -6276,8 +6297,102 @@ button.area-card {
   font-size: 11px;
   font-weight: 700;
 }
-.dl-tab[aria-selected='true'] .dl-tab-count {
-  background: rgba(255, 255, 255, 0.22);
+.dp-rain + .dp-count {
+  margin-left: 8px;
+}
+.dp-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--lift);
+  transform-origin: 50% 0;
+}
+.dp-panel.is-up {
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform-origin: 50% 100%;
+}
+.dp-list {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dp-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.dp-option.is-active {
+  background: var(--raised);
+}
+.dp-option[aria-selected='true'] .dp-day {
+  color: var(--cedar);
+}
+.dp-option > svg {
+  flex: none;
+  color: var(--cedar);
+}
+/* Plan / Wet-weather plan: two halves of one pill, cedar for the open one. */
+.dl-subtabs {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.dl-subtab {
+  /* Positioned, so its screen-reader text stays inside. */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+.dl-subtab:hover {
+  color: var(--ink);
+}
+.dl-subtab[aria-selected='true'] {
+  background: var(--cedar);
+  color: #fff;
+}
+.dl-subtab:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.dl-subtab svg {
+  flex: none;
+  color: var(--c-conditions);
+}
+.dl-subtab[aria-selected='true'] svg {
+  color: #fff;
 }
 .dl-panel {
   flex: 1;
@@ -6781,29 +6896,61 @@ button.area-card {
   padding: 0 4px;
   color: var(--muted);
 }
+.tray {
+  container-type: inline-size;
+}
+.tray-text .tray-where {
+  color: var(--cedar);
+  font-weight: 600;
+}
+.tray-remove {
+  flex: none;
+}
+/* Narrow (the phone sheet): the action drops under the name, so the name keeps its room. */
+@container (max-width: 400px) {
+  .tray .tray-item {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+  .tray .tray-item img {
+    grid-row: span 2;
+    align-self: start;
+  }
+  .tray .tray-add,
+  .tray .tray-note {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+  .tray .tray-remove {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
 
 /* ---------- Rain (mock forecast) ---------- */
-/* A likely-wet day (50% or more) gets a rain mark on its tab. The mark takes the Conditions
-   line's colour, kept small, as the design system uses factor colours. */
+/* A likely-wet day (50% or more) gets a rain mark and "N% rain" in the day dropdown, and a rain mark
+   on the Wet-weather plan sub-tab. The mark takes the Conditions line's colour, kept small, as the
+   design system uses factor colours. */
 
 .dl-top {
   flex: none;
 }
-.dl-tab-rain {
+.dp-rain {
+  flex: none;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin-left: 8px;
+  margin-left: auto;
+  padding-left: 10px;
   color: var(--c-conditions-ink);
   font-size: 12px;
   font-weight: 700;
 }
-.dl-tab-rain svg {
+.dp-rain svg {
   color: var(--c-conditions);
-}
-.dl-tab[aria-selected='true'] .dl-tab-rain,
-.dl-tab[aria-selected='true'] .dl-tab-rain svg {
-  color: #fff;
 }
 .dl-stop-rain {
   display: inline-flex;
@@ -6826,30 +6973,15 @@ button.area-card {
 }
 
 /* ---------- Wet-weather plan ---------- */
-/* A tray-like section under the day summary. Open on likely-wet days, collapsed otherwise. */
+/* The Wet-weather plan sub-tab's content: the rain note, the list and its time and cost. */
 
 .wet {
   flex: none;
-  border-radius: var(--r-md);
-  background: var(--surface);
-}
-.wet h3 {
-  margin: 0;
-}
-.wet-head > svg:first-child {
-  flex: none;
-  color: var(--c-conditions);
-}
-.wet-head > svg + span {
-  flex: 1;
-}
-.wet.is-open .wet-head > svg:last-child {
-  transform: rotate(180deg);
-}
-.wet-body {
   display: grid;
   gap: 12px;
-  padding: 0 0 14px;
+  padding: 14px 0;
+  border-radius: var(--r-md);
+  background: var(--surface);
 }
 .wet-note {
   padding: 0 16px;
@@ -6857,54 +6989,16 @@ button.area-card {
   line-height: 19px;
   color: var(--muted);
 }
+.wet-note svg {
+  margin-right: 4px;
+  vertical-align: -3px;
+  color: var(--c-conditions);
+}
 .wet-note strong {
   color: var(--c-conditions-ink);
 }
-.wet-adding {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 16px;
-}
-.wet-adding-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--muted);
-}
-.wet-switch {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 999px;
-  background: var(--raised);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-.wet-switch button {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
-}
-.wet-switch button:hover {
-  color: var(--ink);
-}
-.wet-switch button[aria-pressed='true'] {
-  background: var(--cedar);
-  color: #fff;
-}
-.wet-switch button:focus-visible {
-  outline: 2px solid var(--cedar);
-  outline-offset: 2px;
-}
 .wet .tray-empty {
+  margin: 0;
   padding-bottom: 0;
 }
 .wet .tray-list {
@@ -7057,9 +7151,9 @@ button.area-card {
 
 /* Phone: the map on top and the day panel as a bottom sheet, as on the map page. The page
    scrolls and the sheet slides up over the fixed map (useGuideScroll writes --gp and --vh).
-   It peeks --plan-peek tall above the tab bar (--sheet-clear) with the day tabs and the
+   It peeks --plan-peek tall above the tab bar (--sheet-clear) with the day dropdown and the
    one-line summary, and comes up to --sheet-top, under the trip bar, the search and the place
-   pills, where the tabs pin. */
+   pills, where the dropdown pins. The sub-tabs open the sheet's content. */
 @media (max-width: 760px) {
   .plan-bar {
     top: 72px;
@@ -7136,13 +7230,17 @@ button.area-card {
     background: var(--mist);
     box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
   }
+  /* An open day list rises over the map's credit (it can open upward from the peek). */
+  .plan-sheet:has(.dp.is-open) {
+    z-index: 16;
+  }
   .plan-sheet .gsheet-handle {
     top: 6px;
   }
   .plan-sheet .dl {
     gap: 10px;
   }
-  /* The tabs pin under the place pills once the sheet is up. Their frosted backing reaches up
+  /* The day dropdown pins under the place pills once the sheet is up. Their frosted backing reaches up
      behind the bar, the search and the pills, so the list never shows between them. */
   .plan-sheet .dl-top {
     position: sticky;

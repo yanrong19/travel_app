@@ -95,10 +95,9 @@ The planner must feel like part of the same app: same map engine, same cards, sa
   - place switcher pills and "+ Add place"
   - a settings button (reopens Step 2)
 - Right-hand panel (frosted, like the map page's panel):
-  - day tabs with dates if set ("Day 3 · Tue 14 Apr")
-  - the day's stop list
-  - the day summary
-  - the wet-weather section
+  - a day dropdown with dates if set ("Day 3 · Tue 14 Apr"), the rain mark and "N% rain" on likely-wet days, and the stop count (revised 2026-10-27: was day tabs)
+  - two sub-tabs under it, "Plan" (the day's stop list and summary) and "Wet-weather plan"; the open sub-tab decides where adds from the card, search and Saved tray go
+  - the trip's Saved tray, on both sub-tabs
 - The search sits top-left, as on the map page; picking an attraction there opens its card.
 
 **Map.**
@@ -149,11 +148,11 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 - Each day with a date has a rain chance (0–100%) from a mock forecast. Days without dates have none.
 - **Mock forecast:** a pure function of date and place that returns stable values (the same trip shows the same chances every time). Tokyo's rainy season (June to mid July) and typhoon months (August to September) are higher. Put it behind an interface such as `getRainChance(place, date): number | null`, so a weather API can replace it later.
 - Days at 50% or more are "likely wet". There:
-  - The day tab gets a rain mark.
+  - The day gets a rain mark in the day dropdown and on its Wet-weather plan sub-tab.
   - Rain-sensitive stops get a flag ("Poor in rain · 0% covered").
-  - The **wet-weather plan** section opens: a second, optional list for that day. It's added to the same way as the day (map, search, trays), but only rain-proof attractions can be added; others are greyed with "Not rain-proof".
+  - The **wet-weather plan** is a second, optional list for that day, on its own sub-tab. While that sub-tab is open, adds from the map, search and Saved go to it, but only rain-proof attractions can be added; others are greyed with "Not rain-proof".
   - Its own short summary shows: total time and cost.
-- The wet-weather list exists for every day and can be filled on any day; it's simply collapsed on days under 50%.
+- The wet-weather list exists for every day and can be filled on any day.
 - It is reference only: nothing swaps automatically.
 
 **Places.**
@@ -172,7 +171,7 @@ The planner must feel like part of the same app: same map engine, same cards, sa
 
 - **Trips list and setup:** single column.
 - **Planner:** the map on top, with the day list as a bottom sheet.
-  - The sheet peeks with the day tabs and a one-line summary.
+  - The sheet peeks with the day dropdown and a one-line summary; the sub-tabs open the sheet's content.
   - Drag it up for the full list, summary and wet-weather plan, as the map page's guide sheet does.
 - Pin cards dock at the bottom as on the map page.
 - The place switcher scrolls horizontally under the search.
@@ -227,10 +226,11 @@ The planner must feel like part of the same app: same map engine, same cards, sa
   - "Add to trip" for an attraction no trip place covers also adds Tokyo (prefecture 13) to the trip's places.
 - **A day's rain chance** uses the place of the day's first stop. An empty day uses the trip's first place. The saved format doesn't change.
 - **The wet-weather list.**
-  - An "Adding to: Day N / Wet-weather plan" toggle in the panel decides where the next add goes.
+  - The open sub-tab (Plan or Wet-weather plan) decides where the next add goes (revised 2026-10-27: was an "Adding to" toggle). It stays when the day changes and is kept in the URL as `&tab=wet`.
   - Wet-list stops get no pin colour of their own.
   - An attraction can be on a day and in that same day's wet list.
-  - "On Day N: move here" and replace mode apply to day lists only.
+  - Moving a stop between days and replace mode apply to the Plan sub-tab only.
+- **The trip's Saved list** (revised 2026-10-27). In the planner the pin card's heart becomes a "Save" / "Saved" toggle for the trip's Saved list. The one tray, "Saved", offers "Add to Day N" (or "Add to wet-weather plan"), shows "On Day M" for planned items, offers "Use as replacement" in replace mode, and has a remove button with Undo. The global hearted list is unchanged elsewhere.
 - **Who's going.**
   - A Vibe flag when a stop's `vibe.suits[who]` is `poor` (e.g. "Not great for families").
   - It's a warning only; nothing is hidden.

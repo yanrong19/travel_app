@@ -6,14 +6,14 @@ import { BottomTabs, TopNav } from '../components/Chrome';
 import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
 import { Icon } from '../components/Icon';
-import { DayList, stopsOf } from '../components/planner/DayList';
+import { DayList, stopsOf, type PlanTab } from '../components/planner/DayList';
 import { DaySummaryPanel } from '../components/planner/DaySummaryPanel';
 import { PlacePicker } from '../components/planner/PlacePicker';
 import { PlaceSwitcher } from '../components/planner/PlaceSwitcher';
 import { Sheet } from '../components/planner/Sheet';
 import { TripSettings, type TripSettingsValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
-import { WetPlan, type AddTarget } from '../components/planner/WetPlan';
+import { WetPlan } from '../components/planner/WetPlan';
 import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
@@ -27,19 +27,22 @@ import {
   dateOf,
   dayOf,
   endDate,
+  movedToSaved,
   moveStop,
   removePlace,
   removeStop,
   removeWet,
   replaceStop,
+  saveToTrip,
   setDays,
+  unsaveFromTrip,
   type PlaceRef,
   type Trip,
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
-import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace } from '../lib/tripUndo';
+import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from '../lib/tripUndo';
 import { useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
 
@@ -89,8 +92,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const reduced = useReducedMotion();
   const edit = useCallback((fn: (t: Trip, now: number) => Trip) => update(trip.id, fn), [update, trip.id]);
 
-  // The day and place shown live in the URL (?day=3&place=2, 1-based), so Back from an attraction
-  // page comes back to them. Written with replace: switching days isn't a step in history.
+  // The day and place shown live in the URL (?day=3&place=2, 1-based), and the Wet-weather plan
+  // sub-tab as &tab=wet, so Back from an attraction page comes back to them. Written with replace:
+  // switching days isn't a step in history.
   const [params, setParams] = useSearchParams();
   const dayIdx = indexParam(params.get('day'));
   const placeIdx = indexParam(params.get('place'));
@@ -108,6 +112,20 @@ function PlannerPage({ trip }: { trip: Trip }) {
   );
   const setDayIdx = useCallback((d: number) => setParam('day', d), [setParam]);
   const setPlaceIdx = useCallback((i: number) => setParam('place', i), [setParam]);
+  const tab: PlanTab = params.get('tab') === 'wet' ? 'wet' : 'plan';
+  const setTab = useCallback(
+    (to: PlanTab) =>
+      setParams(
+        (p) => {
+          const q = new URLSearchParams(p);
+          if (to === 'wet') q.set('tab', 'wet');
+          else q.delete('tab');
+          return q;
+        },
+        { replace: true, preventScrollReset: true },
+      ),
+    [setParams],
+  );
   const [selected, setSelected] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [replace, setReplace] = useState<{ day: number; id: string } | null>(null);
@@ -115,7 +133,6 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const [undo, setUndo] = useState<Undo | null>(null);
   const [sheet, setSheet] = useState<'places' | 'settings' | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
-  const [adding, setAdding] = useState<AddTarget>('day');
   const undoTimer = useRef<number | undefined>(undefined);
 
   // The trip can shrink under the page (fewer days, a place removed): stay on one that exists.
@@ -147,10 +164,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const scope = useMemo(() => ({ name: placeName, attractions: pins }), [placeName, pins]);
   const picked = selected ? (stopsOf([selected])[0] ?? null) : null;
 
-  // A new place or day closes the card; a new day leaves replace mode.
+  // A new place or day closes the card; a new day leaves replace mode (the sub-tab stays).
   useEffect(() => setSelected(null), [placeKey]);
   useEffect(() => setReplace(null), [day]);
-  useEffect(() => setAdding('day'), [day]);
 
   // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
@@ -167,7 +183,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     [plan, trip.dayStart, trip.pace, trip.who, date?.getTime()],
   );
   const wetDay = isLikelyWet(getRainChance(dayPlace(trip, day), date));
-  const toWet = adding === 'wet';
+  const toWet = tab === 'wet';
 
   // ---- toasts ----
   useEffect(() => {
@@ -231,17 +247,39 @@ function PlannerPage({ trip }: { trip: Trip }) {
     });
   };
 
-  /** "Adding to": the wet-weather plan and replace mode don't mix (replace works on day lists only). */
-  const pickAdding = (to: AddTarget) => {
-    setAdding(to);
+  /** The sub-tabs: the wet-weather plan and replace mode don't mix (replace works on the Plan sub-tab only). */
+  const pickTab = (to: PlanTab) => {
+    setTab(to);
     if (to === 'wet') setReplace(null);
   };
-  const startReplace = (d: number, sid: string) => {
-    setAdding('day');
-    setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }));
+  const startReplace = (d: number, sid: string) => setReplace((r) => (r?.id === sid ? null : { day: d, id: sid }));
+
+  // ---- the trip's Saved list ----
+  const unsave = (sid: string) => {
+    const at = trip.saved.indexOf(sid);
+    if (at < 0) return;
+    edit((t, now) => unsaveFromTrip(t, sid, now));
+    offerUndo({ text: `Removed ${nameOf(sid)} from Saved`, run: () => edit(undoUnsave(sid, at)) });
+  };
+  /** The card's Save toggle, in place of the heart: saves to this trip, not the global hearted list. */
+  const saveToggle = (sid: string) => {
+    const on = trip.saved.includes(sid);
+    const name = nameOf(sid);
+    return (
+      <button
+        type="button"
+        className={`button is-compact plan-save ${on ? 'is-done' : 'is-quiet'}`}
+        aria-pressed={on}
+        aria-label={on ? `Saved to this trip: ${name}. Remove from Saved` : `Save ${name} to this trip`}
+        onClick={() => (on ? unsave(sid) : edit((t, now) => saveToTrip(t, sid, now)))}
+      >
+        <Icon name={on ? 'check' : 'plus'} />
+        {on ? 'Saved' : 'Save'}
+      </button>
+    );
   };
 
-  /** Where the card, the search and the trays add to. */
+  /** Where the card, the search and the Saved tray add to: the sub-tab open. */
   const add = (sid: string) => (toWet ? addToWet(sid) : addToDay(sid));
 
   /** The card's own action for the attraction it shows. */
@@ -346,6 +384,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
     setSheet('settings');
   };
   const dropped = draft ? trip.days.slice(draft.days).reduce((n, d) => n + d.stops.length, 0) : 0;
+  // Only the stops Saved doesn't already hold are news.
+  const moved = draft ? movedToSaved(trip, draft.days) : 0;
   const droppedWet = draft ? trip.days.slice(draft.days).some((d) => d.wet.length > 0) : false;
   const saveSettings = () => {
     if (!draft) return;
@@ -356,7 +396,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       const same = name === n.name && v.startDate === n.startDate && v.who === n.who && v.pace === n.pace && v.dayStart === n.dayStart;
       return same ? n : { ...n, name, startDate: v.startDate, who: v.who, pace: v.pace, dayStart: v.dayStart, updatedAt: now };
     });
-    if (dropped) setNotice(`${plural(dropped, 'stop')} moved to Saved.`);
+    if (moved) setNotice(`${plural(moved, 'stop')} moved to Saved.`);
     setSheet(null);
   };
 
@@ -426,6 +466,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
       }
       day={day}
       onDay={setDayIdx}
+      tab={tab}
+      onTab={pickTab}
       onRemove={removeFromDay}
       onMove={(d, from, to) => edit((t, now) => moveStop(t, d, from, to, now))}
       onReplace={startReplace}
@@ -436,21 +478,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
       onCancelReplace={() => setReplace(null)}
       rainFlags={wetDay ? summary.conditions.rainSensitive : []}
       peek={narrow && <p className="dl-peek">{summary.empty ? 'No stops yet. Add them from the map or search.' : summary.line}</p>}
-      after={
-        <>
-          <DaySummaryPanel summary={summary} />
-          <WetPlan
-            trip={trip}
-            day={day}
-            open={wetDay}
-            adding={adding}
-            onAdding={pickAdding}
-            onRemove={(sid, i) => removeFromWet(day, sid, i)}
-            onOpen={openStop}
-          />
-          <Trays trip={trip} day={day} onPlan={add} replacing={target?.id ?? null} wet={toWet} />
-        </>
-      }
+      after={<DaySummaryPanel summary={summary} />}
+      wet={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} />}
+      tray={<Trays trip={trip} day={day} tab={tab} onPlan={add} onRemove={unsave} replacing={target?.id ?? null} />}
       note={
         empty && (
           <div className="plan-empty" role="status">
@@ -554,7 +584,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               exit={{ opacity: 0, y: 40 }}
               transition={{ duration: reduced ? 0 : 0.4, ease: EASE_OUT }}
             >
-              <PinCard a={picked} onOpen={(aid) => go(`/attraction/${aid}`)} onClose={() => setSelected(null)} action={cardAction(picked.id)} />
+              <PinCard a={picked} onOpen={(aid) => go(`/attraction/${aid}`)} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -599,7 +629,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               <p className="plan-warn" role="status">
                 <Icon name="alert" size={16} />
                 {dropped > 0
-                  ? `${plural(dropped, 'stop')} after Day ${draft.days} will move to Saved${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
+                  ? `${moved > 0 ? `${plural(moved, 'stop')} after Day ${draft.days} will move to Saved` : `The stops after Day ${draft.days} come off their days and stay in Saved`}${droppedWet ? ', and those days’ wet-weather plans will be removed' : ''}.`
                   : `The wet-weather plans after Day ${draft.days} will be removed.`}
               </p>
             )}
