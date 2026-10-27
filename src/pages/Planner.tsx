@@ -690,7 +690,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className={`explore planner ${chips ? 'has-level-chips' : ''} ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''}`}
+      className={`explore planner ${chips ? 'has-level-chips' : ''} ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''}`}
       style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${safeTop}px` } as CSSProperties}
     >
       {/* Phone: once the sheet is fully up it covers the header, which then leaves the tab order. */}
@@ -780,6 +780,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
               target={view.target}
               focusPrefs={view.focusPrefs}
               insets={insets}
+              // Phone: a city frames on its attractions, as on the map page, not its whole outline:
+              // Tokyo's western mountains would leave the city a speck in a phone-wide strip.
+              fitPins={narrow}
               pins={pins}
               hoverId={hoverId}
               selectedId={selected}

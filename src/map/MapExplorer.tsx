@@ -550,10 +550,16 @@ export function MapExplorer(props: Props) {
       const [hw, up, down] = [70, 52, 0];
       const px = box.left + p.x;
       const py = box.top + p.y;
-      if (px + hw < c.left || px - hw > c.right || py + down < c.top || py - up > c.bottom) return;
       const ins = insetsRef.current;
       // The pill may reach a little into the top inset: its bottom edge is the chrome's soft padding.
       const [x0, x1, y0, y1] = [box.left + ins.left + hw, box.right - ins.right - hw, box.top + ins.top + up - 12, box.bottom - ins.bottom - down];
+      const clear = ([x, y]: [number, number]) => x + hw < c.left || x - hw > c.right || y + down < c.top || y - up > c.bottom;
+      const clamp = ([x, y]: [number, number]): [number, number] => [Math.min(x1, Math.max(x0, x)), Math.min(y1, Math.max(y0, y))];
+      // Phones: the picked pin also comes into the free strip when it is off it (outside the place's
+      // framing, or under the header or the sheet), by panning only: the zoom stays the place's.
+      const phone = box.width < 761;
+      const inFree = px >= x0 && px <= x1 && py >= y0 && py <= y1;
+      if (clear([px, py]) && (!phone || inFree)) return;
       // The nearest spot beside, above or below the card that stays inside the free area.
       const spots: [number, number][] = [
         [px, c.top - down - 4],
@@ -561,9 +567,10 @@ export function MapExplorer(props: Props) {
         [c.right + hw + 8, py],
         [c.left - hw - 8, py],
       ];
-      const fits = spots
-        .map(([x, y]) => [Math.min(x1, Math.max(x0, x)), Math.min(y1, Math.max(y0, y))] as [number, number])
-        .filter(([x, y]) => x + hw < c.left || x - hw > c.right || y + down < c.top || y - up > c.bottom);
+      if (phone) spots.push([px, py]);
+      const fits = spots.map(clamp).filter(clear);
+      // No spot clear of the card (a very short screen): still pan, to just above it, rather than zoom out.
+      if (!fits.length && phone) fits.push(clamp([px, c.top - down - 4]));
       if (!fits.length) return;
       const [tx, ty] = fits.reduce((b, f) => (Math.hypot(f[0] - px, f[1] - py) < Math.hypot(b[0] - px, b[1] - py) ? f : b));
       map.panBy([px - tx, py - ty], { duration: prefersReducedMotion() ? 0 : 600 });

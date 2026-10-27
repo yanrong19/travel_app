@@ -7607,9 +7607,11 @@ button.lvl-crumb:hover {
       opacity 0.2s,
       visibility 0.2s;
   }
-  .planner.has-card .map-controls {
+  .planner.has-card .map-controls,
+  .planner.has-card > .explore-stage .map-offscreen {
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
   }
   .planner .map-controls {
     transform: none;
@@ -7681,9 +7683,14 @@ button.lvl-crumb:hover {
     top: calc(var(--sheet-top) + 58px);
   }
 
-  /* The credit rests just above the peek, and above the tab bar once the sheet is up. */
+  /* The credit rests just above the peek and rides down with the sheet; it fades out as the sheet
+     covers the map (no map, nothing to credit) and leaves the tab order once it is fully up. */
   .planner > .explore-attrib.maplibregl-ctrl-bottom-right {
     --attrib-rest: calc(var(--plan-peek) + var(--sheet-clear));
+    opacity: clamp(0, (1 - var(--gp, 0)) / 0.05, 1);
+  }
+  .planner.is-covered > .explore-attrib.maplibregl-ctrl-bottom-right {
+    visibility: hidden;
   }
   /* Pin cards dock at the bottom, above the peek and the credit under them, and never reach up
      into the header: a short screen scrolls the card instead. */
