@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../data/attractions';
 import { AREA_COUNTS, JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, areaById, slug, type MapTarget } from '../data/places';
@@ -33,6 +33,13 @@ interface Props {
   onNotice: (text: string) => void;
   /** Trip planning: search only these attractions (the current place's), whatever the map level. */
   scope?: { name: string; attractions: Attraction[] };
+  /**
+   * A search opened on demand (the phone planner's header): it takes focus when it appears, shows
+   * `lead` in place of the search icon (a close button), and asks to close on Escape and after a pick.
+   */
+  onClose?: () => void;
+  lead?: ReactNode;
+  className?: string;
 }
 
 /** Lower case without accents, so "taito" finds Taitō. */
@@ -61,7 +68,7 @@ const SECTION: Record<Kind, string> = {
 const KIND_ORDER: Kind[] = ['city', 'dest', 'place', 'pref', 'area', 'country'];
 
 /** Search that changes with the map level: countries, then prefectures, then wards and places. */
-export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, onNotice, scope: only }: Props) {
+export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, onNotice, scope: only, onClose, lead, className = '' }: Props) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -229,6 +236,7 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
     setQuery('');
     setOpen(false);
     input.current?.blur();
+    onClose?.();
   };
 
   const onKey = (e: React.KeyboardEvent) => {
@@ -244,7 +252,9 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
       choose(results[active]);
     } else if (e.key === 'Escape') {
       e.stopPropagation();
-      if (query) setQuery('');
+      // A search opened on demand closes outright.
+      if (onClose) onClose();
+      else if (query) setQuery('');
       else {
         setOpen(false);
         input.current?.blur();
@@ -256,9 +266,9 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
   const activeId = results[active] ? `${listId}-${results[active].key}` : undefined;
 
   return (
-    <div ref={box} className={`msearch ${showList ? 'is-open' : ''}`}>
+    <div ref={box} className={`msearch ${showList ? 'is-open' : ''} ${className}`}>
       <div className="msearch-field">
-        <Icon name="search" size={18} />
+        {lead ?? <Icon name="search" size={18} />}
         <input
           ref={input}
           type="text"
@@ -278,6 +288,9 @@ export function MapSearch({ target, onCountry, onRegion, onArea, onAttraction, o
           onKeyDown={onKey}
           autoComplete="off"
           spellCheck={false}
+          // Focused as it mounts, inside the tap that opened it, so phones raise the keyboard.
+          autoFocus={!!onClose}
+          enterKeyHint={onClose ? 'search' : undefined}
         />
         {query && (
           <button type="button" className="msearch-clear" onClick={() => (setQuery(''), input.current?.focus())} aria-label="Clear search">

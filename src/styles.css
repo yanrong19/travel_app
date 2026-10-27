@@ -7448,19 +7448,35 @@ button.lvl-crumb:hover {
   }
 }
 
-/* Phone: the map on top and the day panel as a bottom sheet, as on the map page. The page
-   scrolls and the sheet slides up over the fixed map (useGuideScroll writes --gp and --vh).
-   It peeks --plan-peek tall above the tab bar (--sheet-clear) with the day dropdown and the
-   one-line summary, and comes up to --sheet-top, under the trip bar, the search and the place
-   pills, where the dropdown pins. The sub-tabs open the sheet's content. */
+/* Phone: one header over the map and the day panel as a bottom sheet, as on the map page. The
+   header is the trip bar (back, the trip's name, search, settings), then the trip's place pills,
+   then the breadcrumb; --plan-head is where it ends (lib/planSheet's HEAD_PHONE). The page scrolls
+   and the sheet slides up over the fixed map (useGuideScroll writes --gp and --vh). It peeks
+   --plan-peek tall above the tab bar (--sheet-clear) with the day dropdown and the one-line
+   summary, and comes all the way up over the header to --sheet-top (the safe area), where the
+   dropdown pins. The sub-tabs open the sheet's content. */
 @media (max-width: 760px) {
+  .planner {
+    --plan-head: calc(env(safe-area-inset-top, 0px) + 148px);
+  }
+  /* Under the sheet, so the sheet covers the header as it comes up (the map page's chrome stays
+     above its sheet). The open search rises over everything but the tab bar. */
+  .planner > .explore-chrome {
+    z-index: 9;
+  }
+  .planner.is-searching > .explore-chrome {
+    z-index: 25;
+  }
   .plan-bar {
-    top: 72px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
     left: 12px;
     right: 12px;
     height: 52px;
-    gap: 6px;
-    padding: 0 4px;
+    gap: 4px;
+    padding: 0 5px;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
   }
   .plan-back {
     width: 40px;
@@ -7474,17 +7490,53 @@ button.lvl-crumb:hover {
     padding: 0 8px;
     font-size: 16px;
   }
+  .plan-search-btn,
   .plan-settings {
     width: 40px;
     height: 40px;
   }
-  .planner > .explore-chrome > .msearch {
-    top: 132px;
+  /* Searching: the bar itself is the field, its results under it at the bar's width. */
+  .plan-bar.is-search {
+    background: var(--surface);
+    border-color: var(--cedar);
   }
-  /* The place pills: a row of their own under the search, scrolling sideways edge to edge. */
+  .plan-bar .plan-search {
+    position: static;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    animation: plan-search-in 0.32s var(--ease-out);
+  }
+  .plan-bar .plan-search .msearch-field,
+  .plan-bar .plan-search.is-open .msearch-field,
+  .plan-bar .plan-search .msearch-field:focus-within {
+    height: 50px;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* 16px: phones zoom the page into a field with smaller text. */
+  .plan-bar .plan-search .msearch-field input {
+    padding-left: 4px;
+    font-size: 16px;
+  }
+  .plan-bar .plan-search .msearch-clear {
+    margin-right: 3px;
+  }
+  .plan-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 25, 27, 0.2);
+    animation: plan-fade 0.2s var(--ease-out);
+  }
+  /* The place pills: a row of their own under the bar, scrolling sideways edge to edge. */
   .plan-places {
     position: absolute;
-    top: 188px;
+    top: calc(env(safe-area-inset-top, 0px) + 68px);
     left: 0;
     right: 0;
     /* The row spans the map: only the pills and buttons take touches, the gaps go to the map. */
@@ -7496,35 +7548,12 @@ button.lvl-crumb:hover {
     pointer-events: auto;
   }
   .plan-places .psw {
-    padding: 2px 12px 12px;
+    padding: 2px 12px 4px;
     scroll-padding: 0 12px;
-  }
-  /* The map level: a row of its own under the place pills, edge to edge, scrolling sideways. */
-  .plan-levels {
-    top: 232px;
-    left: 0;
-    right: 0;
-    flex-wrap: nowrap;
-    gap: 6px;
-    padding: 2px 12px 10px;
-    overflow-x: auto;
-    scroll-padding: 0 12px;
-    scrollbar-width: none;
-  }
-  .plan-levels::-webkit-scrollbar {
-    display: none;
-  }
-  .lvl-chips {
-    flex: none;
-    flex-wrap: nowrap;
-  }
-  .lvl-crumbs,
-  .lvl-chip {
-    height: 34px;
   }
   .psw-pill,
   .psw-add {
-    height: 38px;
+    height: 36px;
     box-shadow: var(--float);
   }
   .psw-add {
@@ -7532,9 +7561,55 @@ button.lvl-crumb:hover {
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
   }
+  /* The map level: the breadcrumb alone, a slim line under the pills (the bubbles drill in). */
+  .plan-levels {
+    top: calc(env(safe-area-inset-top, 0px) + 112px);
+    left: 12px;
+    right: 12px;
+    padding: 0;
+  }
+  .lvl-crumbs {
+    max-width: 100%;
+    height: 28px;
+    padding: 0 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .lvl-crumbs::-webkit-scrollbar {
+    display: none;
+  }
+  .lvl-crumb {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .lvl-sep {
+    font-size: 13px;
+  }
+  .plan-places,
+  .plan-levels {
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
+  }
+  .planner.is-searching .plan-places,
+  .planner.is-searching .plan-levels {
+    opacity: 0;
+    visibility: hidden;
+  }
   .planner > .explore-stage .map-offscreen,
   .planner .map-controls {
-    top: calc(var(--sheet-top) + 4px);
+    top: calc(var(--plan-head) + 4px);
+  }
+  /* An open card takes the map's middle: the zoom buttons step aside (pinching still zooms). */
+  .planner .map-controls {
+    transition:
+      opacity 0.2s,
+      visibility 0.2s;
+  }
+  .planner.has-card .map-controls {
+    opacity: 0;
+    visibility: hidden;
   }
   .planner .map-controls {
     transform: none;
@@ -7547,7 +7622,7 @@ button.lvl-crumb:hover {
     margin-top: calc(var(--vh, 100svh) - var(--plan-peek) - var(--sheet-clear));
     /* Always tall enough to come fully up, even with little in it. */
     min-height: calc(var(--vh, 100svh) - var(--sheet-top));
-    padding: 16px 16px calc(var(--sheet-clear) + 24px);
+    padding: 12px 16px calc(var(--sheet-clear) + 24px);
     border-radius: calc(var(--r-xl) * (1 - var(--gp, 0))) calc(var(--r-xl) * (1 - var(--gp, 0))) 0 0;
     background: var(--mist);
     box-shadow: 0 -16px 40px -24px rgba(16, 25, 27, 0.45);
@@ -7562,14 +7637,14 @@ button.lvl-crumb:hover {
   .plan-sheet .dl {
     gap: 10px;
   }
-  /* The day dropdown pins under the place pills once the sheet is up. Their frosted backing reaches up
-     behind the bar, the search and the pills, so the list never shows between them. */
+  /* The day dropdown pins at the top once the sheet is up, the first thing on screen. Its frosted
+     backing reaches up behind the safe area (the notch), so the list never shows above it. */
   .plan-sheet .dl-top {
     position: sticky;
     top: var(--sheet-top);
     z-index: 3;
     margin: 0 -16px;
-    padding: 0 16px 6px;
+    padding: 8px 16px 6px;
     background: var(--mist);
   }
   .plan-sheet .dl-top::before {
@@ -7603,20 +7678,26 @@ button.lvl-crumb:hover {
     overflow: visible;
   }
   .plan-sheet .dl-replace {
-    top: calc(var(--sheet-top) + 50px);
+    top: calc(var(--sheet-top) + 58px);
   }
 
   /* The credit rests just above the peek, and above the tab bar once the sheet is up. */
   .planner > .explore-attrib.maplibregl-ctrl-bottom-right {
     --attrib-rest: calc(var(--plan-peek) + var(--sheet-clear));
   }
-  /* Pin cards dock at the bottom, above the peek and the credit under them. */
+  /* Pin cards dock at the bottom, above the peek and the credit under them, and never reach up
+     into the header: a short screen scrolls the card instead. */
   .planner .pincard {
     top: auto;
     bottom: calc(var(--sheet-clear) + var(--plan-peek) + 30px);
   }
+  .planner .pin-card {
+    max-height: calc(var(--vh, 100svh) - var(--plan-head) - 8px - var(--sheet-clear) - var(--plan-peek) - 30px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
   .planner .toast:not(.is-action) {
-    top: calc(var(--sheet-top) + 4px);
+    top: calc(var(--plan-head) + 4px);
   }
   .planner .toast.is-action {
     bottom: calc(var(--sheet-clear) + var(--plan-peek) + 12px);
@@ -7635,6 +7716,24 @@ button.lvl-crumb:hover {
   }
   .psheet-foot {
     padding: 12px 16px 16px;
+  }
+}
+/* The phone planner's search opening in the bar, and the scrim under it. */
+@keyframes plan-search-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@keyframes plan-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-bar .plan-search,
+  .plan-scrim {
+    animation: none;
   }
 }
 

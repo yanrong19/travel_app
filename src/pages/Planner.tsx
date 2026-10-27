@@ -19,7 +19,8 @@ import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
-import { planningState, readPlannerOpen } from '../lib/planning';
+import { planningState, readPlannerOpen, readPlanSearch, SEARCH_STATE } from '../lib/planning';
+import { PEEK_PHONE, SHEET_CLEAR, phoneInsets, sheetBarH } from '../lib/planSheet';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -48,6 +49,7 @@ import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from '../lib/tripUndo';
 import { useGuideScroll } from '../lib/useGuideScroll';
 import { useMedia } from '../lib/useMedia';
+import { useSafeTop } from '../lib/useSafeTop';
 
 // The map engine is large, so it loads only on the map pages.
 const MapExplorer = lazy(() => import('../map/MapExplorer'));
@@ -57,16 +59,12 @@ const NOTICE_MS = 3600;
 const noop = () => {};
 /** Laptop: the map frames its place between the top bar and search, and the day panel. */
 const INSETS: Insets = { top: 236, right: 476, bottom: 40, left: 40 };
-/**
- * Phone: the day panel is a bottom sheet over the map, as the map page's guide sheet is. The page
- * scrolls; the sheet peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR), enough for the day
- * dropdown, the one-line summary and the whole sub-tab pill, and comes up to SHEET_TOP, under the
- * trip bar, the search, the place pills and the map level row. useGuideScroll gets the same peek.
+/*
+ * Phone (lib/planSheet): one header over the map (the trip bar, the place pills, the breadcrumb) and
+ * the day panel as a bottom sheet, as the map page's guide sheet is. The page scrolls; the sheet
+ * peeks PEEK_PHONE tall above the tab bar (SHEET_CLEAR), enough for the day dropdown, the one-line
+ * summary and the whole sub-tab pill, and comes all the way up over the header, to the safe area.
  */
-const PEEK_PHONE = 164;
-const SHEET_CLEAR = 92;
-const SHEET_TOP = 280;
-const INSETS_PHONE: Insets = { top: SHEET_TOP, right: 16, bottom: PEEK_PHONE + SHEET_CLEAR + 16, left: 16 };
 
 /** A 1-based position from the URL (`?day=3`) as a 0-based index; 0 when missing or not a whole number. */
 const indexParam = (v: string | null) => {
@@ -474,31 +472,69 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (name) edit((t, now) => (t.name === name ? t : { ...t, name, updatedAt: now }));
   };
 
+  // ---- the phone search ----
+  // The header's search icon turns the trip bar into the search. Opening it pushes a history entry
+  // (same URL, SEARCH_STATE), so the Back gesture closes it; every other way of closing steps back
+  // off that entry, and only then runs what the close was for (opening a picked place), so that
+  // change lands on the planner's own entry. Focus goes back to the icon.
+  const searchOpen = readPlanSearch(navState);
+  const searching = narrow && searchOpen;
+  const searchBtn = useRef<HTMLButtonElement>(null);
+  const leavingSearch = useRef(false);
+  const afterSearch = useRef<(() => void) | null>(null);
+  const openSearch = () => {
+    if (!searchOpen) navigate({ search }, { state: SEARCH_STATE, preventScrollReset: true });
+  };
+  const closeSearch = useCallback(
+    (then?: () => void) => {
+      if (then) afterSearch.current = then;
+      if (!searchOpen || leavingSearch.current) return;
+      leavingSearch.current = true;
+      navigate(-1);
+    },
+    [searchOpen, navigate],
+  );
+  const wasSearchOpen = useRef(searchOpen);
+  useEffect(() => {
+    if (wasSearchOpen.current === searchOpen) return;
+    wasSearchOpen.current = searchOpen;
+    if (searchOpen) return;
+    leavingSearch.current = false;
+    const then = afterSearch.current;
+    afterSearch.current = null;
+    searchBtn.current?.focus({ preventScroll: true });
+    then?.();
+  }, [searchOpen]);
+
   // ---- keys ----
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented || isTyping(e.target)) return;
       if (document.querySelector('dialog[open], .drawer')) return;
-      if (selected) setSelected(null);
+      if (searching) closeSearch();
+      else if (selected) setSelected(null);
       else if (replace) setReplace(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, replace]);
+  }, [selected, replace, searching, closeSearch]);
 
   const empty = !!viewed && countFor(viewed) === 0;
-  const insets = narrow ? INSETS_PHONE : INSETS;
 
   // ---- the phone sheet ----
   // The page scrolls and the day sheet slides up over the fixed map, as on the map page (useGuideScroll).
+  // Fully up, its top is at the safe area: it covers the header, and the day dropdown pins there.
   const rootRef = useRef<HTMLDivElement>(null);
+  const safeTop = useSafeTop(narrow);
+  const phoneFrame = useMemo(() => phoneInsets(safeTop), [safeTop]);
+  const insets = narrow ? phoneFrame : INSETS;
   const { open: drawerOpen } = useSaved();
-  const { scrollToTop } = useGuideScroll({
+  const { scrollToTop, atGuides } = useGuideScroll({
     enabled: narrow,
     root: rootRef,
-    barH: SHEET_TOP + SHEET_CLEAR,
+    barH: sheetBarH(safeTop),
     levelKey: trip.id,
-    paused: drawerOpen || !!sheet || !!confirm,
+    paused: drawerOpen || !!sheet || !!confirm || searching,
     peek: PEEK_PHONE,
   });
   // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
@@ -557,8 +593,10 @@ function PlannerPage({ trip }: { trip: Trip }) {
     />
   );
 
-  // The map level: a breadcrumb up the viewed place's tree, then a chip per child for keyboard and phone.
+  // The map level: a breadcrumb up the viewed place's tree, then on laptops a chip per child for the
+  // keyboard. Phones keep the breadcrumb alone, as a slim line under the pills: the bubbles drill in.
   const path = viewed ? pathTo(viewed) : [];
+  const chips = !narrow && !!bubbles && bubbles.length > 0;
   const levels = viewed && (
     <div className="plan-levels">
       <nav className="lvl-crumbs" aria-label="Map level">
@@ -582,7 +620,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
                       {name}
                     </span>
                     {/* Leads into the chips: Japan › Hokkaidō, Tōhoku, Kantō… */}
-                    {bubbles && bubbles.length > 0 && (
+                    {chips && (
                       <span className="lvl-sep is-lead" aria-hidden="true">
                         ›
                       </span>
@@ -594,7 +632,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
           })}
         </ol>
       </nav>
-      {bubbles && bubbles.length > 0 && (
+      {chips && bubbles && (
         <div className="lvl-chips" role="group" aria-label={`Places in ${viewedName}`}>
           {bubbles.map((b) => (
             <button key={b.id} type="button" className={`lvl-chip ${b.count ? 'is-live' : ''}`} onClick={b.onPick}>
@@ -652,37 +690,74 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className={`explore planner ${bubbles?.length ? 'has-level-chips' : ''}`}
-      style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${SHEET_TOP}px` } as CSSProperties}
+      className={`explore planner ${chips ? 'has-level-chips' : ''} ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''}`}
+      style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${safeTop}px` } as CSSProperties}
     >
-      <div className="explore-chrome">
-        <TopNav tone="glass" />
-        <div className="plan-bar">
-          <button type="button" className="icon-button plan-back" onClick={() => go('/trips')} aria-label="All trips" title="All trips">
-            <Icon name="arrowLeft" size={18} />
-          </button>
-          <input
-            className="plan-name"
-            value={nameDraft ?? trip.name}
-            onChange={(e) => typeName(e.target.value)}
-            onBlur={() => setNameDraft(null)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') e.currentTarget.blur();
-              if (e.key === 'Escape') {
-                e.currentTarget.blur();
+      {/* Phone: once the sheet is fully up it covers the header, which then leaves the tab order. */}
+      <div className="explore-chrome" inert={narrow && atGuides}>
+        {/* Phone: the trip bar is the header; the tab bar does the nav's job. */}
+        {!narrow && <TopNav tone="glass" />}
+        {/* The open search dims the page under it; a tap there closes the search and does nothing else. */}
+        {searching && <div className="plan-scrim" aria-hidden="true" onClick={() => closeSearch()} />}
+        <div className={`plan-bar ${searching ? 'is-search' : ''}`}>
+          {searching && view ? (
+            <MapSearch
+              className="plan-search"
+              target={view.target}
+              scope={scope}
+              onCountry={noop}
+              onRegion={noop}
+              onArea={noop}
+              onAttraction={(sid) => closeSearch(() => openStop(sid))}
+              onNotice={setNotice}
+              onClose={() => closeSearch()}
+              lead={
+                <button type="button" className="icon-button plan-back" onClick={() => closeSearch()} aria-label="Close search" title="Close search">
+                  <Icon name="arrowLeft" size={18} />
+                </button>
               }
-            }}
-            aria-label="Trip name"
-            maxLength={80}
-            spellCheck={false}
-            autoComplete="off"
-          />
-          {!narrow && switcher}
-          <button type="button" className="round-button plan-settings" onClick={openSettings} aria-label="Trip settings" title="Trip settings">
-            <Icon name="sliders" size={18} />
-          </button>
+            />
+          ) : (
+            <>
+              <button type="button" className="icon-button plan-back" onClick={() => go('/trips')} aria-label="All trips" title="All trips">
+                <Icon name="arrowLeft" size={18} />
+              </button>
+              <input
+                className="plan-name"
+                value={nameDraft ?? trip.name}
+                onChange={(e) => typeName(e.target.value)}
+                onBlur={() => setNameDraft(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.currentTarget.blur();
+                  if (e.key === 'Escape') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                aria-label="Trip name"
+                maxLength={80}
+                spellCheck={false}
+                autoComplete="off"
+              />
+              {!narrow && switcher}
+              {narrow && view && (
+                <button
+                  ref={searchBtn}
+                  type="button"
+                  className="round-button plan-search-btn"
+                  onClick={openSearch}
+                  aria-label={`Search places in ${scope.name}`}
+                  title="Search"
+                >
+                  <Icon name="search" size={18} />
+                </button>
+              )}
+              <button type="button" className="round-button plan-settings" onClick={openSettings} aria-label="Trip settings" title="Trip settings">
+                <Icon name="sliders" size={18} />
+              </button>
+            </>
+          )}
         </div>
-        {view && (
+        {!narrow && view && (
           <MapSearch
             target={view.target}
             scope={scope}
@@ -693,7 +768,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onNotice={setNotice}
           />
         )}
-        {/* Phone: the place pills get a row of their own under the search, scrolling sideways. */}
+        {/* Phone: the place pills get a row of their own under the bar, scrolling sideways. */}
         {narrow && <div className="plan-places">{switcher}</div>}
         {levels}
       </div>

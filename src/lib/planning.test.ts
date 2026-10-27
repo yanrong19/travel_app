@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { onwardState, planningDay, planningState, plannerPath, plannerReturn, readPlannerOpen, readPlanning, type Planning } from './planning';
+import { onwardState, planningDay, planningState, plannerPath, plannerReturn, readPlannerOpen, readPlanning, readPlanSearch, SEARCH_STATE, type Planning } from './planning';
 
 const at = (hops: number, search = '?day=2&view=prefecture:13', day: number | null = null): Planning => ({ tripId: 't1', search, hops, day });
 
@@ -75,4 +75,11 @@ test('plannerReturn pushes the planner URL when it is not the previous entry', (
 test('readPlannerOpen reads the card to open', () => {
   expect(readPlannerOpen({ open: 'senso-ji' })).toBe('senso-ji');
   for (const s of [null, undefined, {}, { open: '' }, { open: 3 }, 'x']) expect(readPlannerOpen(s)).toBeNull();
+});
+
+test('readPlanSearch is true only for the open search’s own state', () => {
+  expect(readPlanSearch(SEARCH_STATE)).toBe(true);
+  for (const s of [null, undefined, {}, { planSearch: 'yes' }, { planSearch: 1 }, { open: 'senso-ji' }, 'x']) expect(readPlanSearch(s)).toBe(false);
+  // The search's entry is never mistaken for a card to open, or a card's for the search.
+  expect(readPlannerOpen(SEARCH_STATE)).toBeNull();
 });

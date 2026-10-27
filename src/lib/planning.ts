@@ -69,6 +69,18 @@ export function readPlannerOpen(state: unknown): string | null {
 }
 
 /**
+ * Router state for the phone planner's open search. Opening the search pushes an entry with it, so
+ * the Back gesture closes the search instead of leaving the planner; closing it any other way steps
+ * back off that entry, so none is left behind.
+ */
+export const SEARCH_STATE = { planSearch: true } as const;
+
+/** True when a planner location's state is the open search's. */
+export function readPlanSearch(state: unknown): boolean {
+  return (state as { planSearch?: unknown } | null)?.planSearch === true;
+}
+
+/**
  * How the attraction page goes back to the planner, on the bar's `day`, and with `open`'s card shown
  * (the "See it on the map" button):
  * - `back`: one step back in history; the planner entry there is exactly right.
