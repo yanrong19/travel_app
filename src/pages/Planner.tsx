@@ -155,6 +155,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
   );
   const [selected, setSelected] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
+  // The dot under the pointer on the map (not the list), for the hover preview card.
+  const [peekId, setPeekId] = useState<string | null>(null);
+  const canHover = useMedia('(hover: hover) and (pointer: fine)');
+  const onMapHover = useCallback((id: string | null) => {
+    setHoverId(id);
+    setPeekId(id);
+  }, []);
   const [replace, setReplace] = useState<{ day: number; id: string } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [undo, setUndo] = useState<Undo | null>(null);
@@ -242,7 +249,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
     return { name: 'this trip', attractions: [...all.values()] };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, viewedName, pins, placesKey]);
-  const picked = selected ? (stopsOf([selected])[0] ?? null) : null;
+  // Laptop: hovering a dot previews its card; a click (selected) keeps it open.
+  const preview = canHover && !narrow ? peekId : null;
+  const shownId = preview ?? selected;
+  const picked = shownId ? (stopsOf([shownId])[0] ?? null) : null;
+  const previewing = !!preview && preview !== selected;
   // The Browse sub-tab: what the map shows (the trip's places' attractions above the attraction
   // level), and its chips, kept here so they survive a visit to the other sub-tabs.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -922,7 +933,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               tour={false}
               wheelScrollsPage={false}
               attributionHost={narrow ? attribHost : null}
-              onHover={setHoverId}
+              onHover={onMapHover}
               onPrefPick={noop}
               onCountry={noop}
               onRegion={noop}
@@ -962,11 +973,12 @@ function PlannerPage({ trip }: { trip: Trip }) {
             <motion.div
               ref={cardRef}
               key={picked.id}
-              className="pincard"
-              initial={{ opacity: 0, y: 40 }}
+              className={`pincard ${previewing ? 'is-preview' : ''}`}
+              initial={{ opacity: 0, y: previewing ? 12 : 40 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40 }}
-              transition={{ duration: reduced ? 0 : 0.4, ease: EASE_OUT }}
+              exit={{ opacity: 0, y: previewing ? 12 : 40 }}
+              transition={{ duration: reduced ? 0 : previewing ? 0.15 : 0.4, ease: EASE_OUT }}
+              aria-hidden={previewing || undefined}
             >
               <PinCard a={picked} onOpen={openDetails} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
             </motion.div>

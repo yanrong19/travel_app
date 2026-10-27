@@ -6664,6 +6664,10 @@ button.lvl-crumb:hover {
 .planner .pincard {
   top: 284px;
 }
+/* Laptop hover preview: shown while the pointer is on a dot, gone when it leaves; a click keeps it. */
+.planner .pincard.is-preview {
+  pointer-events: none;
+}
 /* Wide laptops: the breadcrumb sits on the search's line, beside it, so it adds no row and the card
    stays at 240, clear of the tickers west of Tokyo (Mount Takao, the Ghibli Museum). */
 @media (min-width: 1168px) {
