@@ -1940,6 +1940,11 @@ h2:focus {
   .ftile {
     padding: 12px 14px 14px;
   }
+  /* The opening-hours table needs the full width on phones, or each time wraps at its dash. */
+  .ftile:has(.hours) {
+    grid-column: 1 / -1;
+    grid-row: auto !important;
+  }
 }
 
 .quiet {
