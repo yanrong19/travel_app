@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { attractionById } from '../data/attractions';
-import type { Attraction } from '../data/types';
+import type { Attraction, Rating } from '../data/types';
 import { summarizeDay } from './daySummary';
 import type { Pace, Who } from './trips';
 
@@ -202,4 +202,42 @@ test('cash level: the most cash-bound stop decides', () => {
   expect(summarizeDay([teamlab, takao], opts()).cost.cash).toBe('mostly-cash');
   expect(summarizeDay([takao, yanaka], opts()).cost.cash).toBe('cash-only');
   expect(summarizeDay([], opts()).cost.cash).toBe('cards');
+});
+
+// ---------- time of day ----------
+
+const todFlags = (s: ReturnType<typeof summarizeDay>) => s.flags.filter((f) => f.factor === 'conditions' && /time of day|best in the/.test(f.text));
+/** A copy with its morning / afternoon / evening ratings replaced. */
+const slots = (a: Attraction, morning: Rating, afternoon: Rating, evening: Rating) =>
+  tweak(a, (c) => (c.conditions.timeOfDay = { ...c.conditions.timeOfDay, morning, afternoon, evening }));
+
+test('a stop in a poor slot is flagged and pointed to its best slot', () => {
+  // A teamLab whose morning is poor, at 10:00: best in the evening.
+  const nightTeamlab = slots(teamlab, 'poor', 'ok', 'good');
+  const s = summarizeDay([nightTeamlab], opts({ dayStart: '10:00' }));
+  expect(todFlags(s)).toEqual([{ factor: 'conditions', text: 'teamLab Planets is best in the evening', stopId: 'teamlab-planets' }]);
+  // Golden Gai, for real, at 10:00.
+  const gai = summarizeDay([goldenGai], opts({ dayStart: '10:00' }));
+  expect(todFlags(gai).map((f) => f.text)).toEqual(['Golden Gai is best in the evening']);
+});
+
+test('a stop in a good or ok slot is not flagged', () => {
+  expect(todFlags(summarizeDay([goldenGai], opts({ dayStart: '20:00' })))).toEqual([]);
+  expect(todFlags(summarizeDay([tsukiji], opts({ dayStart: '08:00' })))).toEqual([]);
+  // Afternoon rated ok: not flagged.
+  expect(todFlags(summarizeDay([slots(teamlab, 'poor', 'ok', 'good')], opts({ dayStart: '13:00' })))).toEqual([]);
+});
+
+test('a stop poor at every time of day says so', () => {
+  const s = summarizeDay([slots(teamlab, 'poor', 'poor', 'poor')], opts({ dayStart: '10:00' }));
+  expect(todFlags(s).map((f) => f.text)).toEqual(["teamLab Planets isn't great at any time of day"]);
+});
+
+test('time-of-day boundaries: 11:59 is morning, 12:00 afternoon, 17:00 evening', () => {
+  const amOnly = slots(teamlab, 'good', 'poor', 'poor');
+  expect(todFlags(summarizeDay([amOnly], opts({ dayStart: '11:59' })))).toEqual([]);
+  expect(todFlags(summarizeDay([amOnly], opts({ dayStart: '12:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the morning']);
+  const pmOnly = slots(teamlab, 'poor', 'good', 'poor');
+  expect(todFlags(summarizeDay([pmOnly], opts({ dayStart: '16:59' })))).toEqual([]);
+  expect(todFlags(summarizeDay([pmOnly], opts({ dayStart: '17:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the afternoon']);
 });

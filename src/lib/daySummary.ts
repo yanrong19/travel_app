@@ -4,6 +4,7 @@ import { CROWD_START_HOUR, type Attraction } from '../data/types';
 import { isRainProof, localWord, mustPay, withExtras } from './factors';
 import { DAYS_LONG, duration } from './format';
 import { dayLengthMin, schedule, type ScheduledStop } from './schedule';
+import { EVENING, NOON, slotMismatch } from './timeOfDay';
 import type { Pace, Who } from './trips';
 
 /** How much cash the day needs: the most cash-bound stop decides. */
@@ -22,8 +23,6 @@ export interface DaySummary {
   flags: Flag[];
 }
 
-const NOON = 12 * 60;
-const EVENING = 17 * 60;
 const HARD = 4;
 const MAX_ON_FEET = 6 * 60;
 const BUSY = 70;
@@ -162,6 +161,13 @@ export function summarizeDay(
   if (date) {
     const m = date.getMonth();
     for (const a of stops) if (a.conditions.months[m] === 'poor') flag('conditions', `Out of season in ${MONTHS_LONG[m]}`, a);
+  }
+  // A stop starting in a part of the day rated poor. Ok is not flagged.
+  for (const s of plan) {
+    const miss = slotMismatch(s.a, s.start);
+    if (!miss) continue;
+    const text = miss.better ? `${s.a.name} is best in the ${miss.better}` : `${s.a.name} isn't great at any time of day`;
+    flags.push({ factor: 'conditions', text, stopId: s.a.id });
   }
 
   // Vibe

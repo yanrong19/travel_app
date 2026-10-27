@@ -2,6 +2,7 @@ import type { Attraction, Rating } from '../../data/types';
 import { Icon, type IconName } from '../../components/Icon';
 import { MONTHS, clock, hourOf } from '../../lib/format';
 import { isRainProof } from '../../lib/factors';
+import { TIME_SLOTS, type TimeSlot } from '../../lib/timeOfDay';
 import { Card, FactorSection, Figure, Meter, Note, RATING_WORD, RatingMark } from './parts';
 
 const WEATHER: { key: keyof Attraction['conditions']['weather']; label: string; icon: IconName }[] = [
@@ -14,6 +15,11 @@ const WEATHER: { key: keyof Attraction['conditions']['weather']; label: string; 
 ];
 
 const MONTH_WORD: Record<Rating, string> = { good: 'Best', ok: 'Fine', poor: 'Avoid' };
+const SLOT_LABEL: Record<TimeSlot, { name: string; hours: string }> = {
+  morning: { name: 'Morning', hours: 'Before 12:00' },
+  afternoon: { name: 'Afternoon', hours: '12:00–17:00' },
+  evening: { name: 'Evening', hours: 'From 17:00' },
+};
 const VIS_WORD = { none: 'Doesn’t matter', some: 'Nice to have', critical: 'Make or break' };
 
 export function Conditions({ a, todayIndex }: { a: Attraction; todayIndex: number }) {
@@ -76,6 +82,23 @@ export function Conditions({ a, todayIndex }: { a: Attraction; todayIndex: numbe
       <Card title="Clear skies" span={2}>
         <p className="big-word">{VIS_WORD[c.visibility]}</p>
         <Note>{c.visibilityNote ?? 'Nothing here depends on the view.'}</Note>
+      </Card>
+
+      <Card title="Best part of the day" span={6}>
+        <ul className="tod">
+          {TIME_SLOTS.map((slot) => {
+            const r = c.timeOfDay[slot];
+            return (
+              <li key={slot} className={`tod-pill is-${r}`}>
+                <span className="tod-text">
+                  <strong>{SLOT_LABEL[slot].name}</strong> · {RATING_WORD[r].toLowerCase()}
+                </span>
+                <span className="tod-hours num">{SLOT_LABEL[slot].hours}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <Note>{c.timeOfDay.note}</Note>
       </Card>
 
       <Card title="Best time of day" span={6} aside={<span className="card-aside">Hours shown for today</span>}>

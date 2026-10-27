@@ -5,6 +5,7 @@ import { getRainChance, isLikelyWet } from '../../lib/forecast';
 import { DAYS, MONTHS, duration, plural } from '../../lib/format';
 import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
+import { slotMismatch } from '../../lib/timeOfDay';
 import { dayPlace } from '../../lib/tripPlaces';
 import { dateOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
@@ -99,6 +100,8 @@ export function DayList({
   const tabs = useRef<HTMLDivElement>(null);
   const plan = trip.days[day];
   const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), trip.dayStart), [plan, trip.dayStart]);
+  // Stops starting in a part of the day rated poor for them, by position in `timed`.
+  const misses = useMemo(() => timed.map((s) => slotMismatch(s.a, s.start)), [timed]);
   const date = dateOf(trip, day);
   // Positions in the day's own list: the timed list skips ids the data doesn't have, so its indices can differ.
   const rawIndex = (sid: string) => plan?.stops.indexOf(sid) ?? -1;
@@ -232,6 +235,12 @@ export function DayList({
                             <Icon name="clock" size={13} />
                             {hhmm(s.start)} · {duration(s.end - s.start)}
                           </span>
+                          {misses[i] && (
+                            <span className="dl-stop-rain">
+                              <Icon name="clock" size={13} />
+                              {misses[i].better ? `Better in the ${misses[i].better}` : 'Not great at any time of day'}
+                            </span>
+                          )}
                           {rainFlags.includes(s.a.id) && (
                             <span className="dl-stop-rain num">
                               <Icon name="rain" size={13} />

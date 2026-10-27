@@ -26,6 +26,12 @@ export interface Attraction {
     bestTimes: { from: number; to: number; label: string }[];
     visibility: 'none' | 'some' | 'critical';
     visibilityNote?: string;
+    /**
+     * How well each part of the day suits a visit starting then. The app's slots: morning before
+     * 12:00, afternoon 12:00–17:00, evening 17:00 onward (the day summary's boundaries; see
+     * lib/timeOfDay). A slot the place is closed for on every day is never 'good'.
+     */
+    timeOfDay: { morning: Rating; afternoon: Rating; evening: Rating; note: string };
   };
 
   effort: {

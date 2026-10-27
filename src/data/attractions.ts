@@ -58,6 +58,7 @@ export const ATTRACTIONS: Attraction[] = [
         { from: 18, to: 21, label: 'Lit up after dark' },
       ],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'ok', note: 'Quiet at the 06:00 opening, packed by early afternoon. The hall shuts at 17:00, but the lit grounds stay open.' },
     },
     effort: {
       level: 1, walkKm: 1.2, steps: 10, climbM: 0, onFeetMin: 75, shade: 25,
@@ -106,6 +107,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Late July and August school holidays sell out first.',
       bestTimes: [{ from: 9, to: 11, label: 'First slots are calmest' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'good', note: 'The first slots and the last few hours are calmest. Avoid the early-afternoon peak.' },
     },
     effort: {
       level: 1, walkKm: 0.8, steps: 0, climbM: 0, onFeetMin: 90, shade: 100,
@@ -148,6 +150,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Over three million people visit in the first three days of January.',
       bestTimes: [{ from: 5, to: 8, label: 'Gates open at sunrise' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Best in the early-morning quiet. The gates close at sunset.' },
     },
     effort: {
       level: 2, walkKm: 2.5, steps: 0, climbM: 10, onFeetMin: 70, shade: 85,
@@ -196,6 +199,7 @@ export const ATTRACTIONS: Attraction[] = [
       ],
       visibility: 'critical',
       visibilityNote: 'Low cloud or haze hides the view entirely.',
+      timeOfDay: { morning: 'ok', afternoon: 'ok', evening: 'good', note: 'Go for sunset or the night view. Mornings are quieter but less of a show.' },
     },
     effort: {
       level: 1, walkKm: 0.5, steps: 20, climbM: 0, onFeetMin: 50, shade: 10,
@@ -240,6 +244,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Heat and fish smells peak in July and August.',
       bestTimes: [{ from: 7, to: 9, label: 'Stalls open, crowds thin' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'poor', evening: 'poor', note: 'A breakfast market: stalls wind down after noon and it shuts at 14:00.' },
     },
     effort: {
       level: 2, walkKm: 1.5, steps: 0, climbM: 0, onFeetMin: 90, shade: 40,
@@ -286,6 +291,7 @@ export const ATTRACTIONS: Attraction[] = [
       bestTimes: [{ from: 8, to: 11, label: 'Start early, be down by 15:00' }],
       visibility: 'some',
       visibilityNote: 'Fuji shows from the summit on clear winter mornings.',
+      timeOfDay: { morning: 'good', afternoon: 'poor', evening: 'poor', note: 'Start early to be down by 15:00. An afternoon start runs into dusk on the trail.' },
     },
     effort: {
       level: 4, walkKm: 7.5, steps: 600, climbM: 400, onFeetMin: 240, shade: 70,
@@ -332,6 +338,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Quietest on weekday mornings in any season.',
       bestTimes: [{ from: 15, to: 17, label: 'Sunset from the Yūyake Dandan steps' }],
       visibility: 'none',
+      timeOfDay: { morning: 'ok', afternoon: 'good', evening: 'poor', note: 'Shops open from 10:00 and the sunset steps are the highlight. Most shops shut at 18:00.' },
     },
     effort: {
       level: 2, walkKm: 2, steps: 40, climbM: 15, onFeetMin: 90, shade: 30,
@@ -379,6 +386,7 @@ export const ATTRACTIONS: Attraction[] = [
         { from: 17, to: 20, label: 'Friday late opening' },
       ],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Calmest just after the 09:30 opening. Evenings only on Fridays, when it stays open to 20:00.' },
     },
     effort: {
       level: 2, walkKm: 3, steps: 60, climbM: 0, onFeetMin: 150, shade: 95,
@@ -426,6 +434,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'The same all year. Friday and Saturday nights fill fastest.',
       bestTimes: [{ from: 20, to: 23, label: 'Most bars open around 20:00' }],
       visibility: 'none',
+      timeOfDay: { morning: 'poor', afternoon: 'poor', evening: 'good', note: 'A night place: the bars open around 19:00–20:00 and the alleys are shut by day.' },
     },
     effort: {
       level: 1, walkKm: 0.8, steps: 30, climbM: 0, onFeetMin: 30, shade: 100,
@@ -472,6 +481,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Tickets, not seasons, are the limit.',
       bestTimes: [{ from: 10, to: 12, label: 'Morning entry slots' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Morning entry slots are the calmest. It closes at 18:00.' },
     },
     effort: {
       level: 1, walkKm: 1.5, steps: 80, climbM: 0, onFeetMin: 120, shade: 80,
@@ -519,6 +529,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Cool in summer. The maples turn in late November.',
       bestTimes: [{ from: 9, to: 15, label: 'Daylight only' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'good', evening: 'poor', note: 'Fine any time in daylight. The ravine gets dark early and its paths are unlit.' },
     },
     effort: {
       level: 2, walkKm: 2, steps: 120, climbM: 25, onFeetMin: 50, shade: 90,
@@ -563,6 +574,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Tokyo tournaments run only in January, May and September.',
       bestTimes: [{ from: 15, to: 18, label: 'Top-division bouts' }],
       visibility: 'none',
+      timeOfDay: { morning: 'ok', afternoon: 'good', evening: 'poor', note: 'Mornings are lower divisions and empty seats. The top bouts run from mid-afternoon to the 18:00 close.' },
     },
     effort: {
       level: 1, walkKm: 0.5, steps: 40, climbM: 0, onFeetMin: 20, shade: 100,
@@ -609,6 +621,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'No real seasonal swing.',
       bestTimes: [{ from: 12, to: 18, label: 'Shops open from noon' }],
       visibility: 'none',
+      timeOfDay: { morning: 'poor', afternoon: 'good', evening: 'ok', note: 'Shops open from noon. Evenings turn to bars and live houses as the shops close.' },
     },
     effort: {
       level: 2, walkKm: 3, steps: 20, climbM: 0, onFeetMin: 150, shade: 40,
@@ -653,6 +666,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'No seasonal swing.',
       bestTimes: [{ from: 12, to: 20, label: 'Most shops open by noon' }],
       visibility: 'none',
+      timeOfDay: { morning: 'poor', afternoon: 'good', evening: 'ok', note: 'Most shops open around noon. By evening there are only a few hours before the 20:00 close.' },
     },
     effort: {
       level: 1, walkKm: 1.5, steps: 60, climbM: 0, onFeetMin: 120, shade: 100,
@@ -697,6 +711,7 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Azaleas in May, hydrangeas in June.',
       bestTimes: [{ from: 9, to: 11, label: 'Morning light on the pond' }],
       visibility: 'none',
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Morning light on the pond is the best of it. Last entry 16:30, closed by 17:00.' },
     },
     effort: {
       level: 1, walkKm: 1, steps: 0, climbM: 0, onFeetMin: 45, shade: 30,
@@ -742,6 +757,7 @@ export const ATTRACTIONS: Attraction[] = [
       ],
       visibility: 'critical',
       visibilityNote: 'If the top is in cloud, you see white.',
+      timeOfDay: { morning: 'ok', afternoon: 'ok', evening: 'good', note: 'Sunset and the night view are the reason to go. Daytime queues peak mid-afternoon.' },
     },
     effort: {
       level: 1, walkKm: 0.5, steps: 0, climbM: 0, onFeetMin: 60, shade: 100,
