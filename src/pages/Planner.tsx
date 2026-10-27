@@ -19,8 +19,8 @@ import { summarizeDay } from '../lib/daySummary';
 import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
-import { planningState, readPlannerOpen, readPlanSearch, SEARCH_STATE } from '../lib/planning';
-import { PEEK_PHONE, SHEET_CLEAR, phoneInsets, sheetBarH } from '../lib/planSheet';
+import { planningState, readPlannerOpen, readPlanSearch, SEARCH_STATE, searchStep } from '../lib/planning';
+import { PEEK_PHONE, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH } from '../lib/planSheet';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -476,35 +476,61 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // The header's search icon turns the trip bar into the search. Opening it pushes a history entry
   // (same URL, SEARCH_STATE), so the Back gesture closes it; every other way of closing steps back
   // off that entry, and only then runs what the close was for (opening a picked place), so that
-  // change lands on the planner's own entry. Focus goes back to the icon.
+  // change lands on the planner's own entry. Focus goes back to the icon. Both directions are
+  // guarded by refs (router updates land in a transition, so a quick second tap still sees the old
+  // location), and the guards reset on every location change, so a close can't get stuck.
   const searchOpen = readPlanSearch(navState);
   const searching = narrow && searchOpen;
   const searchBtn = useRef<HTMLButtonElement>(null);
+  const openingSearch = useRef(false);
   const leavingSearch = useRef(false);
   const afterSearch = useRef<(() => void) | null>(null);
   const openSearch = () => {
-    if (!searchOpen) navigate({ search }, { state: SEARCH_STATE, preventScrollReset: true });
+    if (searchOpen || openingSearch.current) return;
+    openingSearch.current = true;
+    navigate({ search }, { state: SEARCH_STATE, preventScrollReset: true });
   };
+  /** Off the search entry: one step back, or (nothing behind it, e.g. a restored tab) replaced in place. */
+  const leaveSearch = useCallback(() => {
+    leavingSearch.current = true;
+    const idx = (window.history.state as { idx?: unknown } | null)?.idx;
+    if (typeof idx === 'number' && idx > 0) navigate(-1);
+    else navigate({ search }, { replace: true, state: null, preventScrollReset: true });
+  }, [navigate, search]);
   const closeSearch = useCallback(
     (then?: () => void) => {
       if (then) afterSearch.current = then;
       if (!searchOpen || leavingSearch.current) return;
-      leavingSearch.current = true;
-      navigate(-1);
+      leaveSearch();
     },
-    [searchOpen, navigate],
+    [searchOpen, leaveSearch],
   );
   const wasSearchOpen = useRef(searchOpen);
+  const searchKey = useRef(navKey);
   useEffect(() => {
-    if (wasSearchOpen.current === searchOpen) return;
-    wasSearchOpen.current = searchOpen;
-    if (searchOpen) return;
-    leavingSearch.current = false;
+    // A new location settles whatever was in flight.
+    if (searchKey.current !== navKey) {
+      searchKey.current = navKey;
+      const leaving = leavingSearch.current;
+      leavingSearch.current = false;
+      openingSearch.current = false;
+      const step = searchStep({ open: searchOpen, wasOpen: wasSearchOpen.current, leaving, narrow });
+      wasSearchOpen.current = searchOpen;
+      if (step === 'back') return leaveSearch();
+      if (step !== 'closed') return;
+    } else {
+      // Same location, new width: only a widened window with the search open needs a step back.
+      if (searchOpen && !narrow && !leavingSearch.current) leaveSearch();
+      return;
+    }
     const then = afterSearch.current;
     afterSearch.current = null;
     searchBtn.current?.focus({ preventScroll: true });
-    then?.();
-  }, [searchOpen]);
+    // After this commit, once the page's scroll has resumed (it pauses while searching), so the
+    // pick's scroll back down to the map isn't dropped.
+    if (then) requestAnimationFrame(then);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navKey, narrow]);
 
   // ---- keys ----
   useEffect(() => {
@@ -598,7 +624,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const path = viewed ? pathTo(viewed) : [];
   const chips = !narrow && !!bubbles && bubbles.length > 0;
   const levels = viewed && (
-    <div className="plan-levels">
+    <div className="plan-levels" inert={searching}>
       <nav className="lvl-crumbs" aria-label="Map level">
         <ol>
           {path.map((r, i) => {
@@ -691,7 +717,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
     <div
       ref={rootRef}
       className={`explore planner ${chips ? 'has-level-chips' : ''} ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''}`}
-      style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${safeTop}px` } as CSSProperties}
+      style={
+        {
+          '--sheet-clear': `${SHEET_CLEAR}px`,
+          '--plan-peek': `${PEEK_PHONE}px`,
+          '--sheet-top': `${safeTop}px`,
+          '--plan-head': `${headBottom(safeTop)}px`,
+        } as CSSProperties
+      }
     >
       {/* Phone: once the sheet is fully up it covers the header, which then leaves the tab order. */}
       <div className="explore-chrome" inert={narrow && atGuides}>
@@ -769,11 +802,16 @@ function PlannerPage({ trip }: { trip: Trip }) {
           />
         )}
         {/* Phone: the place pills get a row of their own under the bar, scrolling sideways. */}
-        {narrow && <div className="plan-places">{switcher}</div>}
+        {/* While searching, what's behind the scrim is out of reach of Tab too. */}
+        {narrow && (
+          <div className="plan-places" inert={searching}>
+            {switcher}
+          </div>
+        )}
         {levels}
       </div>
 
-      <div className="explore-stage">
+      <div className="explore-stage" inert={searching}>
         {view && (
           <Suspense fallback={<div className="map-loading" aria-hidden="true" />}>
             <MapExplorer
@@ -828,8 +866,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
 
       {narrow && (
         <>
-          <div ref={setAttribHost} className="explore-attrib maplibregl-ctrl-bottom-right" />
-          <section className="plan-sheet" aria-label="Days">
+          <div ref={setAttribHost} className="explore-attrib maplibregl-ctrl-bottom-right" inert={searching} />
+          <section className="plan-sheet" aria-label="Days" inert={searching}>
             <span className="gsheet-handle" aria-hidden="true" />
             {days}
           </section>

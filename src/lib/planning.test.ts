@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { onwardState, planningDay, planningState, plannerPath, plannerReturn, readPlannerOpen, readPlanning, readPlanSearch, SEARCH_STATE, type Planning } from './planning';
+import { onwardState, planningDay, planningState, plannerPath, plannerReturn, readPlannerOpen, readPlanning, readPlanSearch, SEARCH_STATE, searchStep, type Planning } from './planning';
 
 const at = (hops: number, search = '?day=2&view=prefecture:13', day: number | null = null): Planning => ({ tripId: 't1', search, hops, day });
 
@@ -82,4 +82,24 @@ test('readPlanSearch is true only for the open search’s own state', () => {
   for (const s of [null, undefined, {}, { planSearch: 'yes' }, { planSearch: 1 }, { open: 'senso-ji' }, 'x']) expect(readPlanSearch(s)).toBe(false);
   // The search's entry is never mistaken for a card to open, or a card's for the search.
   expect(readPlannerOpen(SEARCH_STATE)).toBeNull();
+});
+
+test('searchStep closes cleanly, even off a doubled search entry', () => {
+  const at = (open: boolean, wasOpen: boolean, leaving: boolean, narrow = true) => searchStep({ open, wasOpen, leaving, narrow });
+  // Opening: nothing more to do.
+  expect(at(true, false, false)).toBe('stay');
+  // A close stepped back onto the planner: closed.
+  expect(at(false, true, true)).toBe('closed');
+  // The Back gesture closed it (no close asked for): closed all the same.
+  expect(at(false, true, false)).toBe('closed');
+  // A close landed on a second search entry (a double tap pushed two): step back again.
+  expect(at(true, true, true)).toBe('back');
+  // The Back gesture from the second entry onto the first: the search stays open, as the user sees it.
+  expect(at(true, true, false)).toBe('stay');
+  // Widened to a laptop with the search open: step back off it, so no stray entry stays.
+  expect(at(true, true, false, false)).toBe('back');
+  expect(at(true, false, false, false)).toBe('back');
+  // Nothing open, nothing was: nothing to do.
+  expect(at(false, false, false)).toBe('stay');
+  expect(at(false, false, true, false)).toBe('stay');
 });

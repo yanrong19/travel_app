@@ -81,6 +81,20 @@ export function readPlanSearch(state: unknown): boolean {
 }
 
 /**
+ * What the planner does with its search once the location (or the viewport) has changed:
+ * - `back`: step back off a search entry: a close was asked for and landed on another search
+ *   entry (two were pushed by a quick double tap), or the search is open on a laptop-wide window,
+ *   which has no search to show.
+ * - `closed`: the search was open and no longer is: focus goes back to the icon and a held pick runs.
+ * - `stay`: nothing to do.
+ */
+export function searchStep(s: { open: boolean; wasOpen: boolean; leaving: boolean; narrow: boolean }): 'back' | 'closed' | 'stay' {
+  if (s.open && (s.leaving || !s.narrow)) return 'back';
+  if (!s.open && s.wasOpen) return 'closed';
+  return 'stay';
+}
+
+/**
  * How the attraction page goes back to the planner, on the bar's `day`, and with `open`'s card shown
  * (the "See it on the map" button):
  * - `back`: one step back in history; the planner entry there is exactly right.

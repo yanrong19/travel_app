@@ -7456,9 +7456,6 @@ button.lvl-crumb:hover {
    summary, and comes all the way up over the header to --sheet-top (the safe area), where the
    dropdown pins. The sub-tabs open the sheet's content. */
 @media (max-width: 760px) {
-  .planner {
-    --plan-head: calc(env(safe-area-inset-top, 0px) + 148px);
-  }
   /* Under the sheet, so the sheet covers the header as it comes up (the map page's chrome stays
      above its sheet). The open search rises over everything but the tab bar. */
   .planner > .explore-chrome {

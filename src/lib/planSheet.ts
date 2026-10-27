@@ -10,7 +10,8 @@ export const PEEK_PHONE = 168;
 export const SHEET_CLEAR = 92;
 /**
  * The header's height under the safe area: the trip bar (10 + 52), the place pills (8 + 36) and the
- * breadcrumb (6 + 28), plus a little air. Matches `--plan-head` in styles.css.
+ * breadcrumb (6 + 28), plus a little air. The planner hands it to the CSS, with the safe area, as
+ * `--plan-head` (headBottom).
  */
 export const HEAD_PHONE = 148;
 /** Air between the header and what the map frames under it. */
