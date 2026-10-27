@@ -41,7 +41,7 @@ import {
   type Trip,
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
-import { attractionLevelFor, countFor, nodeOf, parseRefKey, pathTo, placeAnchor, refKey, sameTree } from '../lib/placeTree';
+import { attractionHome, countFor, nodeOf, parseRefKey, pathTo, placeAnchor, refKey, sameTree } from '../lib/placeTree';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoUnsave } from '../lib/tripUndo';
@@ -158,10 +158,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const node = useMemo(() => (viewed ? nodeOf(viewed) : null), [viewKey]);
   const viewedName = node?.label ?? 'this trip';
-  /** Views a place: in the current trip place's tree, or in the tree of the trip place it belongs to. */
+  /**
+   * Views a place: as a trip place when it is one, else in the current trip place's tree, else in the
+   * tree of the trip place it belongs to.
+   */
   const setViewed = useCallback(
     (ref: PlaceRef) => {
-      const at = place && sameTree(ref, place) ? pi : trip.places.findIndex((p) => sameTree(p, ref));
+      const exact = trip.places.findIndex((p) => sameRef(p, ref));
+      const at = exact >= 0 ? exact : place && sameTree(ref, place) ? pi : trip.places.findIndex((p) => sameTree(p, ref));
       if (at < 0) return;
       const home = trip.places[at];
       setParams(
@@ -223,6 +227,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // the search moved the map there to open one (below).
   useEffect(() => setReplace(null), [day]);
   const pendingOpen = useRef<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Replace mode only while its stop is still on its day (an undo, another tab or a settings change can take it away).
   const target = replace && trip.days[replace.day]?.stops.includes(replace.id) ? replace : null;
@@ -493,24 +498,25 @@ function PlannerPage({ trip }: { trip: Trip }) {
   });
   // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
-  /** Opens the attraction's card; on phone the sheet goes back down so the map and the card show. */
-  const openStop = (sid: string) => {
+  /** Shows the attraction's card; on phone the sheet goes back down so the map and the card show. */
+  const showCard = (sid: string) => {
     setSelected(sid);
     if (narrow) scrollToTop();
   };
   useEffect(() => {
     const sid = pendingOpen.current;
     pendingOpen.current = null;
-    if (sid) openStop(sid);
+    if (sid) showCard(sid);
     else setSelected(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewKey]);
-  /** A search result: above the attraction level the map first goes to the place that holds it. */
-  const searchPick = (sid: string) => {
-    if (!viewed || node?.attractionLevel) return openStop(sid);
-    const roots = [viewed, ...trip.places.map((p) => pathTo(p)[0])];
-    const home = roots.map((r) => attractionLevelFor(r, sid)).find((r) => r !== null);
-    if (!home) return openStop(sid);
+  /**
+   * Every way of opening a card (the day list, the wet-weather plan, the search) comes here: the map
+   * first goes to the attraction-level place that shows its pin, then the card opens.
+   */
+  const openStop = (sid: string) => {
+    const home = attractionHome(sid, trip.places, place, viewed);
+    if (!home || (viewed && sameRef(home, viewed))) return showCard(sid);
     pendingOpen.current = sid;
     setViewed(home);
   };
@@ -620,7 +626,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className="explore planner"
+      className={`explore planner ${bubbles?.length ? 'has-level-chips' : ''}`}
       style={{ '--sheet-clear': `${SHEET_CLEAR}px`, '--plan-peek': `${PEEK_PHONE}px`, '--sheet-top': `${SHEET_TOP}px` } as CSSProperties}
     >
       <div className="explore-chrome">
@@ -657,7 +663,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onCountry={noop}
             onRegion={noop}
             onArea={noop}
-            onAttraction={searchPick}
+            onAttraction={openStop}
             onNotice={setNotice}
           />
         )}
@@ -678,6 +684,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               selectedId={selected}
               tones={tones}
               bubbles={bubbles}
+              pickedClearOf={cardRef}
               tour={false}
               wheelScrollsPage={false}
               attributionHost={narrow ? attribHost : null}
@@ -701,6 +708,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
         <AnimatePresence>
           {picked && (
             <motion.div
+              ref={cardRef}
               key={picked.id}
               className="pincard"
               initial={{ opacity: 0, y: 40 }}

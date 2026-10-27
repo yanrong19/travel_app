@@ -5097,6 +5097,10 @@ button.area-card {
   .livepin-photo::after {
     display: none;
   }
+  /* Count bubbles appear at once instead of waiting out their stagger. */
+  .mbubble-pill {
+    animation-delay: 0s;
+  }
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
@@ -6379,9 +6383,42 @@ button.lvl-crumb:hover {
 .planner > .explore-stage .map-offscreen {
   top: 172px;
 }
-/* Below the map level row, which wraps to two rows above the attraction level. */
+/* Below the map level row: one line (the breadcrumb) at the attraction level, where cards open;
+   two when the chips wrap above it. */
 .planner .pincard {
+  top: 284px;
+}
+.planner.has-level-chips .pincard {
   top: 324px;
+}
+/* Wide laptops: the breadcrumb sits on the search's line, beside it, and the chips get the row
+   under the search to themselves. The attraction level then adds no row, so its card stays at 240,
+   clear of the tickers west of Tokyo (Mount Takao, the Ghibli Museum). */
+@media (min-width: 1168px) {
+  .plan-levels {
+    display: contents;
+  }
+  .plan-levels > .lvl-crumbs {
+    position: absolute;
+    top: 180px;
+    left: calc(var(--search-left) + var(--search-w) + 12px);
+  }
+  .plan-levels > .lvl-chips {
+    position: absolute;
+    top: 232px;
+    left: var(--search-left);
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 444px);
+    padding: 2px 2px 10px;
+  }
+  .lvl-sep.is-lead {
+    display: none;
+  }
+  .planner .pincard {
+    top: 240px;
+  }
+  .planner.has-level-chips .pincard {
+    top: 324px;
+  }
 }
 /* Notes drop below the trip bar instead of covering it. */
 .planner .toast:not(.is-action) {

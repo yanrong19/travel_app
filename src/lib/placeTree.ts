@@ -6,10 +6,16 @@
 // itself. This is hard-coded from our data for now: later the knowledge base supplies the tree per
 // country (Singapore at country level, Japan at prefecture or city level). Swap `TREE` for a source
 // that implements `PlaceTree`; nothing outside this file reads the hard-coded shape.
+//
+// The tree is more than `PlaceTree`'s three answers. A knowledge-base tree must also supply, for
+// every place it names: whether it exists (`isKnownPlace`, which validates `&view=` in the URL),
+// where its bubble sits (`placeAnchor`), its label (`nodeOf` reads `placeLabel`), and one canonical
+// id per place (the `prefecture` normaliser here, as zero-padded map ids like '08'). Today those
+// read our geo data in `src/data`.
 import { geoCentroid } from 'd3-geo';
 import { REGIONS, mainLand, regionOfPref } from '../data/regions';
 import { JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, areaById } from '../data/places';
-import { attractionsIn, placeLabel, sameRef } from './tripPlaces';
+import { attractionsIn, covers, placeLabel, sameRef } from './tripPlaces';
 import type { PlaceRef } from './trips';
 
 export interface PlaceNode {
@@ -86,6 +92,27 @@ export function attractionLevelFor(root: PlaceRef, attractionId: string): PlaceR
   if (node.attractionLevel) return attractionsIn(root).some((a) => a.id === attractionId) ? root : null;
   for (const c of node.children) {
     const hit = attractionLevelFor(c, attractionId);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/**
+ * The attraction-level place that shows an attraction's pin, for opening its card from anywhere:
+ * the viewed place when it already does; else the most specific of the trip places that cover it
+ * (Taitō before Japan's Tokyo), the current trip place first on a tie; else the attraction-level
+ * place in any trip place's tree that holds it. Null when none does.
+ */
+export function attractionHome(attractionId: string, places: PlaceRef[], current: PlaceRef | null, viewed: PlaceRef | null): PlaceRef | null {
+  if (viewed && TREE.attractionLevel(viewed) && covers(viewed, attractionId)) return viewed;
+  const order = current ? [current, ...places.filter((p) => !sameRef(p, current))] : places;
+  const homes = order
+    .filter((p) => covers(p, attractionId))
+    .map((p) => attractionLevelFor(p, attractionId))
+    .filter((r): r is PlaceRef => r !== null);
+  if (homes.length) return homes.reduce((best, r) => (pathTo(r).length > pathTo(best).length ? r : best));
+  for (const p of order) {
+    const hit = attractionLevelFor(pathTo(p)[0], attractionId);
     if (hit) return hit;
   }
   return null;

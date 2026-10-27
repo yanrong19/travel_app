@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { REGIONS } from '../data/regions';
 import type { PlaceRef } from './trips';
 import {
+  attractionHome,
   attractionLevelFor,
   countFor,
   isKnownPlace,
@@ -125,4 +126,32 @@ test('placeAnchor puts regions and prefectures on land in Japan', () => {
   expect(tl).toBeLessThan(140);
   expect(tt).toBeGreaterThan(35.4);
   expect(tt).toBeLessThan(35.9);
+});
+
+test('attractionHome: the viewed place when it already shows the pin', () => {
+  expect(attractionHome('senso-ji', [JAPAN], JAPAN, TOKYO)).toEqual(TOKYO);
+  expect(attractionHome('senso-ji', [TAITO], TAITO, TAITO)).toEqual(TAITO);
+});
+
+test('attractionHome: above the attraction level, the attraction-level place under the trip place', () => {
+  expect(attractionHome('senso-ji', [JAPAN, ITALY], JAPAN, JAPAN)).toEqual(TOKYO);
+  expect(attractionHome('senso-ji', [JAPAN, ITALY], JAPAN, KANSAI)).toEqual(TOKYO);
+  // Viewing Italy: Sensō-ji lives in the Japan trip place's tree.
+  expect(attractionHome('senso-ji', [JAPAN, ITALY], ITALY, ITALY)).toEqual(TOKYO);
+});
+
+test('attractionHome: the most specific covering trip place wins', () => {
+  expect(attractionHome('senso-ji', [JAPAN, TAITO], JAPAN, JAPAN)).toEqual(TAITO);
+  expect(attractionHome('senso-ji', [KANTO, TAITO], KANTO, KANTO)).toEqual(TAITO);
+});
+
+test('attractionHome: a Taitō-only trip finds a Taitō attraction in Taitō, and others in Tokyo', () => {
+  // Viewing Japan from a Taitō trip (up the breadcrumb): the pin is in Taitō.
+  expect(attractionHome('senso-ji', [TAITO], TAITO, JAPAN)).toEqual(TAITO);
+  // Not in Taitō: no trip place covers it, so the tree's attraction-level place holds it.
+  expect(attractionHome('shibuya-sky', [TAITO], TAITO, JAPAN)).toEqual(TOKYO);
+});
+
+test('attractionHome: null when no trip tree holds the attraction', () => {
+  expect(attractionHome('senso-ji', [ITALY], ITALY, ITALY)).toBeNull();
 });

@@ -130,6 +130,8 @@ interface Props {
   onWorldPick?: (worldId: string) => void;
   /** Trip planning above the attraction level: one count bubble per child place, in place of pins. */
   bubbles?: MapBubble[];
+  /** Trip planning: a card over the map. When it covers the picked ticker, the map pans the ticker clear of it. */
+  pickedClearOf?: RefObject<HTMLElement | null>;
 }
 
 /** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
@@ -166,6 +168,7 @@ export function MapExplorer(props: Props) {
     tour = true,
     litCountries,
     bubbles,
+    pickedClearOf,
   } = props;
   const tourRef = useRef(tour);
   tourRef.current = tour;
@@ -366,7 +369,7 @@ export function MapExplorer(props: Props) {
       if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
-    if (bubbleEls.length) layoutBubbles(bubbleEls);
+    if (bubbleEls.length) layoutBubbles(bubbleEls, insetsRef.current.top, H - insetsRef.current.bottom);
     const off = tickers.filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
     if (offscreen.current) {
       offscreen.current.dataset.on = off ? '1' : '';
@@ -529,6 +532,51 @@ export function MapExplorer(props: Props) {
   useLayoutEffect(() => {
     place();
   }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey]);
+
+  // ---- Keep the picked ticker clear of a card over the map (trip planning) ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !selectedId || !pickedClearOf) return;
+    let done = false;
+    const reveal = () => {
+      const a = pins.find((p) => p.id === selectedId);
+      const cardEl = pickedClearOf.current;
+      const box = wrap.current?.getBoundingClientRect();
+      if (done || !a || !cardEl || !box) return;
+      done = true;
+      const c = cardEl.getBoundingClientRect();
+      const p = map.project(a.lonlat);
+      // The ticker's pill and tail sit above its point: about 140 wide and 52 tall, picked.
+      const [hw, up, down] = [70, 52, 0];
+      const px = box.left + p.x;
+      const py = box.top + p.y;
+      if (px + hw < c.left || px - hw > c.right || py + down < c.top || py - up > c.bottom) return;
+      const ins = insetsRef.current;
+      // The pill may reach a little into the top inset: its bottom edge is the chrome's soft padding.
+      const [x0, x1, y0, y1] = [box.left + ins.left + hw, box.right - ins.right - hw, box.top + ins.top + up - 12, box.bottom - ins.bottom - down];
+      // The nearest spot beside, above or below the card that stays inside the free area.
+      const spots: [number, number][] = [
+        [px, c.top - down - 4],
+        [px, c.bottom + up + 4],
+        [c.right + hw + 8, py],
+        [c.left - hw - 8, py],
+      ];
+      const fits = spots
+        .map(([x, y]) => [Math.min(x1, Math.max(x0, x)), Math.min(y1, Math.max(y0, y))] as [number, number])
+        .filter(([x, y]) => x + hw < c.left || x - hw > c.right || y + down < c.top || y - up > c.bottom);
+      if (!fits.length) return;
+      const [tx, ty] = fits.reduce((b, f) => (Math.hypot(f[0] - px, f[1] - py) < Math.hypot(b[0] - px, b[1] - py) ? f : b));
+      map.panBy([px - tx, py - ty], { duration: prefersReducedMotion() ? 0 : 600 });
+    };
+    // After the card is in, and after any flight to the attraction's place has landed.
+    const t = window.setTimeout(() => (map.isMoving() ? map.once('moveend', reveal) : reveal()), 450);
+    return () => {
+      done = true;
+      window.clearTimeout(t);
+      map.off('moveend', reveal);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, ready]);
 
   // Ticker widths change once the web fonts arrive: measure again.
   useEffect(() => {
@@ -1115,9 +1163,11 @@ function layoutTickers(list: { el: HTMLElement; sx: number; sy: number }[]) {
 /**
  * Count bubbles centre on their place, places with checked attractions first. One that would
  * overlap a bubble placed before it drops its count ("Saitama"), then moves just above or below
- * its place, and only then folds to a dot; its full label shows again on hover or focus.
+ * its place, and only then folds to a dot; its full label shows again on hover or focus. A move
+ * never takes a bubble out of the free band between the top and bottom insets (the search and
+ * level row above, the credit or the phone sheet below).
  */
-function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[]) {
+function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[], top: number, bottom: number) {
   for (const b of list) {
     if (b.el.dataset.w) continue;
     const pill = b.el.querySelector<HTMLElement>('.mbubble-pill');
@@ -1142,7 +1192,10 @@ function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[]) {
       { short: true, dy: -(h + 6) },
       { short: true, dy: h + 6 },
     ];
-    const fit = tries.find((t) => !hits(box(Number(t.short ? b.el.dataset.ws : b.el.dataset.w), t.dy)));
+    const fit = tries.find((t) => {
+      const r = box(Number(t.short ? b.el.dataset.ws : b.el.dataset.w), t.dy);
+      return !hits(r) && (t.dy === 0 || (r.y0 >= top && r.y1 <= bottom));
+    });
     b.el.classList.toggle('is-compact', !fit);
     b.el.classList.toggle('is-short', !!fit?.short);
     b.el.style.setProperty('--dy', `${fit?.dy ?? 0}px`);
