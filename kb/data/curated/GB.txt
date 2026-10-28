@@ -1,0 +1,59 @@
+# United Kingdom: Country > Nation (admin) > [England: region (official statistical)] > Planning unit
+= GB-ENG
+R GB-R-LONDON | London | Region | London
+R GB-R-SOUTH-EAST | South East England | Region | South East England
+R GB-R-SOUTH-WEST | South West England | Region | South West England
+R GB-R-EAST | East of England | Region | East of England
+R GB-R-WEST-MIDLANDS | West Midlands | Region | West Midlands (region)
+R GB-R-EAST-MIDLANDS | East Midlands | Region | East Midlands
+R GB-R-YORKSHIRE | Yorkshire | Region | Yorkshire and the Humber
+R GB-R-NORTH-WEST | North West England | Region | North West England
+R GB-R-NORTH-EAST | North East England | Region | North East England
+M GB-R-LONDON
+= GB-R-SOUTH-EAST
+P Windsor | Town | trip=London
+P Oxford | City | trip=London
+P Brighton | City
+P Canterbury | City
+= GB-R-SOUTH-WEST
+P Bath | City
+P The Cotswolds | Countryside | q=Cotswolds; link=GB-R-SOUTH-EAST,GB-R-WEST-MIDLANDS
+P Cornwall | Coast | note=St Ives, Penzance and the coast.
+P Jurassic Coast | Coast | q=Jurassic Coast
+P Bristol | City
+P Stonehenge | Archaeological site | q=Stonehenge; trip=London
+= GB-R-EAST
+P Cambridge | City | trip=London
+= GB-R-WEST-MIDLANDS
+P Stratford-upon-Avon | Town
+= GB-R-EAST-MIDLANDS
+P Peak District | National park | q=Peak District; link=GB-R-NORTH-WEST,GB-R-YORKSHIRE
+= GB-R-YORKSHIRE
+P York | City
+P Yorkshire Dales | National park | q=Yorkshire Dales
+= GB-R-NORTH-WEST
+P Manchester | City
+P Liverpool | City
+P Lake District | National park | q=Lake District
+= GB-R-NORTH-EAST
+P Newcastle upon Tyne | City
+P Durham | City | q=Durham, England; trip=Newcastle upon Tyne
+
+= GB-SCT
+P Edinburgh | City
+P Glasgow | City
+P Inverness & Loch Ness | City | q=Inverness
+P Isle of Skye | Island
+P Glencoe & Fort William | Mountains | q=Glen Coe
+P Loch Lomond & the Trossachs | National park | q=Loch Lomond and The Trossachs National Park
+P Cairngorms | National park | q=Cairngorms National Park
+P St Andrews | Town
+
+= GB-WLS
+P Cardiff | City
+P Eryri (Snowdonia) | National park | q=Snowdonia National Park
+P Pembrokeshire Coast | National park | q=Pembrokeshire Coast National Park
+
+= GB-NIR
+P Belfast | City
+P Causeway Coast | Coast | q=Causeway Coast and Glens

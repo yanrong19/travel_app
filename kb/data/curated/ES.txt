@@ -1,0 +1,70 @@
+# Spain: Country > Autonomous community (admin) > [travel region] > Planning unit
+= ES-AN
+R ES-R-COSTA-SOL | Costa del Sol | Coast | Costa del Sol
+P Seville | City
+P Granada | City
+P Córdoba | City | q=Córdoba, Spain
+P Cádiz | City
+P Ronda | Town | trip=Málaga
+P Sierra Nevada | Mountains | q=Sierra Nevada (Spain); trip=Granada
+= ES-R-COSTA-SOL
+P Málaga | City
+P Marbella | City
+P Nerja | Town | trip=Málaga
+
+= ES-CT
+P Barcelona | City
+P Girona | City | trip=Barcelona
+P Costa Brava | Coast | q=Costa Brava
+P Sitges | Town | trip=Barcelona
+P Montserrat | Mountains | q=Montserrat (mountain); trip=Barcelona
+P Tarragona | City
+
+= ES-MD
+P Madrid | City
+= ES-CM
+P Toledo | City | q=Toledo, Spain; trip=Madrid
+P Cuenca | City | q=Cuenca, Spain
+= ES-CL
+P Segovia | City | trip=Madrid
+P Ávila | City | trip=Madrid
+P Salamanca | City
+P Burgos | City
+P León | City | q=León, Spain
+
+= ES-VC
+P Valencia | City
+P Alicante | City
+P Benidorm | City
+
+= ES-IB
+P Mallorca | Island | note=Palma and the island.
+P Ibiza | Island
+P Menorca | Island
+P Formentera | Island | trip=Ibiza
+
+= ES-CN
+P Tenerife | Island
+P Gran Canaria | Island
+P Lanzarote | Island
+P Fuerteventura | Island
+P La Palma | Island | q=La Palma
+
+= ES-PV
+P San Sebastián | City
+P Bilbao | City
+= ES-GA
+P Santiago de Compostela | City
+= ES-NC
+P Pamplona | City
+= ES-AS
+P Picos de Europa | Mountains | q=Picos de Europa; link=ES-CB,ES-CL
+P Oviedo | City
+= ES-CB
+P Santander | City | q=Santander, Spain
+= ES-AR
+P Zaragoza | City
+= ES-EX
+P Cáceres | City | q=Cáceres, Spain
+= ES-RI
+P La Rioja wine country (Logroño) | Countryside | q=Logroño

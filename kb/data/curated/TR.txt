@@ -1,0 +1,46 @@
+# Türkiye: Country > Geographic region (travel, the 7 standard regions) > Planning unit.
+# The 81 provinces are too fine to help travellers choose, so they are not a level.
+= TR
+R TR-R-MARMARA | Marmara | Region | Marmara Region
+R TR-R-AEGEAN | Aegean | Region | Aegean Region
+R TR-R-MEDITERRANEAN | Mediterranean | Region | Mediterranean Region (Turkey)
+R TR-R-CENTRAL-ANATOLIA | Central Anatolia | Region | Central Anatolia Region
+R TR-R-BLACK-SEA | Black Sea | Region | Black Sea Region
+R TR-R-EASTERN-ANATOLIA | Eastern Anatolia | Region | Eastern Anatolia Region
+R TR-R-SOUTHEASTERN-ANATOLIA | Southeastern Anatolia | Region | Southeastern Anatolia Region
+= TR-R-MARMARA
+P Istanbul | City
+P Bursa | City
+P Çanakkale (Gallipoli & Troy) | City | q=Çanakkale
+P Edirne | City
+= TR-R-AEGEAN
+P İzmir | City
+P Selçuk (Ephesus) | Town | q=Selçuk
+P Pamukkale | Town | q=Pamukkale
+P Kuşadası | Town
+P Bodrum | Town
+P Çeşme & Alaçatı | Town | q=Çeşme
+P Fethiye | Town
+P Marmaris | Town
+P Dalyan | Village | q=Dalyan, Muğla
+= TR-R-MEDITERRANEAN
+P Antalya | City
+P Kaş | Town
+P Side | Town | q=Side, Turkey
+P Alanya | City
+P Kemer | Town
+= TR-R-CENTRAL-ANATOLIA
+P Cappadocia | Countryside | q=Cappadocia; note=Göreme, Ürgüp and Uçhisar.
+P Ankara | City
+P Konya | City
+= TR-R-BLACK-SEA
+P Trabzon | City
+P Safranbolu | Town
+= TR-R-EASTERN-ANATOLIA
+P Van | City | q=Van, Turkey
+P Kars | City
+= TR-R-SOUTHEASTERN-ANATOLIA
+P Şanlıurfa | City
+P Mardin | City
+P Gaziantep | City
+P Mount Nemrut (Kâhta) | Mountains | q=Mount Nemrut

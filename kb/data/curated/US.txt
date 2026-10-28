@@ -1,0 +1,99 @@
+# United States: Country > State (admin, 50 + DC) > [travel region in big states] > Planning unit.
+# National parks are planning units in their own right, under the state they are mostly in.
+M US-DC
+= US-CA
+R US-R-SOCAL | Southern California | Region | Southern California
+R US-R-NORCAL | Northern California | Region | Northern California
+R US-R-CENTRAL-COAST | Central Coast | Coast | Central Coast (California)
+= US-R-SOCAL
+P Los Angeles | City
+P San Diego | City
+P Palm Springs | City
+P Joshua Tree | National park | q=Joshua Tree National Park
+P Death Valley | National park | q=Death Valley National Park
+= US-R-NORCAL
+P San Francisco | City
+P Napa Valley | Countryside | q=Napa Valley AVA; trip=San Francisco
+P Yosemite | National park | q=Yosemite National Park
+P Lake Tahoe | Lakes | link=US-NV
+P Sequoia & Kings Canyon | National park | q=Sequoia National Park
+P Redwood | National park | q=Redwood National and State Parks
+= US-R-CENTRAL-COAST
+P Big Sur & Monterey | Coast | q=Big Sur
+P Santa Barbara | City | q=Santa Barbara, California
+= US-NY
+P New York City | City
+P Niagara Falls | Waterfalls | q=Niagara Falls, New York; note=The US side; the Canadian side is a separate place.
+P Hudson Valley | Countryside | q=Hudson Valley; trip=New York City
+P The Hamptons | Coast | q=The Hamptons
+= US-FL
+P Miami | City
+P Orlando | City
+P Florida Keys | Islands | q=Florida Keys; note=Key West and the Keys.
+P Everglades | National park | q=Everglades National Park; trip=Miami
+= US-NV
+P Las Vegas | City
+= US-AZ
+P Grand Canyon | National park | q=Grand Canyon National Park
+P Sedona | Town | q=Sedona, Arizona
+P Page (Antelope Canyon & Horseshoe Bend) | Town | q=Page, Arizona
+P Scottsdale | City
+= US-UT
+P Zion | National park | q=Zion National Park
+P Bryce Canyon | National park | q=Bryce Canyon National Park
+P Moab (Arches & Canyonlands) | Town | q=Moab, Utah
+P Park City | Mountains | q=Park City, Utah
+= US-HI
+P Oʻahu | Island | q=Oahu; note=Honolulu and Waikīkī.
+P Maui | Island
+P Hawaiʻi Island | Island | q=Hawaii (island)
+P Kauaʻi | Island | q=Kauai
+= US-WA
+P Seattle | City
+P Mount Rainier | National park | q=Mount Rainier National Park
+P Olympic | National park | q=Olympic National Park
+P San Juan Islands | Islands | q=San Juan Islands
+= US-OR
+P Portland | City | q=Portland, Oregon
+P Crater Lake | National park | q=Crater Lake National Park
+= US-CO
+P Denver | City
+P Rocky Mountain | National park | q=Rocky Mountain National Park
+P Aspen | Mountains | q=Aspen, Colorado
+= US-WY
+P Yellowstone | National park | q=Yellowstone National Park; link=US-MT,US-ID
+P Grand Teton (Jackson Hole) | National park | q=Grand Teton National Park
+= US-MT
+P Glacier | National park | q=Glacier National Park (U.S.)
+= US-SD
+P Black Hills (Mount Rushmore) | Mountains | q=Black Hills
+= US-IL
+P Chicago | City
+= US-MA
+P Boston | City
+P Cape Cod | Coast
+= US-PA
+P Philadelphia | City
+= US-LA
+P New Orleans | City
+= US-TN
+P Nashville | City
+P Memphis | City | q=Memphis, Tennessee
+P Great Smoky Mountains | National park | q=Great Smoky Mountains National Park; link=US-NC
+= US-TX
+P Austin | City | q=Austin, Texas
+P San Antonio | City
+P Big Bend | National park | q=Big Bend National Park
+= US-GA
+P Savannah | City | q=Savannah, Georgia
+= US-SC
+P Charleston | City | q=Charleston, South Carolina
+= US-NC
+P Asheville | City
+= US-AK
+P Denali | National park | q=Denali National Park and Preserve
+P Juneau | City
+= US-NM
+P Santa Fe | City | q=Santa Fe, New Mexico
+= US-ME
+P Acadia (Bar Harbor) | National park | q=Acadia National Park

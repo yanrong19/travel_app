@@ -1,0 +1,148 @@
+# Japan: Country > Region (travel, the 8 traditional regions) > Prefecture (admin) > Planning unit
+# Syntax: "= ID" sets the parent for following lines. "R id | name | level | search" = travel region.
+# "P name | level | key=value; ..." = planning unit (keys: q search text, trip, link, note, id).
+# "A code > parent" re-parents an official region. "M code" marks an official region as a planning unit.
+= JP
+R JP-R-HOKKAIDO | Hokkaidō | Region | Hokkaido region
+R JP-R-TOHOKU | Tōhoku | Region | Tōhoku region
+R JP-R-KANTO | Kantō | Region | Kantō region
+R JP-R-CHUBU | Chūbu | Region | Chūbu region
+R JP-R-KANSAI | Kansai | Region | Kansai region
+R JP-R-CHUGOKU | Chūgoku | Region | Chūgoku region
+R JP-R-SHIKOKU | Shikoku | Region | Shikoku region
+R JP-R-KYUSHU | Kyūshū & Okinawa | Region | Kyushu region
+A JP-01 > JP-R-HOKKAIDO
+A JP-02 JP-03 JP-04 JP-05 JP-06 JP-07 > JP-R-TOHOKU
+A JP-08 JP-09 JP-10 JP-11 JP-12 JP-13 JP-14 > JP-R-KANTO
+A JP-15 JP-16 JP-17 JP-18 JP-19 JP-20 JP-21 JP-22 JP-23 > JP-R-CHUBU
+A JP-24 JP-25 JP-26 JP-27 JP-28 JP-29 JP-30 > JP-R-KANSAI
+A JP-31 JP-32 JP-33 JP-34 JP-35 > JP-R-CHUGOKU
+A JP-36 JP-37 JP-38 JP-39 > JP-R-SHIKOKU
+A JP-40 JP-41 JP-42 JP-43 JP-44 JP-45 JP-46 JP-47 > JP-R-KYUSHU
+
+= JP-01
+P Sapporo | City
+P Otaru | Town | trip=Sapporo
+P Niseko | Mountains | q=Niseko, Hokkaido
+P Furano & Biei | Countryside | q=Furano
+P Hakodate | City
+P Noboribetsu | Hot-spring town
+P Lake Tōya | Lakes | q=Lake Tōya
+P Shiretoko | National park | q=Shiretoko National Park
+
+= JP-02
+P Hirosaki | City
+P Lake Towada & Oirase | Lakes | q=Lake Towada; link=JP-05
+= JP-03
+P Hiraizumi | Town
+= JP-04
+P Sendai | City
+P Matsushima | Coast | q=Matsushima, Miyagi; trip=Sendai
+= JP-05
+P Kakunodate | Town | q=Kakunodate
+= JP-06
+P Ginzan Onsen | Hot-spring town
+P Zaō | Mountains | q=Mount Zaō
+= JP-07
+P Aizu-Wakamatsu | City
+P Ōuchi-juku | Village | trip=Aizu-Wakamatsu
+
+= JP-09
+P Nikkō | Town | trip=Tokyo
+= JP-10
+P Kusatsu Onsen | Hot-spring town | q=Kusatsu, Gunma
+= JP-11
+P Kawagoe | City | trip=Tokyo
+P Chichibu | Countryside | trip=Tokyo
+= JP-13
+P Tokyo | City | id=JP-P-TOKYO; q=Tokyo; note=Tokyo Metropolis on the mainland: the 23 wards plus Tama (Mount Takao). The Izu and Ogasawara islands are separate.
+P Ogasawara Islands | Islands | q=Bonin Islands; note=1,000 km south of the city: a 24-hour ferry, never a day trip.
+= JP-14
+P Yokohama | City | trip=Tokyo
+P Kamakura | Town | trip=Tokyo
+P Hakone | Mountains | trip=Tokyo; note=Often an overnight onsen stay rather than a day trip.
+
+= JP-15
+P Sado Island | Island | q=Sado Island
+= JP-16
+P Tateyama Kurobe Alpine Route | Mountains | link=JP-20
+= JP-17
+P Kanazawa | City
+= JP-19
+P Fuji Five Lakes | Lakes | q=Fuji Five Lakes; link=JP-22; note=Mount Fuji itself straddles Yamanashi and Shizuoka.
+= JP-20
+P Matsumoto | City
+P Karuizawa | Town
+P Hakuba | Mountains | q=Hakuba, Nagano
+P Kamikōchi | Mountains
+P Yudanaka & Shibu Onsen | Hot-spring town | q=Yudanaka Onsen; note=Base for the Jigokudani snow monkeys.
+P Kiso Valley (Magome & Tsumago) | Countryside | q=Kiso Valley; link=JP-21
+= JP-21
+P Takayama | City
+P Shirakawa-gō | Village | trip=Takayama
+= JP-22
+P Izu Peninsula | Coast | q=Izu Peninsula
+= JP-23
+P Nagoya | City
+
+= JP-24
+P Ise | City | q=Ise, Mie
+= JP-26
+P Kyoto | City
+P Amanohashidate & Ine | Coast | q=Amanohashidate
+= JP-27
+P Osaka | City
+= JP-28
+P Kobe | City | trip=Osaka
+P Himeji | City | trip=Osaka
+P Kinosaki Onsen | Hot-spring town | q=Kinosaki Onsen
+= JP-29
+P Nara | City | trip=Osaka
+= JP-30
+P Kōyasan | Mountains | q=Mount Kōya
+P Kumano Kodō | Trails | q=Kumano Kodō; link=JP-24
+P Shirahama | Coast | q=Shirahama, Wakayama
+
+= JP-31
+P Tottori | City | q=Tottori (city)
+= JP-32
+P Matsue | City
+P Izumo | City | q=Izumo, Shimane
+= JP-33
+P Okayama | City | q=Okayama (city)
+P Kurashiki | City | trip=Okayama
+= JP-34
+P Hiroshima | City
+P Miyajima | Island | q=Itsukushima; trip=Hiroshima
+P Onomichi | Town | note=Start of the Shimanami Kaidō cycling route to Shikoku.
+
+= JP-36
+P Iya Valley | Countryside | q=Iya Valley
+= JP-37
+P Takamatsu | City
+P Naoshima | Island | q=Naoshima, Kagawa
+= JP-38
+P Matsuyama | City | q=Matsuyama, Ehime
+= JP-39
+P Kōchi | City | q=Kōchi (city)
+
+= JP-40
+P Fukuoka | City
+= JP-42
+P Nagasaki | City
+= JP-43
+P Kumamoto | City
+P Aso | Mountains | q=Mount Aso
+= JP-44
+P Beppu | Hot-spring town
+P Yufuin | Hot-spring town | q=Yufuin
+= JP-45
+P Takachiho | Town | q=Takachiho, Miyazaki
+= JP-46
+P Kagoshima | City
+P Yakushima | Island
+= JP-47
+P Okinawa Island | Island | q=Okinawa Island; note=Naha and the main island.
+P Kerama Islands | Islands | trip=Okinawa Island
+P Ishigaki Island | Island | q=Ishigaki Island
+P Miyako Island | Island | q=Miyako-jima

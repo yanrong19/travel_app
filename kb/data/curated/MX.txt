@@ -1,0 +1,51 @@
+# Mexico: Country > State (admin, 32) > [travel region] > Planning unit. Mexico City is its own planning unit.
+M MX-CMX
+= MX-MEX
+P Teotihuacán | Archaeological site | q=Teotihuacan; trip=Mexico City
+= MX-ROO
+R MX-R-RIVIERA-MAYA | Riviera Maya | Coast | Riviera Maya
+P Cancún | City
+P Isla Mujeres | Island | trip=Cancún
+P Holbox | Island | q=Holbox Island
+P Bacalar | Lakes | q=Bacalar
+= MX-R-RIVIERA-MAYA
+P Playa del Carmen | City
+P Tulum | Town
+P Cozumel | Island
+= MX-YUC
+P Mérida | City | q=Mérida, Yucatán
+P Valladolid | City | q=Valladolid, Yucatán
+P Chichén Itzá | Archaeological site | trip=Valladolid
+= MX-CAM
+P Campeche | City | q=San Francisco de Campeche
+= MX-OAX
+P Oaxaca City | City | q=Oaxaca City
+P Puerto Escondido | Town | q=Puerto Escondido, Oaxaca
+P Huatulco | Coast | q=Huatulco
+= MX-GUA
+P San Miguel de Allende | City
+P Guanajuato City | City | q=Guanajuato City
+= MX-JAL
+P Guadalajara | City
+P Puerto Vallarta | City
+P Tequila | Town | q=Tequila, Jalisco; trip=Guadalajara
+= MX-NAY
+P Sayulita & Riviera Nayarit | Coast | q=Sayulita
+= MX-BCS
+P Los Cabos | Coast | q=Los Cabos Municipality; note=Cabo San Lucas and San José del Cabo.
+P La Paz | City | q=La Paz, Baja California Sur
+= MX-CHP
+P San Cristóbal de las Casas | City
+P Palenque | Town | q=Palenque (city)
+= MX-PUE
+P Puebla | City | q=Puebla (city)
+P Cholula | Town | trip=Puebla
+= MX-GRO
+P Taxco | Town | trip=Mexico City
+P Acapulco | City
+= MX-MOR
+P Tepoztlán | Town | trip=Mexico City
+= MX-SIN
+P Mazatlán | City
+= MX-CHH
+P Copper Canyon | Canyon | q=Copper Canyon

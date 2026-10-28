@@ -1,0 +1,85 @@
+# France: Country > Région (admin, the 13 metropolitan ones) > [travel region] > Planning unit
+# Overseas regions (Guadeloupe, Martinique, Réunion...) and Monaco (its own country) are left for later.
+= FR-IDF
+P Paris | City
+P Versailles | Town | trip=Paris
+P Fontainebleau | Town | trip=Paris
+P Disneyland Paris | Resort | q=Disneyland Paris; trip=Paris; note=A resort people stay at, 40 min east of Paris.
+
+= FR-NOR
+P Mont-Saint-Michel | Village | q=Mont-Saint-Michel
+P Bayeux & the D-Day beaches | Coast | q=Bayeux
+P Rouen | City
+P Honfleur | Town
+P Étretat | Coast | q=Étretat
+P Giverny | Village | trip=Paris
+
+= FR-BRE
+P Saint-Malo | Town
+P Rennes | City
+P Carnac & Quiberon | Coast | q=Carnac
+
+= FR-HDF
+P Lille | City
+P Chantilly | Town | trip=Paris
+
+= FR-GES
+P Strasbourg | City
+P Colmar & the Alsace Wine Route | Town | q=Colmar
+P Reims | City
+P Épernay | Town | trip=Reims
+
+= FR-CVL
+P Loire Valley (Tours & Amboise) | Countryside | q=Loire Valley; note=The châteaux country; based in Tours or Amboise.
+P Chartres | City | trip=Paris
+
+= FR-PDL
+P Nantes | City
+
+= FR-BFC
+P Dijon | City
+P Beaune | Town | trip=Dijon
+
+= FR-ARA
+P Lyon | City
+P Annecy | Town
+P Chamonix-Mont-Blanc | Mountains | q=Chamonix
+P Les Trois Vallées | Ski area | q=Les Trois Vallées; note=Courchevel, Méribel and Val Thorens.
+
+= FR-NAQ
+P Bordeaux | City
+P Saint-Émilion | Village | trip=Bordeaux
+P Biarritz & the Basque Coast | Coast | q=Biarritz
+P Dordogne Valley (Sarlat) | Countryside | q=Sarlat-la-Canéda
+P La Rochelle | City
+
+= FR-OCC
+P Toulouse | City
+P Carcassonne | City
+P Montpellier | City
+P Nîmes & Pont du Gard | City | q=Nîmes
+P Lourdes | Town
+
+= FR-PAC
+R FR-R-COTE-AZUR | Côte d'Azur (French Riviera) | Area | French Riviera
+R FR-R-PROVENCE | Provence | Area | Provence
+= FR-R-COTE-AZUR
+P Nice | City
+P Cannes | City
+P Antibes | Town | trip=Nice
+P Èze | Village | trip=Nice
+P Saint-Tropez | Town
+P Menton | Town | trip=Nice
+= FR-R-PROVENCE
+P Marseille | City
+P Aix-en-Provence | City
+P Avignon | City
+P Arles | City
+P Luberon | Countryside | q=Luberon; note=Gordes, Roussillon and the hill villages.
+P Gorges du Verdon | Canyon | q=Verdon Gorge
+P Cassis & the Calanques | Coast | q=Cassis; trip=Marseille
+
+= FR-20R
+P Ajaccio | City
+P Bonifacio | Town
+P Calvi | Town | q=Calvi, Haute-Corse

@@ -1,0 +1,74 @@
+# Italy: Country > Region (admin, 20) > [travel region] > Planning unit
+# Vatican City and San Marino are their own countries and are left for later.
+= IT-62
+P Rome | City
+P Tivoli | Town | trip=Rome
+= IT-52
+P Florence | City
+P Siena | City
+P Pisa | City | trip=Florence
+P Lucca | City
+P San Gimignano | Town | trip=Siena
+P Chianti | Countryside | q=Chianti
+P Val d'Orcia | Countryside | q=Val d'Orcia
+= IT-34
+P Venice | City
+P Verona | City
+P Lake Garda | Lakes | q=Lake Garda; link=IT-25,IT-32
+= IT-32
+R IT-R-DOLOMITES | Dolomites | Mountains | Dolomites
+= IT-R-DOLOMITES
+P Val Gardena | Mountains | q=Val Gardena
+P Alta Badia | Mountains | q=Alta Badia
+P Cortina d'Ampezzo | Town | link=IT-34; note=In Veneto, but travellers place it in the Dolomites.
+= IT-25
+P Milan | City
+P Lake Como | Lakes | q=Lake Como; note=Bellagio, Varenna and Como.
+P Bergamo | City | trip=Milan
+= IT-72
+P Naples | City
+P Amalfi Coast | Coast | q=Amalfi Coast; note=Positano, Amalfi and Ravello.
+P Sorrento | Town
+P Capri | Island | q=Capri
+P Pompeii | Archaeological site | q=Pompeii; trip=Naples
+= IT-42
+P Cinque Terre | Coast | q=Cinque Terre
+P Genoa | City
+P Portofino | Village | trip=Genoa
+= IT-21
+P Turin | City
+P Langhe | Countryside | q=Langhe; note=Barolo wine country, based in Alba.
+= IT-82
+P Palermo | City
+P Taormina | Town
+P Catania & Mount Etna | City | q=Catania
+P Syracuse | City | q=Syracuse, Sicily
+P Agrigento | City
+P Aeolian Islands | Islands | q=Aeolian Islands
+= IT-88
+P Costa Smeralda | Coast | q=Costa Smeralda
+P Cagliari | City
+P Alghero | City
+= IT-75
+P Bari | City
+P Lecce | City
+P Alberobello | Town | trip=Bari
+P Polignano a Mare | Town | trip=Bari
+= IT-77
+P Matera | City
+= IT-45
+P Bologna | City
+P Parma | City | trip=Bologna
+P Modena | City | trip=Bologna
+P Ravenna | City | trip=Bologna
+P Rimini | City
+= IT-55
+P Assisi | Town
+P Perugia | City
+P Orvieto | Town | trip=Rome
+= IT-36
+P Trieste | City
+= IT-23
+P Courmayeur | Mountains | q=Courmayeur
+= IT-78
+P Tropea | Town

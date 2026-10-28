@@ -1,0 +1,47 @@
+# Greece: Country > Region (admin, 13) > [island group] > Planning unit
+= GR-I
+P Athens | City
+P Aegina | Island | trip=Athens
+P Hydra | Island | q=Hydra (island)
+= GR-L
+R GR-R-CYCLADES | Cyclades | Islands | Cyclades
+R GR-R-DODECANESE | Dodecanese | Islands | Dodecanese
+= GR-R-CYCLADES
+P Santorini | Island
+P Mykonos | Island
+P Naxos | Island
+P Paros | Island
+P Milos | Island
+= GR-R-DODECANESE
+P Rhodes | Island
+P Kos | Island
+P Patmos | Island
+= GR-M
+P Chania | City
+P Heraklion | City
+P Rethymno | City
+P Agios Nikolaos & Elounda | Town | q=Agios Nikolaos, Crete
+= GR-F
+P Corfu | Island
+P Zakynthos | Island
+P Kefalonia | Island
+P Lefkada | Island
+= GR-E
+P Meteora (Kalambaka) | Town | q=Meteora
+P Pelion | Mountains | q=Pelion
+P Skiathos | Island
+P Skopelos | Island
+= GR-H
+P Delphi | Archaeological site | trip=Athens
+= GR-J
+P Nafplio | Town
+P Monemvasia | Town
+= GR-G
+P Olympia | Archaeological site | q=Olympia, Greece
+= GR-B
+P Thessaloniki | City
+P Halkidiki | Coast
+= GR-D
+P Zagori | Countryside | q=Zagori
+= GR-K
+P Lesbos | Island

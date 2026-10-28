@@ -1,0 +1,45 @@
+# Germany: Country > State (admin, 16) > Planning unit. City-states (Berlin, Hamburg, Bremen) are their own planning unit.
+M DE-BE
+M DE-HH
+M DE-HB
+= DE-BY
+P Munich | City
+P Füssen (Neuschwanstein) | Town | q=Füssen
+P Nuremberg | City
+P Rothenburg ob der Tauber | Town
+P Bamberg | City | trip=Nuremberg
+P Würzburg | City
+P Regensburg | City
+P Garmisch-Partenkirchen | Mountains
+P Berchtesgaden | Mountains
+= DE-BB
+P Potsdam | City | trip=Berlin
+P Spreewald | Countryside | q=Spreewald; trip=Berlin
+= DE-BW
+P Heidelberg | City
+P Black Forest | Countryside | q=Black Forest; note=Based in Freiburg or the forest towns.
+P Baden-Baden | Town
+P Stuttgart | City
+P Lake Constance | Lakes | q=Lake Constance; link=DE-BY
+= DE-RP
+P Middle Rhine Valley | Valley | q=Middle Rhine; link=DE-HE
+P Moselle Valley (Cochem) | Valley | q=Cochem
+P Trier | City
+= DE-NW
+P Cologne | City
+P Düsseldorf | City
+= DE-HE
+P Frankfurt | City | q=Frankfurt am Main
+= DE-SN
+P Dresden | City
+P Leipzig | City
+P Saxon Switzerland | National park | q=Saxon Switzerland National Park; trip=Dresden
+= DE-TH
+P Weimar | City
+= DE-MV
+P Rügen | Island
+= DE-SH
+P Lübeck | City
+P Sylt | Island
+= DE-NI
+P Harz Mountains (Goslar) | Mountains | q=Goslar

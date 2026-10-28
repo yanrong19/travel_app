@@ -1,0 +1,36 @@
+# Thailand: Country > Region (travel) > Planning unit. The 77 provinces are too fine to be a level.
+= TH
+R TH-R-CENTRAL | Central Thailand | Region | Central Thailand
+R TH-R-NORTH | Northern Thailand | Region | Northern Thailand
+R TH-R-NORTHEAST | Isan (Northeast) | Region | Isan
+R TH-R-EAST | Eastern Thailand | Region | Eastern Thailand
+R TH-R-GULF | Gulf islands | Islands | Gulf of Thailand
+R TH-R-ANDAMAN | Andaman coast | Coast | Andaman Sea
+= TH-R-CENTRAL
+P Bangkok | City
+P Ayutthaya | City | q=Ayutthaya (city); trip=Bangkok
+P Kanchanaburi | City | q=Kanchanaburi (town)
+P Hua Hin | Town
+= TH-R-NORTH
+P Chiang Mai | City
+P Chiang Rai | City
+P Pai | Town | q=Pai, Thailand
+P Sukhothai | Town | q=Sukhothai Historical Park
+= TH-R-NORTHEAST
+P Khao Yai | National park | q=Khao Yai National Park
+= TH-R-EAST
+P Pattaya | City
+P Ko Samet | Island
+P Ko Chang | Island | q=Ko Chang (Trat)
+= TH-R-GULF
+P Ko Samui | Island
+P Ko Pha-ngan | Island
+P Ko Tao | Island
+= TH-R-ANDAMAN
+P Phuket | Island | q=Phuket (island)
+P Krabi (Ao Nang & Railay) | Coast | q=Ao Nang
+P Ko Phi Phi | Islands | q=Phi Phi Islands
+P Ko Lanta | Island | q=Ko Lanta
+P Khao Lak | Coast
+P Khao Sok | National park | q=Khao Sok National Park; note=Inland, but visited with the Andaman coast.
+P Ko Lipe | Island

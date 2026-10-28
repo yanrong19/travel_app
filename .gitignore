@@ -5,3 +5,4 @@ dist
 *.local
 *.tsbuildinfo
 .superpowers
+kb/.cache

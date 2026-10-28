@@ -1,0 +1,823 @@
+place_id,parent_id,country_iso2,depth,level_type,kind,name_en,name_local,slug,is_planning_unit,day_trip_from,iso_3166_2,wikidata,osm_relation,lat,lon,default_zoom,path,notes,source,status
+FR,,FR,0,Country,admin,France,France,france,,,,Q142,2202162,47.0,2.0,5,France,,Wikidata,reviewed
+FR-ARA,FR,FR,1,Région,admin,Auvergne-Rhône-Alpes,Auvergne-Rhône-Alpes,auvergne-rhone-alpes,,,FR-ARA,Q18338206,3792877,45.7,4.8,6,France › Auvergne-Rhône-Alpes,,Wikidata,reviewed
+FR-P-ANNECY,FR-ARA,FR,2,Town,travel,Annecy,Annecy,annecy,yes,,,Q50189,6791758,45.89917,6.12944,13,France › Auvergne-Rhône-Alpes › Annecy,,Curated,draft
+FR-P-CHAMONIX-MONT-BLANC,FR-ARA,FR,2,Mountains,travel,Chamonix-Mont-Blanc,Chamonix-Mont-Blanc,chamonix-mont-blanc,yes,,,Q83236,104836,45.92222,6.86889,10,France › Auvergne-Rhône-Alpes › Chamonix-Mont-Blanc,,Curated,draft
+FR-P-LES-TROIS-VALLEES,FR-ARA,FR,2,Ski area,travel,Les Trois Vallées,Les 3 Vallées,les-trois-vallees,yes,,,Q1548034,,45.35000,6.60000,11,France › Auvergne-Rhône-Alpes › Les Trois Vallées,"Courchevel, Méribel and Val Thorens.",Curated,draft
+FR-P-LYON,FR-ARA,FR,2,City,travel,Lyon,Lyon,lyon,yes,,,Q456,120965,45.76750,4.83500,11,France › Auvergne-Rhône-Alpes › Lyon,,Curated,draft
+FR-BFC,FR,FR,1,Région,admin,Bourgogne-Franche-Comté,Bourgogne-Franche-Comté,bourgogne-franche-comte,,,FR-BFC,Q18578267,3792878,47.234527777,6.0305,6,France › Bourgogne-Franche-Comté,,Wikidata,reviewed
+FR-P-BEAUNE,FR-BFC,FR,2,Town,travel,Beaune,Beaune,beaune,yes,FR-P-DIJON,,Q16121,74091,47.02417,4.83889,13,France › Bourgogne-Franche-Comté › Beaune,,Curated,draft
+FR-P-DIJON,FR-BFC,FR,2,City,travel,Dijon,Dijon,dijon,yes,,,Q7003,74090,47.32306,5.04194,11,France › Bourgogne-Franche-Comté › Dijon,,Curated,draft
+FR-BRE,FR,FR,1,Région,admin,Brittany,Bretagne,brittany,,,FR-BRE,Q12130,102740,48.0,-3.0,6,France › Brittany,,Wikidata,reviewed
+FR-P-CARNAC-QUIBERON,FR-BRE,FR,2,Coast,travel,Carnac & Quiberon,Carnac,carnac-quiberon,yes,,,Q70925,117495,47.58472,-3.07778,9,France › Brittany › Carnac & Quiberon,,Curated,draft
+FR-P-RENNES,FR-BRE,FR,2,City,travel,Rennes,Rennes,rennes,yes,,,Q647,54517,48.11417,-1.68083,11,France › Brittany › Rennes,,Curated,draft
+FR-P-SAINT-MALO,FR-BRE,FR,2,Town,travel,Saint-Malo,Saint-Malo,saint-malo,yes,,,Q163108,905534,48.64944,-2.02611,13,France › Brittany › Saint-Malo,,Curated,draft
+FR-CVL,FR,FR,1,Région,admin,Centre-Val de Loire,Centre-Val de Loire,centre-val-de-loire,,,FR-CVL,Q13947,8640,47.5,1.75,6,France › Centre-Val de Loire,,Wikidata,reviewed
+FR-P-CHARTRES,FR-CVL,FR,2,City,travel,Chartres,Chartres,chartres,yes,FR-P-PARIS,,Q130272,276905,48.44667,1.48833,11,France › Centre-Val de Loire › Chartres,,Curated,draft
+FR-P-LOIRE-VALLEY,FR-CVL,FR,2,Countryside,travel,Loire Valley (Tours & Amboise),Val de Loire,loire-valley,yes,,,Q1050483,17212045,47.21629,0.06218,10,France › Centre-Val de Loire › Loire Valley (Tours & Amboise),The châteaux country,Curated,draft
+FR-20R,FR,FR,1,Région,admin,Corsica,Corse,corsica,,,FR-20R,Q14112,76910,42.15,9.083333333,6,France › Corsica,,Wikidata,reviewed
+FR-P-AJACCIO,FR-20R,FR,2,City,travel,Ajaccio,Ajaccio,ajaccio,yes,,,Q40104,73283,41.92556,8.73639,11,France › Corsica › Ajaccio,,Curated,draft
+FR-P-BONIFACIO,FR-20R,FR,2,Town,travel,Bonifacio,Bonifacio,bonifacio,yes,,,Q204051,122377,41.38806,9.16056,13,France › Corsica › Bonifacio,,Curated,draft
+FR-P-CALVI,FR-20R,FR,2,Town,travel,Calvi,Calvi,calvi,yes,,,Q202439,1151255,42.56778,8.75667,13,France › Corsica › Calvi,,Curated,draft
+FR-GES,FR,FR,1,Région,admin,Grand Est,Grand Est,grand-est,,,FR-GES,Q18677983,3792876,48.583333333,7.75,6,France › Grand Est,,Wikidata,reviewed
+FR-P-COLMAR-THE-ALSACE-WINE-ROUTE,FR-GES,FR,2,Town,travel,Colmar & the Alsace Wine Route,Colmar,colmar-the-alsace-wine-route,yes,,,Q130994,61423,48.08111,7.35500,13,France › Grand Est › Colmar & the Alsace Wine Route,,Curated,draft
+FR-P-REIMS,FR-GES,FR,2,City,travel,Reims,Reims,reims,yes,,,Q41876,36458,49.26528,4.02861,11,France › Grand Est › Reims,,Curated,draft
+FR-P-STRASBOURG,FR-GES,FR,2,City,travel,Strasbourg,Strasbourg,strasbourg,yes,,,Q6602,71033,48.57333,7.75222,11,France › Grand Est › Strasbourg,,Curated,draft
+FR-P-EPERNAY,FR-GES,FR,2,Town,travel,Épernay,Épernay,epernay,yes,FR-P-REIMS,,Q205537,417327,49.04000,3.95917,13,France › Grand Est › Épernay,,Curated,draft
+FR-HDF,FR,FR,1,Région,admin,Hauts-de-France,Hauts-de-France,hauts-de-france,,,FR-HDF,Q18677767,4217435,49.916666666,2.7,6,France › Hauts-de-France,,Wikidata,reviewed
+FR-P-CHANTILLY,FR-HDF,FR,2,Town,travel,Chantilly,Chantilly,chantilly,yes,FR-P-PARIS,,Q126675,1415878,49.18694,2.46083,13,France › Hauts-de-France › Chantilly,,Curated,draft
+FR-P-LILLE,FR-HDF,FR,2,City,travel,Lille,Lille,lille,yes,,,Q648,58404,50.63194,3.05750,11,France › Hauts-de-France › Lille,,Curated,draft
+FR-NOR,FR,FR,1,Région,admin,Normandy,Normandie,normandy,,,FR-NOR,Q18677875,3793170,49.183333333,-0.35,6,France › Normandy,,Wikidata,reviewed
+FR-P-BAYEUX-THE-D-DAY-BEACHES,FR-NOR,FR,2,Coast,travel,Bayeux & the D-Day beaches,Bayeux,bayeux-the-d-day-beaches,yes,,,Q183910,145776,49.27861,-0.70389,9,France › Normandy › Bayeux & the D-Day beaches,,Curated,draft
+FR-P-GIVERNY,FR-NOR,FR,2,Village,travel,Giverny,Giverny,giverny,yes,FR-P-PARIS,,Q165061,74718,49.07611,1.52917,14,France › Normandy › Giverny,,Curated,draft
+FR-P-HONFLEUR,FR-NOR,FR,2,Town,travel,Honfleur,Honfleur,honfleur,yes,,,Q231720,126415,49.41889,0.23306,13,France › Normandy › Honfleur,,Curated,draft
+FR-P-MONT-SAINT-MICHEL,FR-NOR,FR,2,Village,travel,Mont-Saint-Michel,Le Mont-Saint-Michel,mont-saint-michel,yes,,,Q20892,376823,48.63583,-1.51028,14,France › Normandy › Mont-Saint-Michel,,Curated,draft
+FR-P-ROUEN,FR-NOR,FR,2,City,travel,Rouen,Rouen,rouen,yes,,,Q30974,75628,49.44306,1.10250,11,France › Normandy › Rouen,,Curated,draft
+FR-P-ETRETAT,FR-NOR,FR,2,Coast,travel,Étretat,Étretat,etretat,yes,,,Q290936,2673357,49.70639,0.20667,9,France › Normandy › Étretat,,Curated,draft
+FR-NAQ,FR,FR,1,Région,admin,Nouvelle-Aquitaine,Nouvelle-Aquitaine,nouvelle-aquitaine,,,FR-NAQ,Q18678082,3792880,44.833333333,-0.583333333,6,France › Nouvelle-Aquitaine,,Wikidata,reviewed
+FR-P-BIARRITZ-THE-BASQUE-COAST,FR-NAQ,FR,2,Coast,travel,Biarritz & the Basque Coast,Biarritz,biarritz-the-basque-coast,yes,,,Q132790,166717,43.48056,-1.55722,9,France › Nouvelle-Aquitaine › Biarritz & the Basque Coast,,Curated,draft
+FR-P-BORDEAUX,FR-NAQ,FR,2,City,travel,Bordeaux,Bordeaux,bordeaux,yes,,,Q1479,105270,44.83778,-0.57944,11,France › Nouvelle-Aquitaine › Bordeaux,,Curated,draft
+FR-P-DORDOGNE-VALLEY,FR-NAQ,FR,2,Countryside,travel,Dordogne Valley (Sarlat),Sarlat-la-Canéda,dordogne-valley,yes,,,Q6381,1839460,44.89000,1.21667,10,France › Nouvelle-Aquitaine › Dordogne Valley (Sarlat),,Curated,draft
+FR-P-LA-ROCHELLE,FR-NAQ,FR,2,City,travel,La Rochelle,La Rochelle,la-rochelle,yes,,,Q82185,117858,46.15944,-1.15139,11,France › Nouvelle-Aquitaine › La Rochelle,,Curated,draft
+FR-P-SAINT-EMILION,FR-NAQ,FR,2,Village,travel,Saint-Émilion,Saint-Émilion,saint-emilion,yes,FR-P-BORDEAUX,,Q192548,89248,44.89433,-0.15572,14,France › Nouvelle-Aquitaine › Saint-Émilion,,Curated,draft
+FR-OCC,FR,FR,1,Région,admin,Occitania,Occitanie,occitania,,,FR-OCC,Q18678265,3792883,43.7075,2.1375,6,France › Occitania,,Wikidata,reviewed
+FR-P-CARCASSONNE,FR-OCC,FR,2,City,travel,Carcassonne,Carcassonne,carcassonne,yes,,,Q6582,37774,43.21583,2.35139,11,France › Occitania › Carcassonne,,Curated,draft
+FR-P-LOURDES,FR-OCC,FR,2,Town,travel,Lourdes,Lourdes,lourdes,yes,,,Q3327,399976,43.09417,-0.04694,13,France › Occitania › Lourdes,,Curated,draft
+FR-P-MONTPELLIER,FR-OCC,FR,2,City,travel,Montpellier,Montpellier,montpellier,yes,,,Q6441,28722,43.61092,3.87723,11,France › Occitania › Montpellier,,Curated,draft
+FR-P-NIMES-PONT-DU-GARD,FR-OCC,FR,2,City,travel,Nîmes & Pont du Gard,Nîmes,nimes-pont-du-gard,yes,,,Q42807,378685,43.83833,4.35972,11,France › Occitania › Nîmes & Pont du Gard,,Curated,draft
+FR-P-TOULOUSE,FR-OCC,FR,2,City,travel,Toulouse,Toulouse,toulouse,yes,,,Q7880,35738,43.60444,1.44333,11,France › Occitania › Toulouse,,Curated,draft
+FR-PDL,FR,FR,1,Région,admin,Pays de la Loire,Pays de la Loire,pays-de-la-loire,,,FR-PDL,Q16994,8650,47.416666666,-0.85,6,France › Pays de la Loire,,Wikidata,reviewed
+FR-P-NANTES,FR-PDL,FR,2,City,travel,Nantes,Nantes,nantes,yes,,,Q12191,59874,47.21722,-1.55389,11,France › Pays de la Loire › Nantes,,Curated,draft
+FR-PAC,FR,FR,1,Région,admin,Provence-Alpes-Côte d'Azur,Provence-Alpes-Côte d'Azur,provence-alpes-cote-d-azur,,,FR-PAC,Q15104,8654,44.0,6.0,6,France › Provence-Alpes-Côte d'Azur,,Wikidata,reviewed
+FR-R-COTE-AZUR,FR-PAC,FR,2,Area,travel,Côte d'Azur (French Riviera),Côte d'Azur,cote-d-azur,,,,Q182822,17990374,43.60111,7.15204,8,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera),,Curated,draft
+FR-P-ANTIBES,FR-R-COTE-AZUR,FR,3,Town,travel,Antibes,Antibes,antibes,yes,FR-P-NICE,,Q126898,74687,43.58000,7.12306,13,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Antibes,,Curated,draft
+FR-P-CANNES,FR-R-COTE-AZUR,FR,3,City,travel,Cannes,Cannes,cannes,yes,,,Q39984,91734,43.55250,7.02139,11,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Cannes,,Curated,draft
+FR-P-MENTON,FR-R-COTE-AZUR,FR,3,Town,travel,Menton,Menton,menton,yes,FR-P-NICE,,Q180083,74727,43.77472,7.49972,13,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Menton,,Curated,draft
+FR-P-NICE,FR-R-COTE-AZUR,FR,3,City,travel,Nice,Nice,nice,yes,,,Q33959,170100,43.70194,7.26833,11,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Nice,,Curated,draft
+FR-P-SAINT-TROPEZ,FR-R-COTE-AZUR,FR,3,Town,travel,Saint-Tropez,Saint-Tropez,saint-tropez,yes,,,Q1813,970823,43.26972,6.63861,13,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Saint-Tropez,,Curated,draft
+FR-P-EZE,FR-R-COTE-AZUR,FR,3,Village,travel,Èze,Èze,eze,yes,FR-P-NICE,,Q242617,174959,43.72778,7.36111,14,France › Provence-Alpes-Côte d'Azur › Côte d'Azur (French Riviera) › Èze,,Curated,draft
+FR-R-PROVENCE,FR-PAC,FR,2,Area,travel,Provence,Provence,provence,,,,Q101081,,43.59992,5.34056,8,France › Provence-Alpes-Côte d'Azur › Provence,,Curated,draft
+FR-P-AIX-EN-PROVENCE,FR-R-PROVENCE,FR,3,City,travel,Aix-en-Provence,Aix-en-Provence,aix-en-provence,yes,,,Q47465,70279,43.52778,5.44556,11,France › Provence-Alpes-Côte d'Azur › Provence › Aix-en-Provence,,Curated,draft
+FR-P-ARLES,FR-R-PROVENCE,FR,3,City,travel,Arles,Arles,arles,yes,,,Q48292,73911,43.67694,4.62861,11,France › Provence-Alpes-Côte d'Azur › Provence › Arles,,Curated,draft
+FR-P-AVIGNON,FR-R-PROVENCE,FR,3,City,travel,Avignon,Avignon,avignon,yes,,,Q6397,102478,43.94861,4.80833,11,France › Provence-Alpes-Côte d'Azur › Provence › Avignon,,Curated,draft
+FR-P-CASSIS-THE-CALANQUES,FR-R-PROVENCE,FR,3,Coast,travel,Cassis & the Calanques,Cassis,cassis-the-calanques,yes,FR-P-MARSEILLE,,Q243002,76425,43.21556,5.53722,9,France › Provence-Alpes-Côte d'Azur › Provence › Cassis & the Calanques,,Curated,draft
+FR-P-GORGES-DU-VERDON,FR-R-PROVENCE,FR,3,Canyon,travel,Gorges du Verdon,gorges du Verdon,gorges-du-verdon,yes,,,Q687057,,43.73778,6.36389,10,France › Provence-Alpes-Côte d'Azur › Provence › Gorges du Verdon,,Curated,draft
+FR-P-LUBERON,FR-R-PROVENCE,FR,3,Countryside,travel,Luberon,Massif du Luberon,luberon,yes,,,Q1780121,19313950,43.79611,5.22389,10,France › Provence-Alpes-Côte d'Azur › Provence › Luberon,"Gordes, Roussillon and the hill villages.",Curated,draft
+FR-P-MARSEILLE,FR-R-PROVENCE,FR,3,City,travel,Marseille,Marseille,marseille,yes,,,Q23482,76469,43.29667,5.37639,11,France › Provence-Alpes-Côte d'Azur › Provence › Marseille,,Curated,draft
+FR-IDF,FR,FR,1,Région,admin,Île-de-France,Île-de-France,ile-de-france,,,FR-IDF,Q13917,8649,48.85,2.316666666,6,France › Île-de-France,,Wikidata,reviewed
+FR-P-DISNEYLAND-PARIS,FR-IDF,FR,2,Resort,travel,Disneyland Paris,Disneyland Paris,disneyland-paris,yes,FR-P-PARIS,,Q206521,,48.86872,2.78180,13,France › Île-de-France › Disneyland Paris,"A resort people stay at, 40 min east of Paris.",Curated,draft
+FR-P-FONTAINEBLEAU,FR-IDF,FR,2,Town,travel,Fontainebleau,Fontainebleau,fontainebleau,yes,FR-P-PARIS,,Q182872,216359,48.40889,2.70167,13,France › Île-de-France › Fontainebleau,,Curated,draft
+FR-P-PARIS,FR-IDF,FR,2,City,travel,Paris,Paris,paris,yes,,,Q90,7444,48.85667,2.35222,11,France › Île-de-France › Paris,,Curated,draft
+FR-P-VERSAILLES,FR-IDF,FR,2,Town,travel,Versailles,Versailles,versailles,yes,FR-P-PARIS,,Q621,30295,48.80500,2.13500,13,France › Île-de-France › Versailles,,Curated,draft
+ES,,ES,0,Country,admin,Spain,España,spain,,,,Q29,1311341,40.2,-3.5,5,Spain,,Wikidata,reviewed
+ES-AN,ES,ES,1,Autonomous community,admin,Andalusia,Andalucía,andalusia,,,ES-AN,Q5783,349044,37.405,-5.9875,7,Spain › Andalusia,,Wikidata,reviewed
+ES-R-COSTA-SOL,ES-AN,ES,2,Coast,travel,Costa del Sol,Costa del Sol,costa-del-sol,,,,Q215254,,36.65830,-4.39304,9,Spain › Andalusia › Costa del Sol,,Curated,draft
+ES-P-MARBELLA,ES-R-COSTA-SOL,ES,3,City,travel,Marbella,Marbella,marbella,yes,,,Q484799,340756,36.51136,-4.88344,11,Spain › Andalusia › Costa del Sol › Marbella,,Curated,draft
+ES-P-MALAGA,ES-R-COSTA-SOL,ES,3,City,travel,Málaga,Málaga,malaga,yes,,,Q8851,340746,36.71667,-4.41667,11,Spain › Andalusia › Costa del Sol › Málaga,,Curated,draft
+ES-P-NERJA,ES-R-COSTA-SOL,ES,3,Town,travel,Nerja,Nerja,nerja,yes,ES-P-MALAGA,,Q13149,345092,36.74686,-3.87902,13,Spain › Andalusia › Costa del Sol › Nerja,,Curated,draft
+ES-P-CADIZ,ES-AN,ES,2,City,travel,Cádiz,Cádiz,cadiz,yes,,,Q15682,346956,36.53500,-6.29750,11,Spain › Andalusia › Cádiz,,Curated,draft
+ES-P-CORDOBA,ES-AN,ES,2,City,travel,Córdoba,Córdoba,cordoba,yes,,,Q5818,343207,37.89000,-4.78000,11,Spain › Andalusia › Córdoba,,Curated,draft
+ES-P-GRANADA,ES-AN,ES,2,City,travel,Granada,Granada,granada,yes,,,Q8810,344685,37.17500,-3.60000,11,Spain › Andalusia › Granada,,Curated,draft
+ES-P-RONDA,ES-AN,ES,2,Town,travel,Ronda,Ronda,ronda,yes,ES-P-MALAGA,,Q13153,343088,36.73722,-5.16472,13,Spain › Andalusia › Ronda,,Curated,draft
+ES-P-SEVILLE,ES-AN,ES,2,City,travel,Seville,Sevilla,seville,yes,,,Q8717,342563,37.38861,-5.99500,11,Spain › Andalusia › Seville,,Curated,draft
+ES-P-SIERRA-NEVADA,ES-AN,ES,2,Mountains,travel,Sierra Nevada,Sierra Nevada,sierra-nevada,yes,ES-P-GRANADA,,Q26955,,37.05333,-3.31139,10,Spain › Andalusia › Sierra Nevada,,Curated,draft
+ES-AR,ES,ES,1,Autonomous community,admin,Aragon,Aragón,aragon,,,ES-AR,Q4040,349045,41.0,-1.0,7,Spain › Aragon,,Wikidata,reviewed
+ES-P-ZARAGOZA,ES-AR,ES,2,City,travel,Zaragoza,Zaragoza,zaragoza,yes,,,Q10305,345740,41.65000,-0.88333,11,Spain › Aragon › Zaragoza,,Curated,draft
+ES-AS,ES,ES,1,Autonomous community,admin,Asturias,Asturias,asturias,,,ES-AS,Q3934,349033,43.361388888,-5.847777777,7,Spain › Asturias,,Wikidata,reviewed
+ES-P-OVIEDO,ES-AS,ES,2,City,travel,Oviedo,Oviedo,oviedo,yes,,,Q14317,346397,43.36250,-5.85028,11,Spain › Asturias › Oviedo,,Curated,draft
+ES-P-PICOS-DE-EUROPA,ES-AS,ES,2,Mountains,travel,Picos de Europa,Picos de Europa,picos-de-europa,yes,,,Q1141172,,43.19967,-4.80050,10,Spain › Asturias › Picos de Europa,,Curated,draft
+ES-IB,ES,ES,1,Autonomous community,admin,Balearic Islands,Islas Baleares,balearic-islands,,,ES-IB,Q107356467,348981,39.5,3.0,7,Spain › Balearic Islands,,Wikidata,reviewed
+ES-P-FORMENTERA,ES-IB,ES,2,Island,travel,Formentera,Formentera,formentera,yes,ES-P-IBIZA,,Q52626,6076062,38.70000,1.45000,10,Spain › Balearic Islands › Formentera,,Curated,draft
+ES-P-IBIZA,ES-IB,ES,2,Island,travel,Ibiza,Ibiza,ibiza,yes,,,Q52631,6076060,38.98000,1.43000,10,Spain › Balearic Islands › Ibiza,,Curated,draft
+ES-P-MALLORCA,ES-IB,ES,2,Island,travel,Mallorca,Mallorca,mallorca,yes,,,Q8828,6803636,39.61667,2.98333,10,Spain › Balearic Islands › Mallorca,Palma and the island.,Curated,draft
+ES-P-MENORCA,ES-IB,ES,2,Island,travel,Menorca,Menorca,menorca,yes,,,Q52636,6076061,39.96667,4.08333,10,Spain › Balearic Islands › Menorca,,Curated,draft
+ES-PV,ES,ES,1,Autonomous community,admin,Basque Country,País Vasco,basque-country,,,ES-PV,Q3995,349042,43.0,-2.75,7,Spain › Basque Country,,Wikidata,reviewed
+ES-P-BILBAO,ES-PV,ES,2,City,travel,Bilbao,Bilbao,bilbao,yes,,,Q8692,339549,43.26306,-2.93500,11,Spain › Basque Country › Bilbao,,Curated,draft
+ES-P-SAN-SEBASTIAN,ES-PV,ES,2,City,travel,San Sebastián,San Sebastián,san-sebastian,yes,,,Q10313,346465,43.32000,-1.98000,11,Spain › Basque Country › San Sebastián,,Curated,draft
+ES-CN,ES,ES,1,Autonomous community,admin,Canary Islands,Canarias,canary-islands,,,ES-CN,Q5813,349048,28.0,-15.75,7,Spain › Canary Islands,,Wikidata,reviewed
+ES-P-FUERTEVENTURA,ES-CN,ES,2,Island,travel,Fuerteventura,Fuerteventura,fuerteventura,yes,,,Q192534,2214682,28.40000,-14.00000,10,Spain › Canary Islands › Fuerteventura,,Curated,draft
+ES-P-GRAN-CANARIA,ES-CN,ES,2,Island,travel,Gran Canaria,Gran Canaria,gran-canaria,yes,,,Q178925,2214683,27.95861,-15.59250,10,Spain › Canary Islands › Gran Canaria,,Curated,draft
+ES-P-LA-PALMA,ES-CN,ES,2,Island,travel,La Palma,La Palma,la-palma,yes,,,Q201689,11775386,28.66000,-17.86000,10,Spain › Canary Islands › La Palma,,Curated,draft
+ES-P-LANZAROTE,ES-CN,ES,2,Island,travel,Lanzarote,Lanzarote,lanzarote,yes,,,Q182432,3253929,29.03500,-13.63500,10,Spain › Canary Islands › Lanzarote,,Curated,draft
+ES-P-TENERIFE,ES-CN,ES,2,Island,travel,Tenerife,Tenerife,tenerife,yes,,,Q40846,2108882,28.26861,-16.60556,10,Spain › Canary Islands › Tenerife,,Curated,draft
+ES-CB,ES,ES,1,Autonomous community,admin,Cantabria,Cantabria,cantabria,,,ES-CB,Q3946,349013,43.333333333,-4.0,7,Spain › Cantabria,,Wikidata,reviewed
+ES-P-SANTANDER,ES-CB,ES,2,City,travel,Santander,Santander,santander,yes,,,Q12233,340797,43.46667,-3.80000,11,Spain › Cantabria › Santander,,Curated,draft
+ES-CL,ES,ES,1,Autonomous community,admin,Castile and León,Castilla y León,castile-and-leon,,,ES-CL,Q5739,349041,41.754444444,-4.781944444,7,Spain › Castile and León,,Wikidata,reviewed
+ES-P-BURGOS,ES-CL,ES,2,City,travel,Burgos,Burgos,burgos,yes,,,Q9580,344165,42.34083,-3.69972,11,Spain › Castile and León › Burgos,,Curated,draft
+ES-P-LEON,ES-CL,ES,2,City,travel,León,León,leon,yes,,,Q15699,339984,42.59889,-5.56694,11,Spain › Castile and León › León,,Curated,draft
+ES-P-SALAMANCA,ES-CL,ES,2,City,travel,Salamanca,Salamanca,salamanca,yes,,,Q15695,344342,40.96500,-5.66417,11,Spain › Castile and León › Salamanca,,Curated,draft
+ES-P-SEGOVIA,ES-CL,ES,2,City,travel,Segovia,Segovia,segovia,yes,ES-P-MADRID,,Q15684,346134,40.94806,-4.11833,11,Spain › Castile and León › Segovia,,Curated,draft
+ES-P-AVILA,ES-CL,ES,2,City,travel,Ávila,Ávila,avila,yes,ES-P-MADRID,,Q15688,348905,40.65435,-4.69622,11,Spain › Castile and León › Ávila,,Curated,draft
+ES-CM,ES,ES,1,Autonomous community,admin,Castilla–La Mancha,Castilla-La Mancha,castillala-mancha,,,ES-CM,Q5748,349052,39.500011111,-3.000033333,7,Spain › Castilla–La Mancha,,Wikidata,reviewed
+ES-P-CUENCA,ES-CM,ES,2,City,travel,Cuenca,Cuenca,cuenca,yes,,,Q15098,344096,40.07167,-2.13500,11,Spain › Castilla–La Mancha › Cuenca,,Curated,draft
+ES-P-TOLEDO,ES-CM,ES,2,City,travel,Toledo,Toledo,toledo,yes,ES-P-MADRID,,Q5836,342999,39.86667,-4.03333,11,Spain › Castilla–La Mancha › Toledo,,Curated,draft
+ES-CT,ES,ES,1,Autonomous community,admin,Catalonia,Cataluña,catalonia,,,ES-CT,Q5705,349053,41.85,1.566666666,7,Spain › Catalonia,,Wikidata,reviewed
+ES-P-BARCELONA,ES-CT,ES,2,City,travel,Barcelona,Barcelona,barcelona,yes,,,Q1492,347950,41.38250,2.17694,11,Spain › Catalonia › Barcelona,,Curated,draft
+ES-P-COSTA-BRAVA,ES-CT,ES,2,Coast,travel,Costa Brava,Costa Brava,costa-brava,yes,,,Q216884,,42.02280,3.22449,9,Spain › Catalonia › Costa Brava,,Curated,draft
+ES-P-GIRONA,ES-CT,ES,2,City,travel,Girona,Gerona,girona,yes,ES-P-BARCELONA,,Q7038,343535,41.98333,2.81667,11,Spain › Catalonia › Girona,,Curated,draft
+ES-P-MONTSERRAT,ES-CT,ES,2,Mountains,travel,Montserrat,Macizo de Montserrat,montserrat,yes,ES-P-BARCELONA,,Q732115,,41.60538,1.81150,10,Spain › Catalonia › Montserrat,,Curated,draft
+ES-P-SITGES,ES-CT,ES,2,Town,travel,Sitges,Sitges,sitges,yes,ES-P-BARCELONA,,Q15551,342217,41.23389,1.80417,13,Spain › Catalonia › Sitges,,Curated,draft
+ES-P-TARRAGONA,ES-CT,ES,2,City,travel,Tarragona,Tarragona,tarragona,yes,,,Q15088,339887,41.11750,1.25278,11,Spain › Catalonia › Tarragona,,Curated,draft
+ES-CE,ES,ES,1,Autonomous community,admin,Ceuta,Ceuta,ceuta,,,ES-CE,Q5823,1822781,35.886667,-5.3,7,Spain › Ceuta,,Wikidata,reviewed
+ES-MD,ES,ES,1,Autonomous community,admin,Community of Madrid,Comunidad de Madrid,community-of-madrid,,,ES-MD,Q5756,349055,40.42526,-3.69063,7,Spain › Community of Madrid,,Wikidata,reviewed
+ES-P-MADRID,ES-MD,ES,2,City,travel,Madrid,Madrid,madrid,yes,,,Q2807,5326784,40.41694,-3.70333,11,Spain › Community of Madrid › Madrid,,Curated,draft
+ES-EX,ES,ES,1,Autonomous community,admin,Extremadura,Extremadura,extremadura,,,ES-EX,Q5777,349050,39.2,-6.15,7,Spain › Extremadura,,Wikidata,reviewed
+ES-P-CACERES,ES-EX,ES,2,City,travel,Cáceres,Cáceres,caceres,yes,,,Q15678,1899973,39.47306,-6.37111,11,Spain › Extremadura › Cáceres,,Curated,draft
+ES-GA,ES,ES,1,Autonomous community,admin,Galicia,Galicia,galicia,,,ES-GA,Q3908,349036,42.8,-7.9,7,Spain › Galicia,,Wikidata,reviewed
+ES-P-SANTIAGO-DE-COMPOSTELA,ES-GA,ES,2,City,travel,Santiago de Compostela,Santiago de Compostela,santiago-de-compostela,yes,,,Q14314,346204,42.88333,-8.53333,11,Spain › Galicia › Santiago de Compostela,,Curated,draft
+ES-RI,ES,ES,1,Autonomous community,admin,La Rioja,La Rioja,la-rioja,,,ES-RI,Q5727,348991,42.25,-2.5,7,Spain › La Rioja,,Wikidata,reviewed
+ES-P-LA-RIOJA-WINE-COUNTRY,ES-RI,ES,2,Countryside,travel,La Rioja wine country (Logroño),Logroño,la-rioja-wine-country,yes,,,Q31917806,,42.46712,-2.44541,10,Spain › La Rioja › La Rioja wine country (Logroño),,Curated,draft
+ES-ML,ES,ES,1,Autonomous community,admin,Melilla,Melilla,melilla,,,ES-ML,Q5831,1154757,35.2825,-2.9475,7,Spain › Melilla,,Wikidata,reviewed
+ES-NC,ES,ES,1,Autonomous community,admin,Navarre,Navarra,navarre,,,ES-NC,Q4018,349027,42.816666666,-1.65,7,Spain › Navarre,,Wikidata,reviewed
+ES-P-PAMPLONA,ES-NC,ES,2,City,travel,Pamplona,Pamplona,pamplona,yes,,,Q10282,344401,42.81667,-1.65000,11,Spain › Navarre › Pamplona,,Curated,draft
+ES-MC,ES,ES,1,Autonomous community,admin,Region of Murcia,Región de Murcia,region-of-murcia,,,ES-MC,Q5772,349047,38.0,-1.833333333,7,Spain › Region of Murcia,,Wikidata,reviewed
+ES-VC,ES,ES,1,Autonomous community,admin,Valencian Community,Comunidad Valenciana,valencian-community,,,ES-VC,Q5720,349043,39.5,-0.75,7,Spain › Valencian Community,,Wikidata,reviewed
+ES-P-ALICANTE,ES-VC,ES,2,City,travel,Alicante,Alicante,alicante,yes,,,Q11959,342792,38.34528,-0.48306,11,Spain › Valencian Community › Alicante,,Curated,draft
+ES-P-BENIDORM,ES-VC,ES,2,City,travel,Benidorm,Benidorm,benidorm,yes,,,Q487981,341148,38.53417,-0.13139,11,Spain › Valencian Community › Benidorm,,Curated,draft
+ES-P-VALENCIA,ES-VC,ES,2,City,travel,Valencia,Valencia,valencia,yes,,,Q8818,344953,39.47000,-0.37639,11,Spain › Valencian Community › Valencia,,Curated,draft
+US,,US,0,Country,admin,United States,United States,united-states,,,,Q30,148838,39.828175,-98.5795,3,United States,,Wikidata,reviewed
+US-AL,US,US,1,State,admin,Alabama,Alabama,alabama,,,US-AL,Q173,161950,32.7,-86.7,6,United States › Alabama,,Wikidata,reviewed
+US-AK,US,US,1,State,admin,Alaska,Alaska,alaska,,,US-AK,Q797,1116270,64.0,-150.0,6,United States › Alaska,,Wikidata,reviewed
+US-P-DENALI,US-AK,US,2,National park,travel,Denali,,denali,yes,,,Q217136,,63.20000,-150.30000,9,United States › Alaska › Denali,,Curated,draft
+US-P-JUNEAU,US-AK,US,2,City,travel,Juneau,,juneau,yes,,,Q29445,2605281,58.30194,-134.41972,11,United States › Alaska › Juneau,,Curated,draft
+US-AZ,US,US,1,State,admin,Arizona,Arizona,arizona,,,US-AZ,Q816,162018,34.286666666,-111.656944444,6,United States › Arizona,,Wikidata,reviewed
+US-P-GRAND-CANYON,US-AZ,US,2,National park,travel,Grand Canyon,,grand-canyon,yes,,,Q220289,183377,36.05530,-112.12200,9,United States › Arizona › Grand Canyon,,Curated,draft
+US-P-PAGE,US-AZ,US,2,Town,travel,Page (Antelope Canyon & Horseshoe Bend),,page,yes,,,Q79940,8274663,36.91420,-111.46000,13,United States › Arizona › Page (Antelope Canyon & Horseshoe Bend),,Curated,draft
+US-P-SCOTTSDALE,US-AZ,US,2,City,travel,Scottsdale,,scottsdale,yes,,,Q49221,110826,33.49306,-111.92611,11,United States › Arizona › Scottsdale,,Curated,draft
+US-P-SEDONA,US-AZ,US,2,Town,travel,Sedona,,sedona,yes,,,Q80041,10693662,34.86000,-111.78917,13,United States › Arizona › Sedona,,Curated,draft
+US-AR,US,US,1,State,admin,Arkansas,Arkansas,arkansas,,,US-AR,Q1612,161646,34.8,-92.2,6,United States › Arkansas,,Wikidata,reviewed
+US-CA,US,US,1,State,admin,California,California,california,,,US-CA,Q99,165475,37.0,-120.0,6,United States › California,,Wikidata,reviewed
+US-R-CENTRAL-COAST,US-CA,US,2,Coast,travel,Central Coast,,central-coast,,,,Q2413435,,35.26667,-120.67000,9,United States › California › Central Coast,,Curated,draft
+US-P-BIG-SUR-MONTEREY,US-R-CENTRAL-COAST,US,3,Coast,travel,Big Sur & Monterey,,big-sur-monterey,yes,,,Q859413,,36.10750,-121.62583,9,United States › California › Central Coast › Big Sur & Monterey,,Curated,draft
+US-P-SANTA-BARBARA,US-R-CENTRAL-COAST,US,3,City,travel,Santa Barbara,,santa-barbara,yes,,,Q159288,112224,34.42583,-119.71417,11,United States › California › Central Coast › Santa Barbara,,Curated,draft
+US-R-NORCAL,US-CA,US,2,Region,travel,Northern California,,northern-california,,,,Q1066807,17839254,38.48769,-121.18518,6,United States › California › Northern California,,Curated,draft
+US-P-LAKE-TAHOE,US-R-NORCAL,US,3,Lakes,travel,Lake Tahoe,,lake-tahoe,yes,,,Q169962,1823287,39.08333,-120.03333,10,United States › California › Northern California › Lake Tahoe,,Curated,draft
+US-P-NAPA-VALLEY,US-R-NORCAL,US,3,Countryside,travel,Napa Valley,,napa-valley,yes,US-P-SAN-FRANCISCO,,Q1151105,5261894,38.38670,-122.35000,10,United States › California › Northern California › Napa Valley,,Curated,draft
+US-P-REDWOOD,US-R-NORCAL,US,3,National park,travel,Redwood,,redwood,yes,,,Q63863168,9574046,41.37389,-123.99806,9,United States › California › Northern California › Redwood,,Curated,draft
+US-P-SAN-FRANCISCO,US-R-NORCAL,US,3,City,travel,San Francisco,,san-francisco,yes,,,Q62,111968,37.77500,-122.41944,11,United States › California › Northern California › San Francisco,,Curated,draft
+US-P-SEQUOIA-KINGS-CANYON,US-R-NORCAL,US,3,National park,travel,Sequoia & Kings Canyon,,sequoia-kings-canyon,yes,,,Q152660,175060,36.56472,-118.77278,9,United States › California › Northern California › Sequoia & Kings Canyon,,Curated,draft
+US-P-YOSEMITE,US-R-NORCAL,US,3,National park,travel,Yosemite,,yosemite,yes,,,Q180402,1643367,37.74250,-119.53750,9,United States › California › Northern California › Yosemite,,Curated,draft
+US-R-SOCAL,US-CA,US,2,Region,travel,Southern California,,southern-california,,,,Q844837,17463174,34.15790,-116.92115,6,United States › California › Southern California,,Curated,draft
+US-P-DEATH-VALLEY,US-R-SOCAL,US,3,National park,travel,Death Valley,,death-valley,yes,,,Q242111,174732,36.45000,-116.85000,9,United States › California › Southern California › Death Valley,,Curated,draft
+US-P-JOSHUA-TREE,US-R-SOCAL,US,3,National park,travel,Joshua Tree,,joshua-tree,yes,,,Q735202,6145614,33.74838,-115.81931,9,United States › California › Southern California › Joshua Tree,,Curated,draft
+US-P-LOS-ANGELES,US-R-SOCAL,US,3,City,travel,Los Angeles,,los-angeles,yes,,,Q65,207359,34.05223,-118.24368,11,United States › California › Southern California › Los Angeles,,Curated,draft
+US-P-PALM-SPRINGS,US-R-SOCAL,US,3,City,travel,Palm Springs,,palm-springs,yes,,,Q488004,2866485,33.82389,-116.53028,11,United States › California › Southern California › Palm Springs,,Curated,draft
+US-P-SAN-DIEGO,US-R-SOCAL,US,3,City,travel,San Diego,,san-diego,yes,,,Q16552,253832,32.71500,-117.16250,11,United States › California › Southern California › San Diego,,Curated,draft
+US-CO,US,US,1,State,admin,Colorado,Colorado,colorado,,,US-CO,Q1261,161961,39.0,-105.5,6,United States › Colorado,,Wikidata,reviewed
+US-P-ASPEN,US-CO,US,2,Mountains,travel,Aspen,,aspen,yes,,,Q205842,113154,39.19222,-106.82444,10,United States › Colorado › Aspen,,Curated,draft
+US-P-DENVER,US-CO,US,2,City,travel,Denver,,denver,yes,,,Q16554,1411339,39.73917,-104.98472,11,United States › Colorado › Denver,,Curated,draft
+US-P-ROCKY-MOUNTAIN,US-CO,US,2,National park,travel,Rocky Mountain,,rocky-mountain,yes,,,Q777183,390960,40.35000,-105.68330,9,United States › Colorado › Rocky Mountain,,Curated,draft
+US-CT,US,US,1,State,admin,Connecticut,Connecticut,connecticut,,,US-CT,Q779,165794,41.6,-72.7,6,United States › Connecticut,,Wikidata,reviewed
+US-DE,US,US,1,State,admin,Delaware,Delaware,delaware,,,US-DE,Q1393,162110,39.0,-75.5,6,United States › Delaware,,Wikidata,reviewed
+US-DC,US,US,1,Federal district,admin,District of Columbia,District of Columbia,district-of-columbia,yes,,US-DC,Q3551781,162069,38.916944444,-77.008611111,11,United States › District of Columbia,,Wikidata,reviewed
+US-FL,US,US,1,State,admin,Florida,Florida,florida,,,US-FL,Q812,162050,28.133333333,-81.631666666,6,United States › Florida,,Wikidata,reviewed
+US-P-EVERGLADES,US-FL,US,2,National park,travel,Everglades,,everglades,yes,US-P-MIAMI,,Q274131,2163707,25.31250,-80.68750,9,United States › Florida › Everglades,,Curated,draft
+US-P-FLORIDA-KEYS,US-FL,US,2,Islands,travel,Florida Keys,,florida-keys,yes,,,Q537749,17989249,24.66694,-81.54417,8,United States › Florida › Florida Keys,Key West and the Keys.,Curated,draft
+US-P-MIAMI,US-FL,US,2,City,travel,Miami,,miami,yes,,,Q8652,1216769,25.77417,-80.19361,11,United States › Florida › Miami,,Curated,draft
+US-P-ORLANDO,US-FL,US,2,City,travel,Orlando,,orlando,yes,,,Q49233,1128379,28.53361,-81.38667,11,United States › Florida › Orlando,,Curated,draft
+US-GA,US,US,1,State,admin,Georgia,Georgia,georgia,,,US-GA,Q1428,161957,33.0,-83.5,6,United States › Georgia,,Wikidata,reviewed
+US-P-SAVANNAH,US-GA,US,2,City,travel,Savannah,,savannah,yes,,,Q83813,119867,32.05083,-81.10389,11,United States › Georgia › Savannah,,Curated,draft
+US-HI,US,US,1,State,admin,Hawaii,Hawaii,hawaii,,,US-HI,Q782,166563,21.5,-158.0,6,United States › Hawaii,,Wikidata,reviewed
+US-P-HAWAII-ISLAND,US-HI,US,2,Island,travel,Hawaiʻi Island,,hawaii-island,yes,,,Q68740,3403603,19.59000,-155.43500,10,United States › Hawaii › Hawaiʻi Island,,Curated,draft
+US-P-KAUAI,US-HI,US,2,Island,travel,Kauaʻi,,kauai,yes,,,Q201026,3489753,22.07000,-159.49750,10,United States › Hawaii › Kauaʻi,,Curated,draft
+US-P-MAUI,US-HI,US,2,Island,travel,Maui,,maui,yes,,,Q188705,3403431,20.77024,-156.26816,10,United States › Hawaii › Maui,,Curated,draft
+US-P-OAHU,US-HI,US,2,Island,travel,Oʻahu,,oahu,yes,,,Q131347,3489649,21.48500,-157.96500,10,United States › Hawaii › Oʻahu,Honolulu and Waikīkī.,Curated,draft
+US-ID,US,US,1,State,admin,Idaho,Idaho,idaho,,,US-ID,Q1221,162116,45.0,-114.0,6,United States › Idaho,,Wikidata,reviewed
+US-IL,US,US,1,State,admin,Illinois,Illinois,illinois,,,US-IL,Q1204,122586,40.000277777,-89.250277777,6,United States › Illinois,,Wikidata,reviewed
+US-P-CHICAGO,US-IL,US,2,City,travel,Chicago,,chicago,yes,,,Q1297,122604,41.88194,-87.62778,11,United States › Illinois › Chicago,,Curated,draft
+US-IN,US,US,1,State,admin,Indiana,Indiana,indiana,,,US-IN,Q1415,161816,39.933333333,-86.216666666,6,United States › Indiana,,Wikidata,reviewed
+US-IA,US,US,1,State,admin,Iowa,Iowa,iowa,,,US-IA,Q1546,161650,42.0,-93.0,6,United States › Iowa,,Wikidata,reviewed
+US-KS,US,US,1,State,admin,Kansas,Kansas,kansas,,,US-KS,Q1558,161644,38.5,-98.0,6,United States › Kansas,,Wikidata,reviewed
+US-KY,US,US,1,State,admin,Kentucky,Kentucky,kentucky,,,US-KY,Q1603,161655,37.5,-85.0,6,United States › Kentucky,,Wikidata,reviewed
+US-LA,US,US,1,State,admin,Louisiana,Louisiana,louisiana,,,US-LA,Q1588,224922,31.0,-92.0,6,United States › Louisiana,,Wikidata,reviewed
+US-P-NEW-ORLEANS,US-LA,US,2,City,travel,New Orleans,,new-orleans,yes,,,Q34404,131885,29.97611,-90.07833,11,United States › Louisiana › New Orleans,,Curated,draft
+US-ME,US,US,1,State,admin,Maine,Maine,maine,,,US-ME,Q724,63512,45.5,-69.0,6,United States › Maine,,Wikidata,reviewed
+US-P-ACADIA,US-ME,US,2,National park,travel,Acadia (Bar Harbor),,acadia,yes,,,Q337396,2176999,44.35000,-68.21667,9,United States › Maine › Acadia (Bar Harbor),,Curated,draft
+US-MD,US,US,1,State,admin,Maryland,Maryland,maryland,,,US-MD,Q1391,162112,39.0,-76.7,6,United States › Maryland,,Wikidata,reviewed
+US-MA,US,US,1,State,admin,Massachusetts,Massachusetts,massachusetts,,,US-MA,Q771,61315,42.3,-71.8,6,United States › Massachusetts,,Wikidata,reviewed
+US-P-BOSTON,US-MA,US,2,City,travel,Boston,,boston,yes,,,Q100,2315704,42.36028,-71.05778,11,United States › Massachusetts › Boston,,Curated,draft
+US-P-CAPE-COD,US-MA,US,2,Coast,travel,Cape Cod,,cape-cod,yes,,,Q49152,9241337,41.68889,-70.29694,9,United States › Massachusetts › Cape Cod,,Curated,draft
+US-MI,US,US,1,State,admin,Michigan,Michigan,michigan,,,US-MI,Q1166,165789,44.34,-85.58,6,United States › Michigan,,Wikidata,reviewed
+US-MN,US,US,1,State,admin,Minnesota,Minnesota,minnesota,,,US-MN,Q1527,165471,46.0,-94.0,6,United States › Minnesota,,Wikidata,reviewed
+US-MS,US,US,1,State,admin,Mississippi,Mississippi,mississippi,,,US-MS,Q1494,161943,33.0,-90.0,6,United States › Mississippi,,Wikidata,reviewed
+US-MO,US,US,1,State,admin,Missouri,Missouri,missouri,,,US-MO,Q1581,161638,38.5,-92.5,6,United States › Missouri,,Wikidata,reviewed
+US-MT,US,US,1,State,admin,Montana,Montana,montana,,,US-MT,Q1212,162115,47.0,-110.0,6,United States › Montana,,Wikidata,reviewed
+US-P-GLACIER,US-MT,US,2,National park,travel,Glacier,,glacier,yes,,,Q373567,1242641,48.75500,-113.80000,9,United States › Montana › Glacier,,Curated,draft
+US-NE,US,US,1,State,admin,Nebraska,Nebraska,nebraska,,,US-NE,Q1553,161648,41.5,-100.0,6,United States › Nebraska,,Wikidata,reviewed
+US-NV,US,US,1,State,admin,Nevada,Nevada,nevada,,,US-NV,Q1227,165473,39.0,-117.0,6,United States › Nevada,,Wikidata,reviewed
+US-P-LAS-VEGAS,US-NV,US,2,City,travel,Las Vegas,,las-vegas,yes,,,Q23768,170117,36.16722,-115.14861,11,United States › Nevada › Las Vegas,,Curated,draft
+US-NH,US,US,1,State,admin,New Hampshire,New Hampshire,new-hampshire,,,US-NH,Q759,67213,44.0,-71.5,6,United States › New Hampshire,,Wikidata,reviewed
+US-NJ,US,US,1,State,admin,New Jersey,New Jersey,new-jersey,,,US-NJ,Q1408,224951,40.0,-74.5,6,United States › New Jersey,,Wikidata,reviewed
+US-NM,US,US,1,State,admin,New Mexico,New Mexico,new-mexico,,,US-NM,Q1522,162014,34.0,-106.0,6,United States › New Mexico,,Wikidata,reviewed
+US-P-SANTA-FE,US-NM,US,2,City,travel,Santa Fe,,santa-fe,yes,,,Q38555,171264,35.66667,-105.96667,11,United States › New Mexico › Santa Fe,,Curated,draft
+US-NY,US,US,1,State,admin,New York,New York,new-york,,,US-NY,Q1384,61320,43.0,-75.0,6,United States › New York,,Wikidata,reviewed
+US-P-HUDSON-VALLEY,US-NY,US,2,Countryside,travel,Hudson Valley,,hudson-valley,yes,US-P-NEW-YORK-CITY,,Q1140235,20410509,41.92090,-73.96130,10,United States › New York › Hudson Valley,,Curated,draft
+US-P-NEW-YORK-CITY,US-NY,US,2,City,travel,New York City,,new-york-city,yes,,,Q60,175905,40.71278,-74.00611,11,United States › New York › New York City,,Curated,draft
+US-P-NIAGARA-FALLS,US-NY,US,2,Waterfalls,travel,Niagara Falls,,niagara-falls,yes,,,Q128133,176131,43.09389,-79.01694,12,United States › New York › Niagara Falls,The US side,Curated,draft
+US-P-THE-HAMPTONS,US-NY,US,2,Coast,travel,The Hamptons,,the-hamptons,yes,,,Q1574020,,40.88493,-72.50106,9,United States › New York › The Hamptons,,Curated,draft
+US-NC,US,US,1,State,admin,North Carolina,North Carolina,north-carolina,,,US-NC,Q1454,224045,35.5,-80.0,6,United States › North Carolina,,Wikidata,reviewed
+US-P-ASHEVILLE,US-NC,US,2,City,travel,Asheville,,asheville,yes,,,Q648501,180348,35.59556,-82.55194,11,United States › North Carolina › Asheville,,Curated,draft
+US-ND,US,US,1,State,admin,North Dakota,North Dakota,north-dakota,,,US-ND,Q1207,161653,47.5,-100.5,6,United States › North Dakota,,Wikidata,reviewed
+US-OH,US,US,1,State,admin,Ohio,Ohio,ohio,,,US-OH,Q1397,162061,40.5,-82.5,6,United States › Ohio,,Wikidata,reviewed
+US-OK,US,US,1,State,admin,Oklahoma,Oklahoma,oklahoma,,,US-OK,Q1649,161645,35.5,-98.0,6,United States › Oklahoma,,Wikidata,reviewed
+US-OR,US,US,1,State,admin,Oregon,Oregon,oregon,,,US-OR,Q824,165476,43.935833333,-120.575,6,United States › Oregon,,Wikidata,reviewed
+US-P-CRATER-LAKE,US-OR,US,2,National park,travel,Crater Lake,,crater-lake,yes,,,Q239304,1274747,42.91194,-122.14806,9,United States › Oregon › Crater Lake,,Curated,draft
+US-P-PORTLAND,US-OR,US,2,City,travel,Portland,,portland,yes,,,Q6106,186579,45.51500,-122.67917,11,United States › Oregon › Portland,,Curated,draft
+US-PA,US,US,1,State,admin,Pennsylvania,Pennsylvania,pennsylvania,,,US-PA,Q1400,162109,41.0,-77.5,6,United States › Pennsylvania,,Wikidata,reviewed
+US-P-PHILADELPHIA,US-PA,US,2,City,travel,Philadelphia,,philadelphia,yes,,,Q1345,188022,39.95278,-75.16361,11,United States › Pennsylvania › Philadelphia,,Curated,draft
+US-RI,US,US,1,State,admin,Rhode Island,Rhode Island,rhode-island,,,US-RI,Q1387,392915,41.7,-71.5,6,United States › Rhode Island,,Wikidata,reviewed
+US-SC,US,US,1,State,admin,South Carolina,South Carolina,south-carolina,,,US-SC,Q1456,224040,34.0,-81.0,6,United States › South Carolina,,Wikidata,reviewed
+US-P-CHARLESTON,US-SC,US,2,City,travel,Charleston,,charleston,yes,,,Q47716,194119,32.78333,-79.93194,11,United States › South Carolina › Charleston,,Curated,draft
+US-SD,US,US,1,State,admin,South Dakota,South Dakota,south-dakota,,,US-SD,Q1211,161652,44.5,-100.0,6,United States › South Dakota,,Wikidata,reviewed
+US-P-BLACK-HILLS,US-SD,US,2,Mountains,travel,Black Hills (Mount Rushmore),,black-hills,yes,,,Q250937,,44.00000,-104.00000,10,United States › South Dakota › Black Hills (Mount Rushmore),,Curated,draft
+US-TN,US,US,1,State,admin,Tennessee,Tennessee,tennessee,,,US-TN,Q1509,161838,36.0,-86.0,6,United States › Tennessee,,Wikidata,reviewed
+US-P-GREAT-SMOKY-MOUNTAINS,US-TN,US,2,National park,travel,Great Smoky Mountains,,great-smoky-mountains,yes,,,Q464004,2131838,35.61111,-83.42500,9,United States › Tennessee › Great Smoky Mountains,,Curated,draft
+US-P-MEMPHIS,US-TN,US,2,City,travel,Memphis,,memphis,yes,,,Q16563,197239,35.14611,-90.05194,11,United States › Tennessee › Memphis,,Curated,draft
+US-P-NASHVILLE,US-TN,US,2,City,travel,Nashville,,nashville,yes,,,Q23197,197472,36.16222,-86.77444,11,United States › Tennessee › Nashville,,Curated,draft
+US-TX,US,US,1,State,admin,Texas,Texas,texas,,,US-TX,Q1439,114690,31.0,-100.0,6,United States › Texas,,Wikidata,reviewed
+US-P-AUSTIN,US-TX,US,2,City,travel,Austin,,austin,yes,,,Q16559,113314,30.30000,-97.73333,11,United States › Texas › Austin,,Curated,draft
+US-P-BIG-BEND,US-TX,US,2,National park,travel,Big Bend,,big-bend,yes,,,Q1427197,,29.25000,-103.25000,9,United States › Texas › Big Bend,,Curated,draft
+US-P-SAN-ANTONIO,US-TX,US,2,City,travel,San Antonio,,san-antonio,yes,,,Q975,253556,29.42500,-98.49389,11,United States › Texas › San Antonio,,Curated,draft
+US-UT,US,US,1,State,admin,Utah,Utah,utah,,,US-UT,Q829,161993,39.5,-111.5,6,United States › Utah,,Wikidata,reviewed
+US-P-BRYCE-CANYON,US-UT,US,2,National park,travel,Bryce Canyon,,bryce-canyon,yes,,,Q219562,4716641,37.64000,-112.17000,9,United States › Utah › Bryce Canyon,,Curated,draft
+US-P-MOAB,US-UT,US,2,Town,travel,Moab (Arches & Canyonlands),,moab,yes,,,Q130134,198930,38.57250,-109.54972,13,United States › Utah › Moab (Arches & Canyonlands),,Curated,draft
+US-P-PARK-CITY,US-UT,US,2,Mountains,travel,Park City,,park-city,yes,,,Q482993,198864,40.65944,-111.49972,10,United States › Utah › Park City,,Curated,draft
+US-P-ZION,US-UT,US,2,National park,travel,Zion,,zion,yes,,,Q205325,5758583,37.20262,-112.98785,9,United States › Utah › Zion,,Curated,draft
+US-VT,US,US,1,State,admin,Vermont,Vermont,vermont,,,US-VT,Q16551,60759,44.0,-72.7,6,United States › Vermont,,Wikidata,reviewed
+US-VA,US,US,1,State,admin,Virginia,Virginia,virginia,,,US-VA,Q1370,224042,37.5,-79.0,6,United States › Virginia,,Wikidata,reviewed
+US-WA,US,US,1,State,admin,Washington,Washington,washington,,,US-WA,Q1223,165479,47.5,-120.5,6,United States › Washington,,Wikidata,reviewed
+US-P-MOUNT-RAINIER,US-WA,US,2,National park,travel,Mount Rainier,,mount-rainier,yes,,,Q944329,1399219,46.85000,-121.75000,9,United States › Washington › Mount Rainier,,Curated,draft
+US-P-OLYMPIC,US-WA,US,2,National park,travel,Olympic,,olympic,yes,,,Q372093,163769,47.70000,-123.75000,9,United States › Washington › Olympic,,Curated,draft
+US-P-SAN-JUAN-ISLANDS,US-WA,US,2,Islands,travel,San Juan Islands,,san-juan-islands,yes,,,Q1196315,19471465,48.53207,-123.02925,8,United States › Washington › San Juan Islands,,Curated,draft
+US-P-SEATTLE,US-WA,US,2,City,travel,Seattle,,seattle,yes,,,Q5083,237385,47.60500,-122.33000,11,United States › Washington › Seattle,,Curated,draft
+US-WV,US,US,1,State,admin,West Virginia,West Virginia,west-virginia,,,US-WV,Q1371,162068,39.0,-80.5,6,United States › West Virginia,,Wikidata,reviewed
+US-WI,US,US,1,State,admin,Wisconsin,Wisconsin,wisconsin,,,US-WI,Q1537,165466,44.5,-89.5,6,United States › Wisconsin,,Wikidata,reviewed
+US-WY,US,US,1,State,admin,Wyoming,Wyoming,wyoming,,,US-WY,Q1214,161991,43.0,-107.5,6,United States › Wyoming,,Wikidata,reviewed
+US-P-GRAND-TETON,US-WY,US,2,National park,travel,Grand Teton (Jackson Hole),,grand-teton,yes,,,Q222695,1492555,43.83333,-110.70083,9,United States › Wyoming › Grand Teton (Jackson Hole),,Curated,draft
+US-P-YELLOWSTONE,US-WY,US,2,National park,travel,Yellowstone,,yellowstone,yes,,,Q351,1453306,44.60000,-110.50000,9,United States › Wyoming › Yellowstone,,Curated,draft
+IT,,IT,0,Country,admin,Italy,Italia,italy,,,,Q38,365331,42.5,12.5,5,Italy,,Wikidata,reviewed
+IT-65,IT,IT,1,Region,admin,Abruzzo,Abruzzo,abruzzo,,,IT-65,Q1284,53937,42.216666666,13.833333333,6,Italy › Abruzzo,,Wikidata,reviewed
+IT-23,IT,IT,1,Region,admin,Aosta Valley,Valle d'Aosta,aosta-valley,,,IT-23,Q1222,45155,45.716666666,7.366666666,6,Italy › Aosta Valley,,Wikidata,reviewed
+IT-P-COURMAYEUR,IT-23,IT,2,Mountains,travel,Courmayeur,Courmayeur,courmayeur,yes,,,Q34993,46039,45.78333,6.96667,10,Italy › Aosta Valley › Courmayeur,,Curated,draft
+IT-75,IT,IT,1,Region,admin,Apulia,Puglia,apulia,,,IT-75,Q1447,40095,41.008611111,16.512777777,6,Italy › Apulia,,Wikidata,reviewed
+IT-P-ALBEROBELLO,IT-75,IT,2,Town,travel,Alberobello,Alberobello,alberobello,yes,IT-P-BARI,,Q51812,40749,40.78406,17.23746,13,Italy › Apulia › Alberobello,,Curated,draft
+IT-P-BARI,IT-75,IT,2,City,travel,Bari,Bari,bari,yes,,,Q3519,41038,41.12528,16.86667,11,Italy › Apulia › Bari,,Curated,draft
+IT-P-LECCE,IT-75,IT,2,City,travel,Lecce,Lecce,lecce,yes,,,Q13386,40442,40.35201,18.16914,11,Italy › Apulia › Lecce,,Curated,draft
+IT-P-POLIGNANO-A-MARE,IT-75,IT,2,Town,travel,Polignano a Mare,Polignano a Mare,polignano-a-mare,yes,IT-P-BARI,,Q51842,40908,40.99611,17.22028,13,Italy › Apulia › Polignano a Mare,,Curated,draft
+IT-77,IT,IT,1,Region,admin,Basilicata,Basilicata,basilicata,,,IT-77,Q1452,40137,40.5,16.5,6,Italy › Basilicata,,Wikidata,reviewed
+IT-P-MATERA,IT-77,IT,2,City,travel,Matera,Matera,matera,yes,,,Q13616,40622,40.66667,16.60000,11,Italy › Basilicata › Matera,,Curated,draft
+IT-78,IT,IT,1,Region,admin,Calabria,Calabria,calabria,,,IT-78,Q1458,1783980,39.0,16.5,6,Italy › Calabria,,Wikidata,reviewed
+IT-P-TROPEA,IT-78,IT,2,Town,travel,Tropea,Tropea,tropea,yes,,,Q54747,39696,38.67538,15.89479,13,Italy › Calabria › Tropea,,Curated,draft
+IT-72,IT,IT,1,Region,admin,Campania,Campania,campania,,,IT-72,Q1438,40218,40.75,14.95,6,Italy › Campania,,Wikidata,reviewed
+IT-P-AMALFI-COAST,IT-72,IT,2,Coast,travel,Amalfi Coast,Costiera amalfitana,amalfi-coast,yes,,,Q212214,,40.63333,14.60000,9,Italy › Campania › Amalfi Coast,"Positano, Amalfi and Ravello.",Curated,draft
+IT-P-CAPRI,IT-72,IT,2,Island,travel,Capri,Isola di Capri,capri,yes,,,Q173292,2675353,40.55000,14.23333,10,Italy › Campania › Capri,,Curated,draft
+IT-P-NAPLES,IT-72,IT,2,City,travel,Naples,Napoli,naples,yes,,,Q2634,40767,40.83583,14.24861,11,Italy › Campania › Naples,,Curated,draft
+IT-P-POMPEII,IT-72,IT,2,Archaeological site,travel,Pompeii,Pompei,pompeii,yes,IT-P-NAPLES,,Q43332,,40.75056,14.48972,14,Italy › Campania › Pompeii,,Curated,draft
+IT-P-SORRENTO,IT-72,IT,2,Town,travel,Sorrento,Sorrento,sorrento,yes,,,Q72672,40620,40.62778,14.37361,13,Italy › Campania › Sorrento,,Curated,draft
+IT-45,IT,IT,1,Region,admin,Emilia-Romagna,Emilia-Romagna,emilia-romagna,,,IT-45,Q1263,42611,44.75,11.0,6,Italy › Emilia-Romagna,,Wikidata,reviewed
+IT-P-BOLOGNA,IT-45,IT,2,City,travel,Bologna,Bologna,bologna,yes,,,Q1891,43172,44.49389,11.34278,11,Italy › Emilia-Romagna › Bologna,,Curated,draft
+IT-P-MODENA,IT-45,IT,2,City,travel,Modena,Modena,modena,yes,IT-P-BOLOGNA,,Q279,43336,44.64582,10.92572,11,Italy › Emilia-Romagna › Modena,,Curated,draft
+IT-P-PARMA,IT-45,IT,2,City,travel,Parma,Parma,parma,yes,IT-P-BOLOGNA,,Q2683,43452,44.80147,10.32800,11,Italy › Emilia-Romagna › Parma,,Curated,draft
+IT-P-RAVENNA,IT-45,IT,2,City,travel,Ravenna,Ravenna,ravenna,yes,IT-P-BOLOGNA,,Q13364,42955,44.41611,12.20167,11,Italy › Emilia-Romagna › Ravenna,,Curated,draft
+IT-P-RIMINI,IT-45,IT,2,City,travel,Rimini,Rimini,rimini,yes,,,Q13369,42791,44.05944,12.56833,11,Italy › Emilia-Romagna › Rimini,,Curated,draft
+IT-36,IT,IT,1,Region,admin,Friuli Venezia Giulia,Friuli-Venezia Giulia,friuli-venezia-giulia,,,IT-36,Q1250,179296,46.1,13.116666666,6,Italy › Friuli Venezia Giulia,,Wikidata,reviewed
+IT-P-TRIESTE,IT-36,IT,2,City,travel,Trieste,Trieste,trieste,yes,,,Q546,179180,45.65028,13.77028,11,Italy › Friuli Venezia Giulia › Trieste,,Curated,draft
+IT-62,IT,IT,1,Region,admin,Lazio,Lazio,lazio,,,IT-62,Q1282,40784,41.9,12.716666666,6,Italy › Lazio,,Wikidata,reviewed
+IT-P-ROME,IT-62,IT,2,City,travel,Rome,Roma,rome,yes,,,Q220,41485,41.89306,12.48278,11,Italy › Lazio › Rome,,Curated,draft
+IT-P-TIVOLI,IT-62,IT,2,Town,travel,Tivoli,Tivoli,tivoli,yes,IT-P-ROME,,Q159605,41662,41.96667,12.80000,13,Italy › Lazio › Tivoli,,Curated,draft
+IT-42,IT,IT,1,Region,admin,Liguria,Liguria,liguria,,,IT-42,Q1256,301482,44.45,8.766666666,6,Italy › Liguria,,Wikidata,reviewed
+IT-P-CINQUE-TERRE,IT-42,IT,2,Coast,travel,Cinque Terre,Cinque Terre,cinque-terre,yes,,,Q275639,,44.12694,9.70944,9,Italy › Liguria › Cinque Terre,,Curated,draft
+IT-P-GENOA,IT-42,IT,2,City,travel,Genoa,Genova,genoa,yes,,,Q1449,44875,44.40722,8.93389,11,Italy › Liguria › Genoa,,Curated,draft
+IT-P-PORTOFINO,IT-42,IT,2,Village,travel,Portofino,Portofino,portofino,yes,IT-P-GENOA,,Q232782,43028,44.30424,9.20716,14,Italy › Liguria › Portofino,,Curated,draft
+IT-25,IT,IT,1,Region,admin,Lombardy,Lombardia,lombardy,,,IT-25,Q1210,44879,45.65,9.95,6,Italy › Lombardy,,Wikidata,reviewed
+IT-P-BERGAMO,IT-25,IT,2,City,travel,Bergamo,Bergamo,bergamo,yes,IT-P-MILAN,,Q628,45681,45.69500,9.67000,11,Italy › Lombardy › Bergamo,,Curated,draft
+IT-P-LAKE-COMO,IT-25,IT,2,Lakes,travel,Lake Como,lago di Como,lake-como,yes,,,Q15523,541757,46.00000,9.26667,10,Italy › Lombardy › Lake Como,"Bellagio, Varenna and Como.",Curated,draft
+IT-P-MILAN,IT-25,IT,2,City,travel,Milan,Milano,milan,yes,,,Q490,44915,45.46694,9.19000,11,Italy › Lombardy › Milan,,Curated,draft
+IT-57,IT,IT,1,Region,admin,Marche,Marche,marche,,,IT-57,Q1279,53060,43.316666666,13.0,6,Italy › Marche,,Wikidata,reviewed
+IT-67,IT,IT,1,Region,admin,Molise,Molise,molise,,,IT-67,Q1443,41256,41.7,14.616666666,6,Italy › Molise,,Wikidata,reviewed
+IT-21,IT,IT,1,Region,admin,Piedmont,Piemonte,piedmont,,,IT-21,Q1216,44874,45.25,7.916666666,6,Italy › Piedmont,,Wikidata,reviewed
+IT-P-LANGHE,IT-21,IT,2,Countryside,travel,Langhe,Langhe,langhe,yes,,,Q19865,,44.60860,7.96361,10,Italy › Piedmont › Langhe,"Barolo wine country, based in Alba.",Curated,draft
+IT-P-TURIN,IT-21,IT,2,City,travel,Turin,Torino,turin,yes,,,Q495,43992,45.07917,7.67611,11,Italy › Piedmont › Turin,,Curated,draft
+IT-88,IT,IT,1,Region,admin,Sardinia,Sardegna,sardinia,,,IT-88,Q1462,7361997,40.0,9.0,6,Italy › Sardinia,,Wikidata,reviewed
+IT-P-ALGHERO,IT-88,IT,2,City,travel,Alghero,Alghero,alghero,yes,,,Q166282,40581,40.56000,8.31500,11,Italy › Sardinia › Alghero,,Curated,draft
+IT-P-CAGLIARI,IT-88,IT,2,City,travel,Cagliari,Cagliari,cagliari,yes,,,Q1897,39837,39.21667,9.11667,11,Italy › Sardinia › Cagliari,,Curated,draft
+IT-P-COSTA-SMERALDA,IT-88,IT,2,Coast,travel,Costa Smeralda,Costa Smeralda,costa-smeralda,yes,,,Q1136383,,41.10000,9.50000,9,Italy › Sardinia › Costa Smeralda,,Curated,draft
+IT-82,IT,IT,1,Region,admin,Sicily,Sicilia,sicily,,,IT-82,Q1460,39152,37.6,14.016666666,6,Italy › Sicily,,Wikidata,reviewed
+IT-P-AEOLIAN-ISLANDS,IT-82,IT,2,Islands,travel,Aeolian Islands,isole Eolie,aeolian-islands,yes,,,Q179883,3868740,38.49667,14.93583,8,Italy › Sicily › Aeolian Islands,,Curated,draft
+IT-P-AGRIGENTO,IT-82,IT,2,City,travel,Agrigento,Agrigento,agrigento,yes,,,Q13678,39202,37.31250,13.57500,11,Italy › Sicily › Agrigento,,Curated,draft
+IT-P-CATANIA-MOUNT-ETNA,IT-82,IT,2,City,travel,Catania & Mount Etna,Catania,catania-mount-etna,yes,,,Q1903,39230,37.50267,15.08727,11,Italy › Sicily › Catania & Mount Etna,,Curated,draft
+IT-P-PALERMO,IT-82,IT,2,City,travel,Palermo,Palermo,palermo,yes,,,Q2656,39513,38.11566,13.36126,11,Italy › Sicily › Palermo,,Curated,draft
+IT-P-SYRACUSE,IT-82,IT,2,City,travel,Syracuse,Siracusa,syracuse,yes,,,Q13670,39169,37.06917,15.28750,11,Italy › Sicily › Syracuse,,Curated,draft
+IT-P-TAORMINA,IT-82,IT,2,Town,travel,Taormina,Taormina,taormina,yes,,,Q199952,39384,37.85179,15.28565,13,Italy › Sicily › Taormina,,Curated,draft
+IT-32,IT,IT,1,Region,admin,Trentino-South Tyrol,Trentino-Alto Adige/Südtirol,trentino-south-tyrol,,,IT-32,Q1237,45757,46.383333333,11.416666666,6,Italy › Trentino-South Tyrol,,Wikidata,reviewed
+IT-R-DOLOMITES,IT-32,IT,2,Mountains,travel,Dolomites,Dolomiti,dolomites,,,,Q1283,2139488,46.55044,11.90536,10,Italy › Trentino-South Tyrol › Dolomites,,Curated,draft
+IT-P-ALTA-BADIA,IT-R-DOLOMITES,IT,3,Mountains,travel,Alta Badia,Alta Badia,alta-badia,yes,,,Q433534,,46.55300,11.87400,10,Italy › Trentino-South Tyrol › Dolomites › Alta Badia,,Curated,draft
+IT-P-CORTINA-D-AMPEZZO,IT-R-DOLOMITES,IT,3,Town,travel,Cortina d'Ampezzo,Cortina d'Ampezzo,cortina-d-ampezzo,yes,,,Q41158,47235,46.53833,12.13735,13,Italy › Trentino-South Tyrol › Dolomites › Cortina d'Ampezzo,"In Veneto, but travellers place it in the Dolomites.",Curated,draft
+IT-P-VAL-GARDENA,IT-R-DOLOMITES,IT,3,Mountains,travel,Val Gardena,Val Gardena,val-gardena,yes,,,Q384885,10732928,46.56000,11.70472,10,Italy › Trentino-South Tyrol › Dolomites › Val Gardena,,Curated,draft
+IT-52,IT,IT,1,Region,admin,Tuscany,Toscana,tuscany,,,IT-52,Q1273,41977,43.45,11.2,6,Italy › Tuscany,,Wikidata,reviewed
+IT-P-CHIANTI,IT-52,IT,2,Countryside,travel,Chianti,Chianti,chianti,yes,,,Q1071629,,43.60000,10.95000,10,Italy › Tuscany › Chianti,,Curated,draft
+IT-P-FLORENCE,IT-52,IT,2,City,travel,Florence,Firenze,florence,yes,,,Q2044,42602,43.77139,11.25417,11,Italy › Tuscany › Florence,,Curated,draft
+IT-P-LUCCA,IT-52,IT,2,City,travel,Lucca,Lucca,lucca,yes,,,Q13373,42659,43.85000,10.51667,11,Italy › Tuscany › Lucca,,Curated,draft
+IT-P-PISA,IT-52,IT,2,City,travel,Pisa,Pisa,pisa,yes,IT-P-FLORENCE,,Q13375,42527,43.71667,10.40000,11,Italy › Tuscany › Pisa,,Curated,draft
+IT-P-SAN-GIMIGNANO,IT-52,IT,2,Town,travel,San Gimignano,San Gimignano,san-gimignano,yes,IT-P-SIENA,,Q91413,42458,43.46772,11.04322,13,Italy › Tuscany › San Gimignano,,Curated,draft
+IT-P-SIENA,IT-52,IT,2,City,travel,Siena,Siena,siena,yes,,,Q2751,42398,43.31833,11.33139,11,Italy › Tuscany › Siena,,Curated,draft
+IT-P-VAL-D-ORCIA,IT-52,IT,2,Countryside,travel,Val d'Orcia,Val d'Orcia,val-d-orcia,yes,,,Q217449,,43.06667,11.55000,10,Italy › Tuscany › Val d'Orcia,,Curated,draft
+IT-55,IT,IT,1,Region,admin,Umbria,Umbria,umbria,,,IT-55,Q1280,42004,42.983333333,12.566666666,6,Italy › Umbria,,Wikidata,reviewed
+IT-P-ASSISI,IT-55,IT,2,Town,travel,Assisi,Assisi,assisi,yes,,,Q20103,42284,43.07081,12.61500,13,Italy › Umbria › Assisi,,Curated,draft
+IT-P-ORVIETO,IT-55,IT,2,Town,travel,Orvieto,Orvieto,orvieto,yes,IT-P-ROME,,Q541,42117,42.71820,12.10827,13,Italy › Umbria › Orvieto,,Curated,draft
+IT-P-PERUGIA,IT-55,IT,2,City,travel,Perugia,Perugia,perugia,yes,,,Q3437,42278,43.11192,12.38855,11,Italy › Umbria › Perugia,,Curated,draft
+IT-34,IT,IT,1,Region,admin,Veneto,Veneto,veneto,,,IT-34,Q1243,43648,45.733333333,11.85,6,Italy › Veneto,,Wikidata,reviewed
+IT-P-LAKE-GARDA,IT-34,IT,2,Lakes,travel,Lake Garda,lago di Garda,lake-garda,yes,,,Q6414,8569,45.63333,10.66667,10,Italy › Veneto › Lake Garda,,Curated,draft
+IT-P-VENICE,IT-34,IT,2,City,travel,Venice,Venezia,venice,yes,,,Q641,44741,45.43972,12.33194,11,Italy › Veneto › Venice,,Curated,draft
+IT-P-VERONA,IT-34,IT,2,City,travel,Verona,Verona,verona,yes,,,Q2028,44830,45.43861,10.99278,11,Italy › Veneto › Verona,,Curated,draft
+CN,,CN,0,Country,admin,China,中华人民共和国,china,,,,Q148,270056,35.844722222,103.451944444,3,China,,Wikidata,reviewed
+CN-AH,CN,CN,1,Province,admin,Anhui,安徽省,anhui,,,CN-AH,Q40956,913011,31.833333333,117.0,6,China › Anhui,,Wikidata,reviewed
+CN-P-HONGCUN-XIDI,CN-AH,CN,2,Village,travel,Hongcun & Xidi,宏村镇,hongcun-xidi,yes,CN-P-HUANGSHAN,,Q10948011,,30.00595,117.97911,14,China › Anhui › Hongcun & Xidi,,Curated,draft
+CN-P-HUANGSHAN,CN-AH,CN,2,Mountains,travel,Huangshan,黄山,huangshan,yes,,,Q36034,,30.12500,118.16667,10,China › Anhui › Huangshan,,Curated,draft
+CN-BJ,CN,CN,1,Municipality,admin,Beijing,北京市,beijing,yes,,CN-BJ,Q956,912940,39.90403,116.407526,9,China › Beijing,,Wikidata,reviewed
+CN-CQ,CN,CN,1,Municipality,admin,Chongqing,重庆市,chongqing,yes,,CN-CQ,Q11725,913069,29.55,106.506944444,9,China › Chongqing,,Wikidata,reviewed
+CN-FJ,CN,CN,1,Province,admin,Fujian,福建省,fujian,,,CN-FJ,Q41705,553303,25.9,118.3,6,China › Fujian,,Wikidata,reviewed
+CN-P-FUJIAN-TULOU,CN-FJ,CN,2,Countryside,travel,Fujian Tulou,福建土楼,fujian-tulou,yes,,,Q718001,7730065,24.65870,116.97500,10,China › Fujian › Fujian Tulou,,Curated,draft
+CN-P-XIAMEN,CN-FJ,CN,2,City,travel,Xiamen,厦门市,xiamen,yes,,,Q68744,3242930,24.47972,118.08194,11,China › Fujian › Xiamen,,Curated,draft
+CN-GS,CN,CN,1,Province,admin,Gansu,甘肃省,gansu,,,CN-GS,Q42392,153314,38.0,102.0,6,China › Gansu,,Wikidata,reviewed
+CN-P-DUNHUANG,CN-GS,CN,2,City,travel,Dunhuang,敦煌市,dunhuang,yes,,,Q319114,,40.14111,94.66389,11,China › Gansu › Dunhuang,,Curated,draft
+CN-P-ZHANGYE,CN-GS,CN,2,City,travel,Zhangye,张掖市,zhangye,yes,,,Q197402,,38.93545,100.45529,11,China › Gansu › Zhangye,The Danxia rainbow mountains.,Curated,draft
+CN-GD,CN,CN,1,Province,admin,Guangdong,广东省,guangdong,,,CN-GD,Q15175,911844,23.4,113.5,6,China › Guangdong,,Wikidata,reviewed
+CN-P-GUANGZHOU,CN-GD,CN,2,City,travel,Guangzhou,广州市,guangzhou,yes,,,Q16572,3287346,23.13000,113.26000,11,China › Guangdong › Guangzhou,,Curated,draft
+CN-P-SHENZHEN,CN-GD,CN,2,City,travel,Shenzhen,深圳市,shenzhen,yes,,,Q15174,3464353,22.54667,114.05444,11,China › Guangdong › Shenzhen,,Curated,draft
+CN-GX,CN,CN,1,Autonomous region,admin,Guangxi,广西壮族自治区,guangxi,,,CN-GX,Q15176,286342,23.6,108.3,5,China › Guangxi,,Wikidata,reviewed
+CN-P-GUILIN,CN-GX,CN,2,City,travel,Guilin,桂林市,guilin,yes,,,Q189633,3471982,25.26667,110.28333,11,China › Guangxi › Guilin,,Curated,draft
+CN-P-LONGJI-RICE-TERRACES,CN-GX,CN,2,Countryside,travel,Longji Rice Terraces,Longji Rice Terraces,longji-rice-terraces,yes,CN-P-GUILIN,,Q124394317,,25.77039,110.13216,10,China › Guangxi › Longji Rice Terraces,,Curated,draft
+CN-P-YANGSHUO,CN-GX,CN,2,Town,travel,Yangshuo,阳朔县,yangshuo,yes,,,Q31358,2773823,24.78333,110.50000,13,China › Guangxi › Yangshuo,,Curated,draft
+CN-GZ,CN,CN,1,Province,admin,Guizhou,贵州省,guizhou,,,CN-GZ,Q47097,286937,26.833333333,106.833333333,6,China › Guizhou,,Wikidata,reviewed
+CN-P-ANSHUN,CN-GZ,CN,2,City,travel,Anshun (Huangguoshu),安顺市,anshun,yes,,,Q486149,2782250,26.24562,105.93401,11,China › Guizhou › Anshun (Huangguoshu),,Curated,draft
+CN-HI,CN,CN,1,Province,admin,Hainan,海南省,hainan,,,CN-HI,Q42200,2128285,20.03342,110.32398,6,China › Hainan,,Wikidata,reviewed
+CN-P-SANYA,CN-HI,CN,2,City,travel,Sanya,三亚市,sanya,yes,,,Q319804,2128284,18.25333,109.50361,11,China › Hainan › Sanya,,Curated,draft
+CN-HE,CN,CN,1,Province,admin,Hebei,河北省,hebei,,,CN-HE,Q21208,912998,38.042222222,114.508611111,6,China › Hebei,,Wikidata,reviewed
+CN-P-CHENGDE,CN-HE,CN,2,City,travel,Chengde,承德市,chengde,yes,CN-BJ,,Q58675,2989561,40.97389,117.93222,11,China › Hebei › Chengde,,Curated,draft
+CN-HL,CN,CN,1,Province,admin,Heilongjiang,黑龙江省,heilongjiang,,,CN-HL,Q19206,199073,48.0,129.0,6,China › Heilongjiang,,Wikidata,reviewed
+CN-P-HARBIN,CN-HL,CN,2,City,travel,Harbin,哈尔滨市,harbin,yes,,,Q42956,2755608,45.75000,126.63333,11,China › Heilongjiang › Harbin,,Curated,draft
+CN-HA,CN,CN,1,Province,admin,Henan,河南省,henan,,,CN-HA,Q43684,407492,33.9,113.5,6,China › Henan,,Wikidata,reviewed
+CN-P-DENGFENG,CN-HA,CN,2,City,travel,Dengfeng (Shaolin),登封市,dengfeng,yes,,,Q877609,3283763,34.46031,113.02803,11,China › Henan › Dengfeng (Shaolin),,Curated,draft
+CN-P-LUOYANG,CN-HA,CN,2,City,travel,Luoyang,洛阳市,luoyang,yes,,,Q187136,3246491,34.65867,112.42447,11,China › Henan › Luoyang,,Curated,draft
+CN-HB,CN,CN,1,Province,admin,Hubei,湖北省,hubei,,,CN-HB,Q46862,913106,31.2,112.3,6,China › Hubei,,Wikidata,reviewed
+CN-P-THREE-GORGES,CN-HB,CN,2,River,travel,Three Gorges,长江三峡,three-gorges,yes,,,Q673287,,31.04278,109.56139,8,China › Hubei › Three Gorges,Usually a Yangtze cruise between Chongqing and Yichang.,Curated,draft
+CN-P-WUHAN,CN-HB,CN,2,City,travel,Wuhan,武汉市,wuhan,yes,,,Q11746,3076268,30.59500,114.29750,11,China › Hubei › Wuhan,,Curated,draft
+CN-HN,CN,CN,1,Province,admin,Hunan,湖南省,hunan,,,CN-HN,Q45761,913073,27.6,111.8,6,China › Hunan,,Wikidata,reviewed
+CN-P-FENGHUANG,CN-HN,CN,2,Town,travel,Fenghuang,凤凰县,fenghuang,yes,,,Q664864,2972161,27.95204,109.59158,13,China › Hunan › Fenghuang,,Curated,draft
+CN-P-ZHANGJIAJIE,CN-HN,CN,2,National park,travel,Zhangjiajie,張家界國家森林公園,zhangjiajie,yes,,,Q3895620,,29.32740,110.41600,9,China › Hunan › Zhangjiajie,,Curated,draft
+CN-NM,CN,CN,1,Autonomous region,admin,Inner Mongolia,内蒙古自治区,inner-mongolia,,,CN-NM,Q41079,161349,44.0,113.0,5,China › Inner Mongolia,,Wikidata,reviewed
+CN-JS,CN,CN,1,Province,admin,Jiangsu,江苏省,jiangsu,,,CN-JS,Q16963,913012,33.0,120.0,6,China › Jiangsu,,Wikidata,reviewed
+CN-P-NANJING,CN-JS,CN,2,City,travel,Nanjing,南京市,nanjing,yes,,,Q16666,2131524,32.06083,118.77889,11,China › Jiangsu › Nanjing,,Curated,draft
+CN-P-SUZHOU,CN-JS,CN,2,City,travel,Suzhou,苏州市,suzhou,yes,CN-SH,,Q42622,4430941,31.30000,120.61944,11,China › Jiangsu › Suzhou,,Curated,draft
+CN-P-ZHOUZHUANG,CN-JS,CN,2,Town,travel,Zhouzhuang,周庄镇,zhouzhuang,yes,CN-P-SUZHOU,,Q198070,,31.86463,120.40575,13,China › Jiangsu › Zhouzhuang,,Curated,draft
+CN-JX,CN,CN,1,Province,admin,Jiangxi,江西省,jiangxi,,,CN-JX,Q57052,913109,27.3,116.0,6,China › Jiangxi,,Wikidata,reviewed
+CN-P-WUYUAN,CN-JX,CN,2,Countryside,travel,Wuyuan,婺源县,wuyuan,yes,,,Q1357710,3046784,29.25000,117.85000,10,China › Jiangxi › Wuyuan,,Curated,draft
+CN-JL,CN,CN,1,Province,admin,Jilin,吉林省,jilin,,,CN-JL,Q45208,198590,43.884166666,125.308333333,6,China › Jilin,,Wikidata,reviewed
+CN-P-CHANGBAI-MOUNTAIN,CN-JL,CN,2,Mountains,travel,Changbai Mountain,长白山,changbai-mountain,yes,,,Q107635,,41.99278,128.07722,10,China › Jilin › Changbai Mountain,,Curated,draft
+CN-LN,CN,CN,1,Province,admin,Liaoning,辽宁省,liaoning,,,CN-LN,Q43934,912942,41.803888888,123.425833333,6,China › Liaoning,,Wikidata,reviewed
+CN-NX,CN,CN,1,Autonomous region,admin,Ningxia,宁夏回族自治区,ningxia,,,CN-NX,Q57448,913101,38.46654,106.27056,5,China › Ningxia,,Wikidata,reviewed
+CN-QH,CN,CN,1,Province,admin,Qinghai,青海省,qinghai,,,CN-QH,Q45833,153269,35.0,96.0,6,China › Qinghai,,Wikidata,reviewed
+CN-P-QINGHAI-LAKE,CN-QH,CN,2,Lakes,travel,Qinghai Lake,青海湖,qinghai-lake,yes,,,Q201294,404236,37.00000,100.00000,10,China › Qinghai › Qinghai Lake,,Curated,draft
+CN-SN,CN,CN,1,Province,admin,Shaanxi,陕西省,shaanxi,,,CN-SN,Q47974,913100,35.6,109.3,6,China › Shaanxi,,Wikidata,reviewed
+CN-P-MOUNT-HUA,CN-SN,CN,2,Mountains,travel,Mount Hua,华山,mount-hua,yes,CN-P-XI-AN,,Q112568,,34.48333,110.08333,10,China › Shaanxi › Mount Hua,,Curated,draft
+CN-P-XI-AN,CN-SN,CN,2,City,travel,Xi'an,西安市,xi-an,yes,,,Q5826,3226004,34.26111,108.94222,11,China › Shaanxi › Xi'an,,Curated,draft
+CN-SD,CN,CN,1,Province,admin,Shandong,山东省,shandong,,,CN-SD,Q43407,913006,36.4,118.4,6,China › Shandong,,Wikidata,reviewed
+CN-P-MOUNT-TAI,CN-SD,CN,2,Mountains,travel,Mount Tai,泰山,mount-tai,yes,,,Q216059,,36.26667,117.10000,10,China › Shandong › Mount Tai,,Curated,draft
+CN-P-QINGDAO,CN-SD,CN,2,City,travel,Qingdao,青岛市,qingdao,yes,,,Q170322,3469133,36.11667,120.40000,11,China › Shandong › Qingdao,,Curated,draft
+CN-P-QUFU,CN-SD,CN,2,City,travel,Qufu,曲阜市,qufu,yes,,,Q210287,3286952,35.60000,116.98333,11,China › Shandong › Qufu,,Curated,draft
+CN-SH,CN,CN,1,Municipality,admin,Shanghai,上海市,shanghai,yes,,CN-SH,Q8686,913067,31.2325,121.469166666,9,China › Shanghai,,Wikidata,reviewed
+CN-SX,CN,CN,1,Province,admin,Shanxi,山西省,shanxi,,,CN-SX,Q46913,913105,37.873333333,112.564444444,6,China › Shanxi,,Wikidata,reviewed
+CN-P-DATONG,CN-SX,CN,2,City,travel,Datong,大同市,datong,yes,,,Q72877,3008552,40.09361,113.29139,11,China › Shanxi › Datong,,Curated,draft
+CN-P-PINGYAO,CN-SX,CN,2,Town,travel,Pingyao,平遥古城,pingyao,yes,,,Q500061,3298440,37.19889,112.17667,13,China › Shanxi › Pingyao,,Curated,draft
+CN-SC,CN,CN,1,Province,admin,Sichuan,四川省,sichuan,,,CN-SC,Q19770,913068,30.0,103.0,6,China › Sichuan,,Wikidata,reviewed
+CN-P-CHENGDU,CN-SC,CN,2,City,travel,Chengdu,成都市,chengdu,yes,,,Q30002,2110264,30.66000,104.06333,11,China › Sichuan › Chengdu,,Curated,draft
+CN-P-JIUZHAIGOU,CN-SC,CN,2,National park,travel,Jiuzhaigou,九寨沟风景名胜区,jiuzhaigou,yes,,,Q4111,7516592,33.20000,103.90000,9,China › Sichuan › Jiuzhaigou,,Curated,draft
+CN-P-LESHAN,CN-SC,CN,2,City,travel,Leshan,乐山市,leshan,yes,CN-P-CHENGDU,,Q426868,2789892,29.58540,103.75755,11,China › Sichuan › Leshan,,Curated,draft
+CN-P-MOUNT-EMEI,CN-SC,CN,2,Mountains,travel,Mount Emei,峨眉山,mount-emei,yes,,,Q134927,,29.51972,103.33250,10,China › Sichuan › Mount Emei,,Curated,draft
+CN-TJ,CN,CN,1,Municipality,admin,Tianjin,天津市,tianjin,yes,,CN-TJ,Q11736,912999,39.146666666,117.205555555,9,China › Tianjin,,Wikidata,reviewed
+CN-XZ,CN,CN,1,Autonomous region,admin,Tibet Autonomous Region,西藏自治区,tibet-autonomous-region,,,CN-XZ,Q17269,153292,31.705556,86.940278,5,China › Tibet Autonomous Region,,Wikidata,reviewed
+CN-P-LHASA,CN-XZ,CN,2,City,travel,Lhasa,拉萨市,lhasa,yes,,,Q5869,2745046,29.64576,91.14082,11,China › Tibet Autonomous Region › Lhasa,,Curated,draft
+CN-XJ,CN,CN,1,Autonomous region,admin,Xinjiang,新疆维吾尔自治区,xinjiang,,,CN-XJ,Q34800,153310,43.8253,87.61379,5,China › Xinjiang,,Wikidata,reviewed
+CN-P-KANAS-LAKE,CN-XJ,CN,2,Lakes,travel,Kanas Lake,喀纳斯湖,kanas-lake,yes,,,Q1723644,,48.81500,87.04000,10,China › Xinjiang › Kanas Lake,,Curated,draft
+CN-P-KASHGAR,CN-XJ,CN,2,City,travel,Kashgar,喀什市,kashgar,yes,,,Q170521,2748425,39.45000,75.98333,11,China › Xinjiang › Kashgar,,Curated,draft
+CN-P-TURPAN,CN-XJ,CN,2,City,travel,Turpan,吐鲁番市,turpan,yes,,,Q868527,2747197,42.95000,89.18222,11,China › Xinjiang › Turpan,,Curated,draft
+CN-P-URUMQI,CN-XJ,CN,2,City,travel,Ürümqi,乌鲁木齐市,urumqi,yes,,,Q16959,2752472,43.82250,87.61250,11,China › Xinjiang › Ürümqi,,Curated,draft
+CN-YN,CN,CN,1,Province,admin,Yunnan,云南省,yunnan,,,CN-YN,Q43194,913094,25.049444444,102.708888888,6,China › Yunnan,,Wikidata,reviewed
+CN-P-DALI,CN-YN,CN,2,City,travel,Dali,大理市,dali,yes,,,Q855228,2727734,25.68111,100.30028,11,China › Yunnan › Dali,,Curated,draft
+CN-P-KUNMING,CN-YN,CN,2,City,travel,Kunming,昆明市,kunming,yes,,,Q182852,2723597,25.04333,102.70611,11,China › Yunnan › Kunming,,Curated,draft
+CN-P-LIJIANG,CN-YN,CN,2,City,travel,Lijiang,丽江市,lijiang,yes,,,Q205914,2729779,26.88083,100.22083,11,China › Yunnan › Lijiang,,Curated,draft
+CN-P-SHANGRI-LA,CN-YN,CN,2,City,travel,Shangri-La,香格里拉市,shangri-la,yes,,,Q933866,2729693,27.82500,99.70250,11,China › Yunnan › Shangri-La,,Curated,draft
+CN-P-XISHUANGBANNA,CN-YN,CN,2,Countryside,travel,Xishuangbanna,西双版纳傣族自治州,xishuangbanna,yes,,,Q868046,2715398,22.00000,100.80000,10,China › Yunnan › Xishuangbanna,,Curated,draft
+CN-P-YUANYANG-RICE-TERRACES,CN-YN,CN,2,Countryside,travel,Yuanyang Rice Terraces,红河哈尼梯田,yuanyang-rice-terraces,yes,,,Q11605230,6295690,23.11719,102.73770,10,China › Yunnan › Yuanyang Rice Terraces,,Curated,draft
+CN-ZJ,CN,CN,1,Province,admin,Zhejiang,浙江省,zhejiang,,,CN-ZJ,Q16967,553302,30.266666666,120.15,6,China › Zhejiang,,Wikidata,reviewed
+CN-P-HANGZHOU,CN-ZJ,CN,2,City,travel,Hangzhou,杭州市,hangzhou,yes,,,Q4970,3221112,30.25000,120.16750,11,China › Zhejiang › Hangzhou,,Curated,draft
+CN-P-WUZHEN,CN-ZJ,CN,2,Town,travel,Wuzhen,乌镇镇,wuzhen,yes,CN-P-HANGZHOU,,Q1371343,,30.74269,120.48796,13,China › Zhejiang › Wuzhen,,Curated,draft
+TR,,TR,0,Country,admin,Türkiye,Türkiye,turkiye,,,,Q43,174737,39.0,36.0,5,Türkiye,,Wikidata,reviewed
+TR-R-AEGEAN,TR,TR,1,Region,travel,Aegean,Ege Bölgesi,aegean,,,,Q155564,2094170,37.53184,27.85871,6,Türkiye › Aegean,,Curated,draft
+TR-P-BODRUM,TR-R-AEGEAN,TR,2,Town,travel,Bodrum,Bodrum,bodrum,yes,,,Q172267,1827275,37.03440,27.43065,13,Türkiye › Aegean › Bodrum,,Curated,draft
+TR-P-DALYAN,TR-R-AEGEAN,TR,2,Village,travel,Dalyan,Dalyan,dalyan,yes,,,Q518586,,36.83417,28.64250,14,Türkiye › Aegean › Dalyan,,Curated,draft
+TR-P-FETHIYE,TR-R-AEGEAN,TR,2,Town,travel,Fethiye,,fethiye,yes,,,Q207998,1827656,36.62056,29.11417,13,Türkiye › Aegean › Fethiye,,Curated,draft
+TR-P-KUSADAS,TR-R-AEGEAN,TR,2,Town,travel,Kuşadası,Kuşadası,kusadas,yes,,,Q211952,1814656,37.86324,27.26687,13,Türkiye › Aegean › Kuşadası,,Curated,draft
+TR-P-MARMARIS,TR-R-AEGEAN,TR,2,Town,travel,Marmaris,Marmaris,marmaris,yes,,,Q209908,1827293,36.85639,28.27111,13,Türkiye › Aegean › Marmaris,,Curated,draft
+TR-P-PAMUKKALE,TR-R-AEGEAN,TR,2,Town,travel,Pamukkale,Pamukkale,pamukkale,yes,,,Q3892919,,37.91644,29.11729,13,Türkiye › Aegean › Pamukkale,,Curated,draft
+TR-P-SELCUK,TR-R-AEGEAN,TR,2,Town,travel,Selçuk (Ephesus),Selçuk,selcuk,yes,,,Q876176,1841225,37.94699,27.37349,13,Türkiye › Aegean › Selçuk (Ephesus),,Curated,draft
+TR-P-CESME-ALACAT,TR-R-AEGEAN,TR,2,Town,travel,Çeşme & Alaçatı,Çeşme,cesme-alacat,yes,,,Q217720,1268454,38.30162,26.37390,13,Türkiye › Aegean › Çeşme & Alaçatı,,Curated,draft
+TR-P-IZMIR,TR-R-AEGEAN,TR,2,City,travel,İzmir,İzmir,izmir,yes,,,Q35997,223167,38.41273,27.13838,11,Türkiye › Aegean › İzmir,,Curated,draft
+TR-R-BLACK-SEA,TR,TR,1,Region,travel,Black Sea,Karadeniz Bölgesi,black-sea,,,,Q155533,1726294,41.12720,36.20285,6,Türkiye › Black Sea,,Curated,draft
+TR-P-SAFRANBOLU,TR-R-BLACK-SEA,TR,2,Town,travel,Safranbolu,Safranbolu,safranbolu,yes,,,Q192501,1245158,41.24939,32.68320,13,Türkiye › Black Sea › Safranbolu,,Curated,draft
+TR-P-TRABZON,TR-R-BLACK-SEA,TR,2,City,travel,Trabzon,Trabzon,trabzon,yes,,,Q45301,,41.00500,39.72250,11,Türkiye › Black Sea › Trabzon,,Curated,draft
+TR-R-CENTRAL-ANATOLIA,TR,TR,1,Region,travel,Central Anatolia,İç Anadolu Bölgesi,central-anatolia,,,,Q155526,2094194,38.82636,33.39000,6,Türkiye › Central Anatolia,,Curated,draft
+TR-P-ANKARA,TR-R-CENTRAL-ANATOLIA,TR,2,City,travel,Ankara,Ankara,ankara,yes,,,Q3640,223422,39.93576,32.83869,11,Türkiye › Central Anatolia › Ankara,,Curated,draft
+TR-P-CAPPADOCIA,TR-R-CENTRAL-ANATOLIA,TR,2,Countryside,travel,Cappadocia,Kapadokya,cappadocia,yes,,,Q217265,,38.67056,34.83917,10,Türkiye › Central Anatolia › Cappadocia,"Göreme, Ürgüp and Uçhisar.",Curated,draft
+TR-P-KONYA,TR-R-CENTRAL-ANATOLIA,TR,2,City,travel,Konya,Konya,konya,yes,,,Q79857,,37.87277,32.49214,11,Türkiye › Central Anatolia › Konya,,Curated,draft
+TR-R-EASTERN-ANATOLIA,TR,TR,1,Region,travel,Eastern Anatolia,Doğu Anadolu Bölgesi,eastern-anatolia,,,,Q155542,2094154,39.55486,43.25625,6,Türkiye › Eastern Anatolia,,Curated,draft
+TR-P-KARS,TR-R-EASTERN-ANATOLIA,TR,2,City,travel,Kars,Kars,kars,yes,,,Q127063,1838392,40.60778,43.09583,11,Türkiye › Eastern Anatolia › Kars,,Curated,draft
+TR-P-VAN,TR-R-EASTERN-ANATOLIA,TR,2,City,travel,Van,Van,van,yes,,,Q83061,,38.50194,43.41667,11,Türkiye › Eastern Anatolia › Van,,Curated,draft
+TR-R-MARMARA,TR,TR,1,Region,travel,Marmara,Marmara Bölgesi,marmara,,,,Q155583,2094193,40.75609,27.75361,6,Türkiye › Marmara,,Curated,draft
+TR-P-BURSA,TR-R-MARMARA,TR,2,City,travel,Bursa,Bursa,bursa,yes,,,Q40738,223463,40.19133,29.08054,11,Türkiye › Marmara › Bursa,,Curated,draft
+TR-P-EDIRNE,TR-R-MARMARA,TR,2,City,travel,Edirne,Edirne,edirne,yes,,,Q43387,1834221,41.67304,26.57361,11,Türkiye › Marmara › Edirne,,Curated,draft
+TR-P-ISTANBUL,TR-R-MARMARA,TR,2,City,travel,Istanbul,İstanbul,istanbul,yes,,,Q406,,41.01000,28.96028,11,Türkiye › Marmara › Istanbul,,Curated,draft
+TR-P-CANAKKALE,TR-R-MARMARA,TR,2,City,travel,Çanakkale (Gallipoli & Troy),Çanakkale,canakkale,yes,,,Q199712,1816280,40.15000,26.40000,11,Türkiye › Marmara › Çanakkale (Gallipoli & Troy),,Curated,draft
+TR-R-MEDITERRANEAN,TR,TR,1,Region,travel,Mediterranean,Akdeniz Bölgesi,mediterranean,,,,Q155552,2092903,36.60390,30.85761,6,Türkiye › Mediterranean,,Curated,draft
+TR-P-ALANYA,TR-R-MEDITERRANEAN,TR,2,City,travel,Alanya,Alanya,alanya,yes,,,Q171810,1726977,36.54361,31.99972,11,Türkiye › Mediterranean › Alanya,,Curated,draft
+TR-P-ANTALYA,TR-R-MEDITERRANEAN,TR,2,City,travel,Antalya,Antalya,antalya,yes,,,Q6487,223132,36.90812,30.69556,11,Türkiye › Mediterranean › Antalya,,Curated,draft
+TR-P-KAS,TR-R-MEDITERRANEAN,TR,2,Town,travel,Kaş,Kaş,kas,yes,,,Q1004438,1727265,36.19972,29.64028,13,Türkiye › Mediterranean › Kaş,,Curated,draft
+TR-P-KEMER,TR-R-MEDITERRANEAN,TR,2,Town,travel,Kemer,Kemer,kemer,yes,,,Q217047,1727292,36.60138,30.56386,13,Türkiye › Mediterranean › Kemer,,Curated,draft
+TR-P-SIDE,TR-R-MEDITERRANEAN,TR,2,Town,travel,Side,Side,side,yes,,,Q152405,15871010,36.76667,31.38861,13,Türkiye › Mediterranean › Side,,Curated,draft
+TR-R-SOUTHEASTERN-ANATOLIA,TR,TR,1,Region,travel,Southeastern Anatolia,Güneydoğu Anadolu Bölgesi,southeastern-anatolia,,,,Q155638,2094155,37.37873,38.91167,6,Türkiye › Southeastern Anatolia,,Curated,draft
+TR-P-GAZIANTEP,TR-R-SOUTHEASTERN-ANATOLIA,TR,2,City,travel,Gaziantep,Gaziantep,gaziantep,yes,,,Q93338,,37.06278,37.37917,11,Türkiye › Southeastern Anatolia › Gaziantep,,Curated,draft
+TR-P-MARDIN,TR-R-SOUTHEASTERN-ANATOLIA,TR,2,City,travel,Mardin,Mardin,mardin,yes,,,Q188022,,37.31306,40.73500,11,Türkiye › Southeastern Anatolia › Mardin,,Curated,draft
+TR-P-MOUNT-NEMRUT,TR-R-SOUTHEASTERN-ANATOLIA,TR,2,Mountains,travel,Mount Nemrut (Kâhta),Nemrut Dağı,mount-nemrut,yes,,,Q207917,,37.98074,38.74083,10,Türkiye › Southeastern Anatolia › Mount Nemrut (Kâhta),,Curated,draft
+TR-P-SANLURFA,TR-R-SOUTHEASTERN-ANATOLIA,TR,2,City,travel,Şanlıurfa,Şanlıurfa,sanlurfa,yes,,,Q133118,,37.15833,38.79167,11,Türkiye › Southeastern Anatolia › Şanlıurfa,,Curated,draft
+MX,,MX,0,Country,admin,Mexico,México,mexico,,,,Q96,114686,23.0,-102.0,4,Mexico,,Wikidata,reviewed
+MX-AGU,MX,MX,1,State,admin,Aguascalientes,Aguascalientes,aguascalientes,,,MX-AGU,Q79952,2610002,22.05,-102.3,6,Mexico › Aguascalientes,,Wikidata,reviewed
+MX-BCN,MX,MX,1,State,admin,Baja California,Baja California,baja-california,,,MX-BCN,Q58731,2589601,29.95,-115.116666666,6,Mexico › Baja California,,Wikidata,reviewed
+MX-BCS,MX,MX,1,State,admin,Baja California Sur,Baja California Sur,baja-california-sur,,,MX-BCS,Q46508,2589611,25.44,-111.88,6,Mexico › Baja California Sur,,Wikidata,reviewed
+MX-P-LA-PAZ,MX-BCS,MX,2,City,travel,La Paz,La Paz,la-paz,yes,,,Q214215,,24.14861,-110.30667,11,Mexico › Baja California Sur › La Paz,,Curated,draft
+MX-P-LOS-CABOS,MX-BCS,MX,2,Coast,travel,Los Cabos,Municipio de Los Cabos,los-cabos,yes,,,Q659516,5605984,23.26667,-109.76667,9,Mexico › Baja California Sur › Los Cabos,Cabo San Lucas and San José del Cabo.,Curated,draft
+MX-CAM,MX,MX,1,State,admin,Campeche,Campeche,campeche,,,MX-CAM,Q80908,2568834,19.0,-90.4,6,Mexico › Campeche,,Wikidata,reviewed
+MX-P-CAMPECHE,MX-CAM,MX,2,City,travel,Campeche,San Francisco de Campeche,campeche,yes,,,Q61301,,19.84481,-90.53965,11,Mexico › Campeche › Campeche,,Curated,draft
+MX-CHP,MX,MX,1,State,admin,Chiapas,Chiapas,chiapas,,,MX-CHP,Q60123,2556679,16.53,-92.45,6,Mexico › Chiapas,,Wikidata,reviewed
+MX-P-PALENQUE,MX-CHP,MX,2,Town,travel,Palenque,Palenque,palenque,yes,,,Q1573453,,17.50917,-91.98222,13,Mexico › Chiapas › Palenque,,Curated,draft
+MX-P-SAN-CRISTOBAL-DE-LAS-CASAS,MX-CHP,MX,2,City,travel,San Cristóbal de las Casas,Municipio de San Cristóbal de Las Casas,san-cristobal-de-las-casas,yes,,,Q2884933,5999725,16.68333,-92.58333,11,Mexico › Chiapas › San Cristóbal de las Casas,,Curated,draft
+MX-CHH,MX,MX,1,State,admin,Chihuahua,Chihuahua,chihuahua,,,MX-CHH,Q655,1673425,28.639166666,-106.073333333,6,Mexico › Chihuahua,,Wikidata,reviewed
+MX-P-COPPER-CANYON,MX-CHH,MX,2,Canyon,travel,Copper Canyon,Barrancas del Cobre,copper-canyon,yes,,,Q674485,,27.51611,-107.76583,10,Mexico › Chihuahua › Copper Canyon,,Curated,draft
+MX-COA,MX,MX,1,State,admin,Coahuila,Coahuila de Zaragoza,coahuila,,,MX-COA,Q53079,1661524,27.302222222,-102.044722222,6,Mexico › Coahuila,,Wikidata,reviewed
+MX-COL,MX,MX,1,State,admin,Colima,Colima,colima,,,MX-COL,Q61309,2340912,19.1,-103.9,6,Mexico › Colima,,Wikidata,reviewed
+MX-DUR,MX,MX,1,State,admin,Durango,Durango,durango,,,MX-DUR,Q79918,2399740,24.934722222,-104.911944444,6,Mexico › Durango,,Wikidata,reviewed
+MX-GUA,MX,MX,1,State,admin,Guanajuato,Guanajuato,guanajuato,,,MX-GUA,Q46475,2340909,21.018888888,-101.262777777,6,Mexico › Guanajuato,,Wikidata,reviewed
+MX-P-GUANAJUATO-CITY,MX-GUA,MX,2,City,travel,Guanajuato City,Guanajuato,guanajuato-city,yes,,,Q61306,,21.01778,-101.25667,11,Mexico › Guanajuato › Guanajuato City,,Curated,draft
+MX-P-SAN-MIGUEL-DE-ALLENDE,MX-GUA,MX,2,City,travel,San Miguel de Allende,San Miguel de Allende,san-miguel-de-allende,yes,,,Q753891,,20.91528,-100.74389,11,Mexico › Guanajuato › San Miguel de Allende,,Curated,draft
+MX-GRO,MX,MX,1,State,admin,Guerrero,Guerrero,guerrero,,,MX-GRO,Q60158,2439316,17.613055555,-99.95,6,Mexico › Guerrero,,Wikidata,reviewed
+MX-P-ACAPULCO,MX-GRO,MX,2,City,travel,Acapulco,Acapulco de Juárez,acapulco,yes,,,Q81398,,16.86287,-99.88701,11,Mexico › Guerrero › Acapulco,,Curated,draft
+MX-P-TAXCO,MX-GRO,MX,2,Town,travel,Taxco,Taxco de Alarcón,taxco,yes,MX-CMX,,Q990095,,18.55462,-99.60592,13,Mexico › Guerrero › Taxco,,Curated,draft
+MX-HID,MX,MX,1,State,admin,Hidalgo,Hidalgo,hidalgo,,,MX-HID,Q80903,1376490,20.478333333,-98.863611111,6,Mexico › Hidalgo,,Wikidata,reviewed
+MX-JAL,MX,MX,1,State,admin,Jalisco,Jalisco,jalisco,,,MX-JAL,Q13160,2340910,20.676388888,-103.345833333,6,Mexico › Jalisco,,Wikidata,reviewed
+MX-P-GUADALAJARA,MX-JAL,MX,2,City,travel,Guadalajara,Guadalajara,guadalajara,yes,,,Q9022,5605820,20.67639,-103.34222,11,Mexico › Jalisco › Guadalajara,,Curated,draft
+MX-P-PUERTO-VALLARTA,MX-JAL,MX,2,City,travel,Puerto Vallarta,Puerto Vallarta,puerto-vallarta,yes,,,Q853258,,20.64130,-105.22330,11,Mexico › Jalisco › Puerto Vallarta,,Curated,draft
+MX-P-TEQUILA,MX-JAL,MX,2,Town,travel,Tequila,Tequila,tequila,yes,MX-P-GUADALAJARA,,Q847764,,20.87944,-103.83565,13,Mexico › Jalisco › Tequila,,Curated,draft
+MX-CMX,MX,MX,1,Capital city,admin,Mexico City,Ciudad de México,mexico-city,yes,,MX-CMX,Q1489,1376330,19.353773,-99.13589,10,Mexico › Mexico City,,Wikidata,reviewed
+MX-MIC,MX,MX,1,State,admin,Michoacán,Michoacán,michoacan,,,MX-MIC,Q79861,2340636,19.21,-101.91,6,Mexico › Michoacán,,Wikidata,reviewed
+MX-MOR,MX,MX,1,State,admin,Morelos,Morelos,morelos,,,MX-MOR,Q66117,1376332,18.7475,-99.070277777,6,Mexico › Morelos,,Wikidata,reviewed
+MX-P-TEPOZTLAN,MX-MOR,MX,2,Town,travel,Tepoztlán,Tepoztlán,tepoztlan,yes,MX-CMX,,Q1020785,,18.98622,-99.10051,13,Mexico › Morelos › Tepoztlán,,Curated,draft
+MX-NAY,MX,MX,1,State,admin,Nayarit,Nayarit,nayarit,,,MX-NAY,Q79920,18522414,22.0,-105.0,6,Mexico › Nayarit,,Wikidata,reviewed
+MX-P-SAYULITA-RIVIERA-NAYARIT,MX-NAY,MX,2,Coast,travel,Sayulita & Riviera Nayarit,Sayulita,sayulita-riviera-nayarit,yes,,,Q3048851,,20.86889,-105.44083,9,Mexico › Nayarit › Sayulita & Riviera Nayarit,,Curated,draft
+MX-NLE,MX,MX,1,State,admin,Nuevo León,Nuevo León,nuevo-leon,,,MX-NLE,Q15282,1661523,25.566666666,-99.970555555,6,Mexico › Nuevo León,,Wikidata,reviewed
+MX-OAX,MX,MX,1,State,admin,Oaxaca,Estado de Oaxaca,oaxaca,,,MX-OAX,Q34110,2529822,17.055,-96.653888888,6,Mexico › Oaxaca,,Wikidata,reviewed
+MX-P-HUATULCO,MX-OAX,MX,2,Coast,travel,Huatulco,Municipio de Santa María Huatulco,huatulco,yes,,,Q3893101,6000028,15.80000,-96.21667,9,Mexico › Oaxaca › Huatulco,,Curated,draft
+MX-P-OAXACA-CITY,MX-OAX,MX,2,City,travel,Oaxaca City,Oaxaca de Juárez,oaxaca-city,yes,,,Q131429,,17.06056,-96.72528,11,Mexico › Oaxaca › Oaxaca City,,Curated,draft
+MX-P-PUERTO-ESCONDIDO,MX-OAX,MX,2,Town,travel,Puerto Escondido,Puerto Escondido,puerto-escondido,yes,,,Q1752991,,15.86194,-97.07167,13,Mexico › Oaxaca › Puerto Escondido,,Curated,draft
+MX-PUE,MX,MX,1,State,admin,Puebla,Puebla,puebla,,,MX-PUE,Q79923,1376491,19.003611111,-97.888333333,6,Mexico › Puebla,,Wikidata,reviewed
+MX-P-CHOLULA,MX-PUE,MX,2,Town,travel,Cholula,Cholula,cholula,yes,MX-P-PUEBLA,,Q20241486,,20.74384,-98.50210,13,Mexico › Puebla › Cholula,,Curated,draft
+MX-P-PUEBLA,MX-PUE,MX,2,City,travel,Puebla,Heroica Puebla de Zaragoza,puebla,yes,,,Q125293,3986722,19.05139,-98.21778,11,Mexico › Puebla › Puebla,,Curated,draft
+MX-QUE,MX,MX,1,State,admin,Querétaro,Querétaro,queretaro,,,MX-QUE,Q79754,2340903,20.591,-100.391,6,Mexico › Querétaro,,Wikidata,reviewed
+MX-ROO,MX,MX,1,State,admin,Quintana Roo,Quintana Roo,quintana-roo,,,MX-ROO,Q80245,2614434,19.6,-87.916666666,6,Mexico › Quintana Roo,,Wikidata,reviewed
+MX-P-BACALAR,MX-ROO,MX,2,Lakes,travel,Bacalar,Bacalar,bacalar,yes,,,Q1709140,6431902,18.67615,-88.38935,10,Mexico › Quintana Roo › Bacalar,,Curated,draft
+MX-P-CANCUN,MX-ROO,MX,2,City,travel,Cancún,Cancún,cancun,yes,,,Q8969,,21.16142,-86.82481,11,Mexico › Quintana Roo › Cancún,,Curated,draft
+MX-P-HOLBOX,MX-ROO,MX,2,Island,travel,Holbox,Isla Holbox,holbox,yes,,,Q1535905,4478802,21.53083,-87.28611,10,Mexico › Quintana Roo › Holbox,,Curated,draft
+MX-P-ISLA-MUJERES,MX-ROO,MX,2,Island,travel,Isla Mujeres,Isla Mujeres,isla-mujeres,yes,MX-P-CANCUN,,Q20238448,,21.25657,-86.74609,10,Mexico › Quintana Roo › Isla Mujeres,,Curated,draft
+MX-R-RIVIERA-MAYA,MX-ROO,MX,2,Coast,travel,Riviera Maya,Riviera Maya,riviera-maya,,,,Q2061038,,20.41853,-87.15179,9,Mexico › Quintana Roo › Riviera Maya,,Curated,draft
+MX-P-COZUMEL,MX-R-RIVIERA-MAYA,MX,3,Island,travel,Cozumel,Isla Cozumel,cozumel,yes,,,Q20119933,,20.41667,-86.91667,10,Mexico › Quintana Roo › Riviera Maya › Cozumel,,Curated,draft
+MX-P-PLAYA-DEL-CARMEN,MX-R-RIVIERA-MAYA,MX,3,City,travel,Playa del Carmen,Playa del Carmen,playa-del-carmen,yes,,,Q989988,6329645,20.62814,-87.07550,11,Mexico › Quintana Roo › Riviera Maya › Playa del Carmen,,Curated,draft
+MX-P-TULUM,MX-R-RIVIERA-MAYA,MX,3,Town,travel,Tulum,Tulum,tulum,yes,,,Q277408,6431898,20.21078,-87.46320,13,Mexico › Quintana Roo › Riviera Maya › Tulum,,Curated,draft
+MX-SLP,MX,MX,1,State,admin,San Luis Potosí,San Luis Potosí,san-luis-potosi,,,MX-SLP,Q78980,4086617,22.603333333,-100.429722222,6,Mexico › San Luis Potosí,,Wikidata,reviewed
+MX-SIN,MX,MX,1,State,admin,Sinaloa,Sinaloa,sinaloa,,,MX-SIN,Q80252,2455086,25.002777777,-107.502777777,6,Mexico › Sinaloa,,Wikidata,reviewed
+MX-P-MAZATLAN,MX-SIN,MX,2,City,travel,Mazatlán,Mazatlán,mazatlan,yes,,,Q40194,,23.21667,-106.40833,11,Mexico › Sinaloa › Mazatlán,,Curated,draft
+MX-SON,MX,MX,1,State,admin,Sonora,Sonora,sonora,,,MX-SON,Q46422,1673426,29.833333333,-110.95,6,Mexico › Sonora,,Wikidata,reviewed
+MX-MEX,MX,MX,1,State,admin,State of Mexico,Estado de México,state-of-mexico,,,MX-MEX,Q82112,1376489,19.354166666,-99.630833333,6,Mexico › State of Mexico,,Wikidata,reviewed
+MX-P-TEOTIHUACAN,MX-MEX,MX,2,Archaeological site,travel,Teotihuacán,Teotihuacan,teotihuacan,yes,MX-CMX,,Q172613,,19.69250,-98.84389,14,Mexico › State of Mexico › Teotihuacán,,Curated,draft
+MX-TAB,MX,MX,1,State,admin,Tabasco,Tabasco,tabasco,,,MX-TAB,Q80914,2556680,17.988055555,-92.919444444,6,Mexico › Tabasco,,Wikidata,reviewed
+MX-TAM,MX,MX,1,State,admin,Tamaulipas,Tamaulipas,tamaulipas,,,MX-TAM,Q80007,2415518,24.287222222,-98.563333333,6,Mexico › Tamaulipas,,Wikidata,reviewed
+MX-TLA,MX,MX,1,State,admin,Tlaxcala,Tlaxcala,tlaxcala,,,MX-TLA,Q82681,1375274,19.4,-98.1,6,Mexico › Tlaxcala,,Wikidata,reviewed
+MX-VER,MX,MX,1,State,admin,Veracruz,Estado de Veracruz,veracruz,,,MX-VER,Q60130,2415761,19.839364,-96.055621,6,Mexico › Veracruz,,Wikidata,reviewed
+MX-YUC,MX,MX,1,State,admin,Yucatán,Yucatán,yucatan,,,MX-YUC,Q60176,2614435,21.0,-89.6,6,Mexico › Yucatán,,Wikidata,reviewed
+MX-P-CHICHEN-ITZA,MX-YUC,MX,2,Archaeological site,travel,Chichén Itzá,Chichén Itzá,chichen-itza,yes,MX-P-VALLADOLID,,Q20275587,,20.67833,-88.56889,14,Mexico › Yucatán › Chichén Itzá,,Curated,draft
+MX-P-MERIDA,MX-YUC,MX,2,City,travel,Mérida,Mérida,merida,yes,,,Q165204,,20.97000,-89.62000,11,Mexico › Yucatán › Mérida,,Curated,draft
+MX-P-VALLADOLID,MX-YUC,MX,2,City,travel,Valladolid,Valladolid,valladolid,yes,,,Q1024731,,20.68944,-88.20167,11,Mexico › Yucatán › Valladolid,,Curated,draft
+MX-ZAC,MX,MX,1,State,admin,Zacatecas,Zacatecas,zacatecas,,,MX-ZAC,Q80269,2399704,23.292777777,-102.700555555,6,Mexico › Zacatecas,,Wikidata,reviewed
+GB,,GB,0,Country,admin,United Kingdom,United Kingdom,united-kingdom,,,,Q145,62149,54.6,-2.0,5,United Kingdom,,Wikidata,reviewed
+GB-ENG,GB,GB,1,Nation,admin,England,England,england,,,GB-ENG,Q21,58447,53.0,-1.0,6,United Kingdom › England,,Wikidata,reviewed
+GB-R-EAST-MIDLANDS,GB-ENG,GB,2,Region,travel,East Midlands,,east-midlands,,,,Q47994,151279,53.38472,-1.87389,6,United Kingdom › England › East Midlands,,Curated,draft
+GB-P-PEAK-DISTRICT,GB-R-EAST-MIDLANDS,GB,3,National park,travel,Peak District,,peak-district,yes,,,Q1330811,2176657,53.38472,-1.87389,9,United Kingdom › England › East Midlands › Peak District,,Curated,draft
+GB-R-EAST,GB-ENG,GB,2,Region,travel,East of England,,east-of-england,,,,Q48006,151336,52.20806,0.12250,6,United Kingdom › England › East of England,,Curated,draft
+GB-P-CAMBRIDGE,GB-R-EAST,GB,3,City,travel,Cambridge,,cambridge,yes,GB-R-LONDON,,Q350,,52.20806,0.12250,11,United Kingdom › England › East of England › Cambridge,,Curated,draft
+GB-R-LONDON,GB-ENG,GB,2,Region,travel,London,,london,yes,,,Q84,65606,51.50722,-0.12750,6,United Kingdom › England › London,,Curated,draft
+GB-R-NORTH-EAST,GB-ENG,GB,2,Region,travel,North East England,,north-east-england,,,,Q47983,151164,54.88056,-1.59000,6,United Kingdom › England › North East England,,Curated,draft
+GB-P-DURHAM,GB-R-NORTH-EAST,GB,3,City,travel,Durham,,durham,yes,GB-P-NEWCASTLE-UPON-TYNE,,Q179815,,54.78333,-1.56667,11,United Kingdom › England › North East England › Durham,,Curated,draft
+GB-P-NEWCASTLE-UPON-TYNE,GB-R-NORTH-EAST,GB,3,City,travel,Newcastle upon Tyne,,newcastle-upon-tyne,yes,,,Q1425428,,54.97778,-1.61333,11,United Kingdom › England › North East England › Newcastle upon Tyne,,Curated,draft
+GB-R-NORTH-WEST,GB-ENG,GB,2,Region,travel,North West England,,north-west-england,,,,Q47967,151261,53.79555,-2.80121,6,United Kingdom › England › North West England,,Curated,draft
+GB-P-LAKE-DISTRICT,GB-R-NORTH-WEST,GB,3,National park,travel,Lake District,,lake-district,yes,,,Q211778,9958674,54.50000,-3.16667,9,United Kingdom › England › North West England › Lake District,,Curated,draft
+GB-P-LIVERPOOL,GB-R-NORTH-WEST,GB,3,City,travel,Liverpool,,liverpool,yes,,,Q24826,,53.40722,-2.99167,11,United Kingdom › England › North West England › Liverpool,,Curated,draft
+GB-P-MANCHESTER,GB-R-NORTH-WEST,GB,3,City,travel,Manchester,,manchester,yes,,,Q18125,,53.47944,-2.24528,11,United Kingdom › England › North West England › Manchester,,Curated,draft
+GB-R-SOUTH-EAST,GB-ENG,GB,2,Region,travel,South East England,,south-east-england,,,,Q48015,151304,51.33361,-0.22945,6,United Kingdom › England › South East England,,Curated,draft
+GB-P-BRIGHTON,GB-R-SOUTH-EAST,GB,3,City,travel,Brighton,,brighton,yes,,,Q131491,,50.82083,-0.13750,11,United Kingdom › England › South East England › Brighton,,Curated,draft
+GB-P-CANTERBURY,GB-R-SOUTH-EAST,GB,3,City,travel,Canterbury,,canterbury,yes,,,Q29303,,51.27833,1.07750,11,United Kingdom › England › South East England › Canterbury,,Curated,draft
+GB-P-OXFORD,GB-R-SOUTH-EAST,GB,3,City,travel,Oxford,,oxford,yes,GB-R-LONDON,,Q34217,394037,51.75194,-1.25778,11,United Kingdom › England › South East England › Oxford,,Curated,draft
+GB-P-WINDSOR,GB-R-SOUTH-EAST,GB,3,Town,travel,Windsor,,windsor,yes,GB-R-LONDON,,Q464955,,51.48333,-0.60000,13,United Kingdom › England › South East England › Windsor,,Curated,draft
+GB-R-SOUTH-WEST,GB-ENG,GB,2,Region,travel,South West England,,south-west-england,,,,Q48026,151339,51.13658,-2.78443,6,United Kingdom › England › South West England,,Curated,draft
+GB-P-BATH,GB-R-SOUTH-WEST,GB,3,City,travel,Bath,,bath,yes,,,Q22889,,51.38139,-2.35972,11,United Kingdom › England › South West England › Bath,,Curated,draft
+GB-P-BRISTOL,GB-R-SOUTH-WEST,GB,3,City,travel,Bristol,,bristol,yes,,,Q23154,5746665,51.45361,-2.59750,11,United Kingdom › England › South West England › Bristol,,Curated,draft
+GB-P-CORNWALL,GB-R-SOUTH-WEST,GB,3,Coast,travel,Cornwall,,cornwall,yes,,,Q23148,8508381,50.30000,-4.90000,9,United Kingdom › England › South West England › Cornwall,"St Ives, Penzance and the coast.",Curated,draft
+GB-P-JURASSIC-COAST,GB-R-SOUTH-WEST,GB,3,Coast,travel,Jurassic Coast,,jurassic-coast,yes,,,Q575976,18519733,50.70556,-2.98989,9,United Kingdom › England › South West England › Jurassic Coast,,Curated,draft
+GB-P-STONEHENGE,GB-R-SOUTH-WEST,GB,3,Archaeological site,travel,Stonehenge,,stonehenge,yes,GB-R-LONDON,,Q39671,,51.17889,-1.82611,14,United Kingdom › England › South West England › Stonehenge,,Curated,draft
+GB-P-THE-COTSWOLDS,GB-R-SOUTH-WEST,GB,3,Countryside,travel,The Cotswolds,,the-cotswolds,yes,,,Q301833,,51.80000,-2.03333,10,United Kingdom › England › South West England › The Cotswolds,,Curated,draft
+GB-R-WEST-MIDLANDS,GB-ENG,GB,2,Region,travel,West Midlands,,west-midlands,,,,Q48038,151283,52.19278,-1.70639,6,United Kingdom › England › West Midlands,,Curated,draft
+GB-P-STRATFORD-UPON-AVON,GB-R-WEST-MIDLANDS,GB,3,Town,travel,Stratford-upon-Avon,,stratford-upon-avon,yes,,,Q189288,3558037,52.19278,-1.70639,13,United Kingdom › England › West Midlands › Stratford-upon-Avon,,Curated,draft
+GB-R-YORKSHIRE,GB-ENG,GB,2,Region,travel,Yorkshire,,yorkshire,,,,Q48063,151012,54.10833,-1.58333,6,United Kingdom › England › Yorkshire,,Curated,draft
+GB-P-YORK,GB-R-YORKSHIRE,GB,3,City,travel,York,,york,yes,,,Q42462,,53.95000,-1.08333,11,United Kingdom › England › Yorkshire › York,,Curated,draft
+GB-P-YORKSHIRE-DALES,GB-R-YORKSHIRE,GB,3,National park,travel,Yorkshire Dales,,yorkshire-dales,yes,,,Q977613,,54.26667,-2.08333,9,United Kingdom › England › Yorkshire › Yorkshire Dales,,Curated,draft
+GB-NIR,GB,GB,1,Nation,admin,Northern Ireland,Northern Ireland,northern-ireland,,,GB-NIR,Q26,156393,54.6075,-6.6925,6,United Kingdom › Northern Ireland,,Wikidata,reviewed
+GB-P-BELFAST,GB-NIR,GB,2,City,travel,Belfast,,belfast,yes,,,Q10686,19414244,54.59667,-5.93000,11,United Kingdom › Northern Ireland › Belfast,,Curated,draft
+GB-P-CAUSEWAY-COAST,GB-NIR,GB,2,Coast,travel,Causeway Coast,,causeway-coast,yes,,,Q5054638,,55.20300,-6.50000,9,United Kingdom › Northern Ireland › Causeway Coast,,Curated,draft
+GB-SCT,GB,GB,1,Nation,admin,Scotland,Scotland,scotland,,,GB-SCT,Q22,58446,57.0,-5.0,6,United Kingdom › Scotland,,Wikidata,reviewed
+GB-P-CAIRNGORMS,GB-SCT,GB,2,National park,travel,Cairngorms,,cairngorms,yes,,,Q1025953,9838401,57.08330,-3.66667,9,United Kingdom › Scotland › Cairngorms,,Curated,draft
+GB-P-EDINBURGH,GB-SCT,GB,2,City,travel,Edinburgh,,edinburgh,yes,,,Q23436,1920901,55.95333,-3.18917,11,United Kingdom › Scotland › Edinburgh,,Curated,draft
+GB-P-GLASGOW,GB-SCT,GB,2,City,travel,Glasgow,,glasgow,yes,,,Q4093,1906767,55.86111,-4.25000,11,United Kingdom › Scotland › Glasgow,,Curated,draft
+GB-P-GLENCOE-FORT-WILLIAM,GB-SCT,GB,2,Mountains,travel,Glencoe & Fort William,,glencoe-fort-william,yes,,,Q92671,,56.66778,-4.98667,10,United Kingdom › Scotland › Glencoe & Fort William,,Curated,draft
+GB-P-INVERNESS-LOCH-NESS,GB-SCT,GB,2,City,travel,Inverness & Loch Ness,,inverness-loch-ness,yes,,,Q160493,,57.48389,-4.22583,11,United Kingdom › Scotland › Inverness & Loch Ness,,Curated,draft
+GB-P-ISLE-OF-SKYE,GB-SCT,GB,2,Island,travel,Isle of Skye,,isle-of-skye,yes,,,Q107393,544726,57.35000,-6.30000,10,United Kingdom › Scotland › Isle of Skye,,Curated,draft
+GB-P-LOCH-LOMOND-THE-TROSSACHS,GB-SCT,GB,2,National park,travel,Loch Lomond & the Trossachs,,loch-lomond-the-trossachs,yes,,,Q116661,1957067,56.25000,-4.61667,9,United Kingdom › Scotland › Loch Lomond & the Trossachs,,Curated,draft
+GB-P-ST-ANDREWS,GB-SCT,GB,2,Town,travel,St Andrews,,st-andrews,yes,,,Q207736,,56.33889,-2.79889,13,United Kingdom › Scotland › St Andrews,,Curated,draft
+GB-WLS,GB,GB,1,Nation,admin,Wales,Wales,wales,,,GB-WLS,Q25,58437,52.35,-3.633333333,6,United Kingdom › Wales,,Wikidata,reviewed
+GB-P-CARDIFF,GB-WLS,GB,2,City,travel,Cardiff,,cardiff,yes,,,Q10690,1625787,51.48167,-3.17917,11,United Kingdom › Wales › Cardiff,,Curated,draft
+GB-P-ERYRI,GB-WLS,GB,2,National park,travel,Eryri (Snowdonia),,eryri,yes,,,Q20888920,287245,52.93333,-3.93333,9,United Kingdom › Wales › Eryri (Snowdonia),,Curated,draft
+GB-P-PEMBROKESHIRE-COAST,GB-WLS,GB,2,National park,travel,Pembrokeshire Coast,,pembrokeshire-coast,yes,,,Q1893297,165598,51.83330,-5.08333,9,United Kingdom › Wales › Pembrokeshire Coast,,Curated,draft
+DE,,DE,0,Country,admin,Germany,Deutschland,germany,,,,Q183,51477,51.0,10.0,5,Germany,,Wikidata,reviewed
+DE-BW,DE,DE,1,State,admin,Baden-Württemberg,Baden-Württemberg,baden-wurttemberg,,,DE-BW,Q985,62611,48.537777777,9.041111111,6,Germany › Baden-Württemberg,,Wikidata,reviewed
+DE-P-BADEN-BADEN,DE-BW,DE,2,Town,travel,Baden-Baden,Baden-Baden,baden-baden,yes,,,Q4100,62340,48.76194,8.24083,13,Germany › Baden-Württemberg › Baden-Baden,,Curated,draft
+DE-P-BLACK-FOREST,DE-BW,DE,2,Countryside,travel,Black Forest,Schwarzwald,black-forest,yes,,,Q4204,3255371,48.30000,8.15000,10,Germany › Baden-Württemberg › Black Forest,Based in Freiburg or the forest towns.,Curated,draft
+DE-P-HEIDELBERG,DE-BW,DE,2,City,travel,Heidelberg,Heidelberg,heidelberg,yes,,,Q2966,285864,49.40936,8.69472,11,Germany › Baden-Württemberg › Heidelberg,,Curated,draft
+DE-P-LAKE-CONSTANCE,DE-BW,DE,2,Lakes,travel,Lake Constance,Bodensee,lake-constance,yes,,,Q4127,1156846,47.65000,9.31667,10,Germany › Baden-Württemberg › Lake Constance,,Curated,draft
+DE-P-STUTTGART,DE-BW,DE,2,City,travel,Stuttgart,Stuttgart,stuttgart,yes,,,Q1022,2793104,48.77750,9.18000,11,Germany › Baden-Württemberg › Stuttgart,,Curated,draft
+DE-BY,DE,DE,1,State,admin,Bavaria,Bayern,bavaria,,,DE-BY,Q980,2145268,49.078611111,11.385555555,6,Germany › Bavaria,,Wikidata,reviewed
+DE-P-BAMBERG,DE-BY,DE,2,City,travel,Bamberg,Bamberg,bamberg,yes,DE-P-NUREMBERG,,Q3936,62525,49.89167,10.89167,11,Germany › Bavaria › Bamberg,,Curated,draft
+DE-P-BERCHTESGADEN,DE-BY,DE,2,Mountains,travel,Berchtesgaden,Berchtesgaden,berchtesgaden,yes,,,Q278221,941837,47.63139,13.00417,10,Germany › Bavaria › Berchtesgaden,,Curated,draft
+DE-P-FUSSEN,DE-BY,DE,2,Town,travel,Füssen (Neuschwanstein),Füssen,fussen,yes,,,Q262684,448298,47.56667,10.70000,13,Germany › Bavaria › Füssen (Neuschwanstein),,Curated,draft
+DE-P-GARMISCH-PARTENKIRCHEN,DE-BY,DE,2,Mountains,travel,Garmisch-Partenkirchen,Garmisch-Partenkirchen,garmisch-partenkirchen,yes,,,Q127043,939334,47.50000,11.08333,10,Germany › Bavaria › Garmisch-Partenkirchen,,Curated,draft
+DE-P-MUNICH,DE-BY,DE,2,City,travel,Munich,München,munich,yes,,,Q1726,62428,48.13750,11.57500,11,Germany › Bavaria › Munich,,Curated,draft
+DE-P-NUREMBERG,DE-BY,DE,2,City,travel,Nuremberg,Nürnberg,nuremberg,yes,,,Q2090,62780,49.45389,11.07750,11,Germany › Bavaria › Nuremberg,,Curated,draft
+DE-P-REGENSBURG,DE-BY,DE,2,City,travel,Regensburg,Regensburg,regensburg,yes,,,Q2978,62411,49.01667,12.08333,11,Germany › Bavaria › Regensburg,,Curated,draft
+DE-P-ROTHENBURG-OB-DER-TAUBER,DE-BY,DE,2,Town,travel,Rothenburg ob der Tauber,Rothenburg ob der Tauber,rothenburg-ob-der-tauber,yes,,,Q153494,287759,49.37722,10.17889,13,Germany › Bavaria › Rothenburg ob der Tauber,,Curated,draft
+DE-P-WURZBURG,DE-BY,DE,2,City,travel,Würzburg,Würzburg,wurzburg,yes,,,Q2999,62464,49.79444,9.92944,11,Germany › Bavaria › Würzburg,,Curated,draft
+DE-BE,DE,DE,1,State,admin,Berlin,Berlin,berlin,yes,,DE-BE,Q64,62422,52.516666666,13.383333333,6,Germany › Berlin,,Wikidata,reviewed
+DE-BB,DE,DE,1,State,admin,Brandenburg,Brandenburg,brandenburg,,,DE-BB,Q1208,62504,52.394555555,13.060333333,6,Germany › Brandenburg,,Wikidata,reviewed
+DE-P-POTSDAM,DE-BB,DE,2,City,travel,Potsdam,Potsdam,potsdam,yes,DE-BE,,Q1711,62369,52.40093,13.05914,11,Germany › Brandenburg › Potsdam,,Curated,draft
+DE-P-SPREEWALD,DE-BB,DE,2,Countryside,travel,Spreewald,Spreewald,spreewald,yes,DE-BE,,Q148859,,51.88000,14.16667,10,Germany › Brandenburg › Spreewald,,Curated,draft
+DE-HB,DE,DE,1,State,admin,Bremen,Freie Hansestadt Bremen,bremen,yes,,DE-HB,Q1209,62718,53.133333333,8.733333333,6,Germany › Bremen,,Wikidata,reviewed
+DE-HH,DE,DE,1,State,admin,Hamburg,Hamburg,hamburg,yes,,DE-HH,Q1055,62782,53.55,10.0,6,Germany › Hamburg,,Wikidata,reviewed
+DE-HE,DE,DE,1,State,admin,Hesse,Hessen,hesse,,,DE-HE,Q1199,62650,50.608027777,9.028472222,6,Germany › Hesse,,Wikidata,reviewed
+DE-P-FRANKFURT,DE-HE,DE,2,City,travel,Frankfurt,Frankfurt am Main,frankfurt,yes,,,Q1794,62400,50.11056,8.68222,11,Germany › Hesse › Frankfurt,,Curated,draft
+DE-NI,DE,DE,1,State,admin,Lower Saxony,Niedersachsen,lower-saxony,,,DE-NI,Q1197,62771,52.756111111,9.393055555,6,Germany › Lower Saxony,,Wikidata,reviewed
+DE-P-HARZ-MOUNTAINS,DE-NI,DE,2,Mountains,travel,Harz Mountains (Goslar),Goslar,harz-mountains,yes,,,Q3896,1421453,51.90600,10.42916,10,Germany › Lower Saxony › Harz Mountains (Goslar),,Curated,draft
+DE-MV,DE,DE,1,State,admin,Mecklenburg-Vorpommern,Mecklenburg-Vorpommern,mecklenburg-vorpommern,,,DE-MV,Q1196,28322,53.75,12.5,6,Germany › Mecklenburg-Vorpommern,,Wikidata,reviewed
+DE-P-RUGEN,DE-MV,DE,2,Island,travel,Rügen,Rügen,rugen,yes,,,Q3237,1434381,54.45000,13.40000,10,Germany › Mecklenburg-Vorpommern › Rügen,,Curated,draft
+DE-NW,DE,DE,1,State,admin,North Rhine-Westphalia,Nordrhein-Westfalen,north-rhine-westphalia,,,DE-NW,Q1198,62761,51.466666666,7.55,6,Germany › North Rhine-Westphalia,,Wikidata,reviewed
+DE-P-COLOGNE,DE-NW,DE,2,City,travel,Cologne,Köln,cologne,yes,,,Q365,62578,50.94222,6.95778,11,Germany › North Rhine-Westphalia › Cologne,,Curated,draft
+DE-P-DUSSELDORF,DE-NW,DE,2,City,travel,Düsseldorf,Düsseldorf,dusseldorf,yes,,,Q1718,62539,51.22556,6.77667,11,Germany › North Rhine-Westphalia › Düsseldorf,,Curated,draft
+DE-RP,DE,DE,1,State,admin,Rhineland-Palatinate,Rheinland-Pfalz,rhineland-palatinate,,,DE-RP,Q1200,62341,49.913056,7.449722,6,Germany › Rhineland-Palatinate,,Wikidata,reviewed
+DE-P-MIDDLE-RHINE-VALLEY,DE-RP,DE,2,Valley,travel,Middle Rhine Valley,Mittelrhein,middle-rhine-valley,yes,,,Q571607,,50.36934,7.61050,10,Germany › Rhineland-Palatinate › Middle Rhine Valley,,Curated,draft
+DE-P-MOSELLE-VALLEY,DE-RP,DE,2,Valley,travel,Moselle Valley (Cochem),Cochem,moselle-valley,yes,,,Q502749,1259317,50.14694,7.16667,10,Germany › Rhineland-Palatinate › Moselle Valley (Cochem),,Curated,draft
+DE-P-TRIER,DE-RP,DE,2,City,travel,Trier,Trier,trier,yes,,,Q3138,172679,49.75565,6.63935,11,Germany › Rhineland-Palatinate › Trier,,Curated,draft
+DE-SL,DE,DE,1,State,admin,Saarland,Saarland,saarland,,,DE-SL,Q1201,62372,49.37715,6.878377777,6,Germany › Saarland,,Wikidata,reviewed
+DE-SN,DE,DE,1,State,admin,Saxony,Sachsen,saxony,,,DE-SN,Q1202,62467,51.026944444,13.358888888,6,Germany › Saxony,,Wikidata,reviewed
+DE-P-DRESDEN,DE-SN,DE,2,City,travel,Dresden,Dresden,dresden,yes,,,Q1731,191645,51.04933,13.73814,11,Germany › Saxony › Dresden,,Curated,draft
+DE-P-LEIPZIG,DE-SN,DE,2,City,travel,Leipzig,Leipzig,leipzig,yes,,,Q2079,62649,51.34063,12.37473,11,Germany › Saxony › Leipzig,,Curated,draft
+DE-P-SAXON-SWITZERLAND,DE-SN,DE,2,National park,travel,Saxon Switzerland,Nationalpark Sächsische Schweiz,saxon-switzerland,yes,DE-P-DRESDEN,,Q702566,1595534,50.91420,14.27840,9,Germany › Saxony › Saxon Switzerland,,Curated,draft
+DE-ST,DE,DE,1,State,admin,Saxony-Anhalt,Sachsen-Anhalt,saxony-anhalt,,,DE-ST,Q1206,62607,52.0,11.7,6,Germany › Saxony-Anhalt,,Wikidata,reviewed
+DE-SH,DE,DE,1,State,admin,Schleswig-Holstein,Schleswig-Holstein,schleswig-holstein,,,DE-SH,Q1194,51529,54.470038,9.51416,6,Germany › Schleswig-Holstein,,Wikidata,reviewed
+DE-P-LUBECK,DE-SH,DE,2,City,travel,Lübeck,Lübeck,lubeck,yes,,,Q2843,27027,53.86972,10.68639,11,Germany › Schleswig-Holstein › Lübeck,,Curated,draft
+DE-P-SYLT,DE-SH,DE,2,Island,travel,Sylt,Sylt,sylt,yes,,,Q21008,1147134,54.89310,8.32361,10,Germany › Schleswig-Holstein › Sylt,,Curated,draft
+DE-TH,DE,DE,1,State,admin,Thuringia,Thüringen,thuringia,,,DE-TH,Q1205,62366,51.0,11.0,6,Germany › Thuringia,,Wikidata,reviewed
+DE-P-WEIMAR,DE-TH,DE,2,City,travel,Weimar,Weimar,weimar,yes,,,Q3955,62493,50.98111,11.32944,11,Germany › Thuringia › Weimar,,Curated,draft
+GR,,GR,0,Country,admin,Greece,Ελλάδα,greece,,,,Q41,192307,38.5,23.0,6,Greece,,Wikidata,reviewed
+GR-I,GR,GR,1,Region,admin,Attica Region,Περιφέρεια Αττικής,attica-region,,,GR-I,Q758056,957716,38.0,23.7,6,Greece › Attica Region,,Wikidata,reviewed
+GR-P-AEGINA,GR-I,GR,2,Island,travel,Aegina,Αίγινα,aegina,yes,GR-P-ATHENS,,Q191082,543490,37.73000,23.49000,10,Greece › Attica Region › Aegina,,Curated,draft
+GR-P-ATHENS,GR-I,GR,2,City,travel,Athens,Αθήνα,athens,yes,,,Q1524,1370736,37.98417,23.72806,11,Greece › Attica Region › Athens,,Curated,draft
+GR-P-HYDRA,GR-I,GR,2,Island,travel,Hydra,Ύδρα,hydra,yes,,,Q208319,543466,37.33500,23.47250,10,Greece › Attica Region › Hydra,,Curated,draft
+GR-H,GR,GR,1,Region,admin,Central Greece Region,Περιφέρεια Στερεάς Ελλάδας,central-greece-region,,,GR-H,Q199580,910915,38.583333333,22.666666666,6,Greece › Central Greece Region,,Wikidata,reviewed
+GR-P-DELPHI,GR-H,GR,2,Archaeological site,travel,Delphi,Δελφοί,delphi,yes,GR-P-ATHENS,,Q75459,,38.48333,22.50000,14,Greece › Central Greece Region › Delphi,,Curated,draft
+GR-B,GR,GR,1,Region,admin,Central Macedonia Region,Περιφέρεια Κεντρικής Μακεδονίας,central-macedonia-region,,,GR-B,Q17152,937958,40.7,23.0,6,Greece › Central Macedonia Region,,Wikidata,reviewed
+GR-P-HALKIDIKI,GR-B,GR,2,Coast,travel,Halkidiki,Χαλκιδική,halkidiki,yes,,,Q204728,17347937,40.58333,23.50000,9,Greece › Central Macedonia Region › Halkidiki,,Curated,draft
+GR-P-THESSALONIKI,GR-B,GR,2,City,travel,Thessaloniki,Θεσσαλονίκη,thessaloniki,yes,,,Q17151,11948133,40.64028,22.93556,11,Greece › Central Macedonia Region › Thessaloniki,,Curated,draft
+GR-M,GR,GR,1,Region,admin,Crete Region,Περιφέρεια Κρήτης,crete-region,,,GR-M,Q1267522,282436,35.216666666,24.916666666,6,Greece › Crete Region,,Wikidata,reviewed
+GR-P-AGIOS-NIKOLAOS-ELOUNDA,GR-M,GR,2,Town,travel,Agios Nikolaos & Elounda,Άγιος Νικόλαος,agios-nikolaos-elounda,yes,,,Q211463,,35.18916,25.71727,13,Greece › Crete Region › Agios Nikolaos & Elounda,,Curated,draft
+GR-P-CHANIA,GR-M,GR,2,City,travel,Chania,Χανιά,chania,yes,,,Q182299,,35.51667,24.01667,11,Greece › Crete Region › Chania,,Curated,draft
+GR-P-HERAKLION,GR-M,GR,2,City,travel,Heraklion,Ηράκλειο,heraklion,yes,,,Q160544,,35.34028,25.13444,11,Greece › Crete Region › Heraklion,,Curated,draft
+GR-P-RETHYMNO,GR-M,GR,2,City,travel,Rethymno,Ρέθυμνο,rethymno,yes,,,Q200908,,35.36889,24.47389,11,Greece › Crete Region › Rethymno,,Curated,draft
+GR-A,GR,GR,1,Region,admin,Eastern Macedonia and Thrace Region,Περιφέρεια Ανατολικής Μακεδονίας και Θράκης,eastern-macedonia-and-thrace-region,,,GR-A,Q171314,937937,41.2,25.0,6,Greece › Eastern Macedonia and Thrace Region,,Wikidata,reviewed
+GR-D,GR,GR,1,Region,admin,Epirus Region,Περιφέρεια Ηπείρου,epirus-region,,,GR-D,Q180484,554424,39.5,20.833333333,6,Greece › Epirus Region,,Wikidata,reviewed
+GR-P-ZAGORI,GR-D,GR,2,Countryside,travel,Zagori,Ζαγόρι,zagori,yes,,,Q2712111,2235944,39.86670,20.70000,10,Greece › Epirus Region › Zagori,,Curated,draft
+GR-F,GR,GR,1,Region,admin,Ionian Islands Region,Περιφέρεια Ιονίων Νήσων,ionian-islands-region,,,GR-F,Q1147674,957830,38.7,20.3,6,Greece › Ionian Islands Region,,Wikidata,reviewed
+GR-P-CORFU,GR-F,GR,2,Island,travel,Corfu,Κέρκυρα,corfu,yes,,,Q121378,966358,39.60000,19.87000,10,Greece › Ionian Islands Region › Corfu,,Curated,draft
+GR-P-KEFALONIA,GR-F,GR,2,Island,travel,Kefalonia,Κεφαλονιά,kefalonia,yes,,,Q178488,957828,38.26500,20.55250,10,Greece › Ionian Islands Region › Kefalonia,,Curated,draft
+GR-P-LEFKADA,GR-F,GR,2,Island,travel,Lefkada,Λευκάδα,lefkada,yes,,,Q190138,3984639,38.71778,20.64389,10,Greece › Ionian Islands Region › Lefkada,,Curated,draft
+GR-P-ZAKYNTHOS,GR-F,GR,2,Island,travel,Zakynthos,Ζάκυνθος,zakynthos,yes,,,Q144880,543822,37.80000,20.75000,10,Greece › Ionian Islands Region › Zakynthos,,Curated,draft
+GR-K,GR,GR,1,Region,admin,North Aegean Region,Περιφέρεια Βορείου Αιγαίου,north-aegean-region,,,GR-K,Q173620,958517,38.7,26.0,6,Greece › North Aegean Region,,Wikidata,reviewed
+GR-P-LESBOS,GR-K,GR,2,Island,travel,Lesbos,Λέσβος,lesbos,yes,,,Q128087,6830778,39.21000,26.28000,10,Greece › North Aegean Region › Lesbos,,Curated,draft
+GR-J,GR,GR,1,Region,admin,Peloponnese Region,Περιφέρεια Πελοποννήσου,peloponnese-region,,,GR-J,Q202484,957717,37.333333333,22.416666666,6,Greece › Peloponnese Region,,Wikidata,reviewed
+GR-P-MONEMVASIA,GR-J,GR,2,Town,travel,Monemvasia,Μονεμβασιά,monemvasia,yes,,,Q654616,,36.68778,23.05556,13,Greece › Peloponnese Region › Monemvasia,,Curated,draft
+GR-P-NAFPLIO,GR-J,GR,2,Town,travel,Nafplio,Ναύπλιο,nafplio,yes,,,Q202337,,37.56583,22.80000,13,Greece › Peloponnese Region › Nafplio,,Curated,draft
+GR-L,GR,GR,1,Region,admin,South Aegean Region,Περιφέρεια Νοτίου Αιγαίου,south-aegean-region,,,GR-L,Q173616,1851752,36.8,26.2,6,Greece › South Aegean Region,,Wikidata,reviewed
+GR-R-CYCLADES,GR-L,GR,2,Islands,travel,Cyclades,Κυκλάδες,cyclades,,,,Q171132,,36.93636,25.16872,8,Greece › South Aegean Region › Cyclades,,Curated,draft
+GR-P-MILOS,GR-R-CYCLADES,GR,3,Island,travel,Milos,Μήλος,milos,yes,,,Q203979,531969,36.68750,24.43250,10,Greece › South Aegean Region › Cyclades › Milos,,Curated,draft
+GR-P-MYKONOS,GR-R-CYCLADES,GR,3,Island,travel,Mykonos,Μύκονος,mykonos,yes,,,Q190210,531115,37.44596,25.32862,10,Greece › South Aegean Region › Cyclades › Mykonos,,Curated,draft
+GR-P-NAXOS,GR-R-CYCLADES,GR,3,Island,travel,Naxos,Νάξος,naxos,yes,,,Q188527,453091,37.08333,25.46667,10,Greece › South Aegean Region › Cyclades › Naxos,,Curated,draft
+GR-P-PAROS,GR-R-CYCLADES,GR,3,Island,travel,Paros,Πάρος,paros,yes,,,Q201272,453214,37.05000,25.18333,10,Greece › South Aegean Region › Cyclades › Paros,,Curated,draft
+GR-P-SANTORINI,GR-R-CYCLADES,GR,3,Island,travel,Santorini,Σαντορίνη,santorini,yes,,,Q129296,453964,36.41500,25.43250,10,Greece › South Aegean Region › Cyclades › Santorini,,Curated,draft
+GR-R-DODECANESE,GR-L,GR,2,Islands,travel,Dodecanese,Δωδεκάνησα,dodecanese,,,,Q131555,,36.77009,27.19065,8,Greece › South Aegean Region › Dodecanese,,Curated,draft
+GR-P-KOS,GR-R-DODECANESE,GR,3,Island,travel,Kos,Κως,kos,yes,,,Q187027,536480,36.81528,27.11028,10,Greece › South Aegean Region › Dodecanese › Kos,,Curated,draft
+GR-P-PATMOS,GR-R-DODECANESE,GR,3,Island,travel,Patmos,Πάτμος,patmos,yes,,,Q190053,533714,37.32500,26.54167,10,Greece › South Aegean Region › Dodecanese › Patmos,,Curated,draft
+GR-P-RHODES,GR-R-DODECANESE,GR,3,Island,travel,Rhodes,Ρόδος,rhodes,yes,,,Q43048,452614,36.17000,27.92000,10,Greece › South Aegean Region › Dodecanese › Rhodes,,Curated,draft
+GR-E,GR,GR,1,Region,admin,Thessaly Region,Περιφέρεια Θεσσαλίας,thessaly-region,,,GR-E,Q22807284,958236,39.5,22.0,6,Greece › Thessaly Region,,Wikidata,reviewed
+GR-P-METEORA,GR-E,GR,2,Town,travel,Meteora (Kalambaka),Μετέωρα,meteora,yes,,,Q3125051,,39.71250,21.62667,13,Greece › Thessaly Region › Meteora (Kalambaka),,Curated,draft
+GR-P-PELION,GR-E,GR,2,Mountains,travel,Pelion,Πήλιο,pelion,yes,,,Q1334825,,39.43333,23.05000,10,Greece › Thessaly Region › Pelion,,Curated,draft
+GR-P-SKIATHOS,GR-E,GR,2,Island,travel,Skiathos,Σκιάθος,skiathos,yes,,,Q515085,536707,39.16900,23.45680,10,Greece › Thessaly Region › Skiathos,,Curated,draft
+GR-P-SKOPELOS,GR-E,GR,2,Island,travel,Skopelos,Σκόπελος,skopelos,yes,,,Q212027,548215,39.11667,23.70000,10,Greece › Thessaly Region › Skopelos,,Curated,draft
+GR-G,GR,GR,1,Region,admin,West Greece Region,Περιφέρεια Δυτικής Ελλάδας,west-greece-region,,,GR-G,Q170291,910919,38.2,21.4,6,Greece › West Greece Region,,Wikidata,reviewed
+GR-P-OLYMPIA,GR-G,GR,2,Archaeological site,travel,Olympia,Ολυμπία,olympia,yes,,,Q38888,,37.63833,21.63000,14,Greece › West Greece Region › Olympia,,Curated,draft
+GR-C,GR,GR,1,Region,admin,Western Macedonia Region,Περιφέρεια Δυτικής Μακεδονίας,western-macedonia-region,,,GR-C,Q165408,956701,40.4,21.5,6,Greece › Western Macedonia Region,,Wikidata,reviewed
+JP,,JP,0,Country,admin,Japan,日本,japan,,,,Q17,382313,35.0,136.0,5,Japan,,Wikidata,reviewed
+JP-R-CHUBU,JP,JP,1,Region,travel,Chūbu,中部地方,chubu,,,,Q134638,,36.20776,137.82326,6,Japan › Chūbu,,Curated,draft
+JP-23,JP-R-CHUBU,JP,2,Prefecture,admin,Aichi Prefecture,愛知県,aichi-prefecture,,,JP-23,Q80434,3560336,35.180166666,136.906416666,8,Japan › Chūbu › Aichi Prefecture,,Wikidata,reviewed
+JP-P-NAGOYA,JP-23,JP,3,City,travel,Nagoya,名古屋市,nagoya,yes,,,Q11751,4576938,35.18139,136.90639,11,Japan › Chūbu › Aichi Prefecture › Nagoya,,Curated,draft
+JP-18,JP-R-CHUBU,JP,2,Prefecture,admin,Fukui Prefecture,福井県,fukui-prefecture,,,JP-18,Q133879,357112,36.065194444,136.221666666,8,Japan › Chūbu › Fukui Prefecture,,Wikidata,reviewed
+JP-21,JP-R-CHUBU,JP,2,Prefecture,admin,Gifu Prefecture,岐阜県,gifu-prefecture,,,JP-21,Q131277,760746,35.391194444,136.722194444,8,Japan › Chūbu › Gifu Prefecture,,Wikidata,reviewed
+JP-P-SHIRAKAWA-GO,JP-21,JP,3,Village,travel,Shirakawa-gō,白川郷,shirakawa-go,yes,JP-P-TAKAYAMA,,Q1002193,,36.25666,136.90504,14,Japan › Chūbu › Gifu Prefecture › Shirakawa-gō,,Curated,draft
+JP-P-TAKAYAMA,JP-21,JP,3,City,travel,Takayama,高山市,takayama,yes,,,Q622594,4716819,36.14603,137.25217,11,Japan › Chūbu › Gifu Prefecture › Takayama,,Curated,draft
+JP-17,JP-R-CHUBU,JP,2,Prefecture,admin,Ishikawa Prefecture,石川県,ishikawa-prefecture,,,JP-17,Q131281,3794726,36.595,136.625,8,Japan › Chūbu › Ishikawa Prefecture,,Wikidata,reviewed
+JP-P-KANAZAWA,JP-17,JP,3,City,travel,Kanazawa,金沢市,kanazawa,yes,,,Q191130,4800041,36.56106,136.65650,11,Japan › Chūbu › Ishikawa Prefecture › Kanazawa,,Curated,draft
+JP-20,JP-R-CHUBU,JP,2,Prefecture,admin,Nagano Prefecture,長野県,nagano-prefecture,,,JP-20,Q127877,3560284,36.651277777,138.180944444,8,Japan › Chūbu › Nagano Prefecture,,Wikidata,reviewed
+JP-P-HAKUBA,JP-20,JP,3,Mountains,travel,Hakuba,白馬村,hakuba,yes,,,Q1011157,,36.69806,137.86192,10,Japan › Chūbu › Nagano Prefecture › Hakuba,,Curated,draft
+JP-P-KAMIKOCHI,JP-20,JP,3,Mountains,travel,Kamikōchi,上高地,kamikochi,yes,,,Q1048234,,36.24697,137.63333,10,Japan › Chūbu › Nagano Prefecture › Kamikōchi,,Curated,draft
+JP-P-KARUIZAWA,JP-20,JP,3,Town,travel,Karuizawa,軽井沢町,karuizawa,yes,,,Q1012064,3591975,36.34842,138.59703,13,Japan › Chūbu › Nagano Prefecture › Karuizawa,,Curated,draft
+JP-P-KISO-VALLEY,JP-20,JP,3,Countryside,travel,Kiso Valley (Magome & Tsumago),木曽谷,kiso-valley,yes,,,Q6416831,,35.57530,137.59510,10,Japan › Chūbu › Nagano Prefecture › Kiso Valley (Magome & Tsumago),,Curated,draft
+JP-P-MATSUMOTO,JP-20,JP,3,City,travel,Matsumoto,松本市,matsumoto,yes,,,Q213324,3648972,36.23800,137.97197,11,Japan › Chūbu › Nagano Prefecture › Matsumoto,,Curated,draft
+JP-P-YUDANAKA-SHIBU-ONSEN,JP-20,JP,3,Hot-spring town,travel,Yudanaka & Shibu Onsen,湯田中温泉,yudanaka-shibu-onsen,yes,,,Q11563754,,36.73972,138.42056,13,Japan › Chūbu › Nagano Prefecture › Yudanaka & Shibu Onsen,Base for the Jigokudani snow monkeys.,Curated,draft
+JP-15,JP-R-CHUBU,JP,2,Prefecture,admin,Niigata Prefecture,新潟県,niigata-prefecture,,,JP-15,Q132705,3559887,37.902472222,139.023166666,8,Japan › Chūbu › Niigata Prefecture,,Wikidata,reviewed
+JP-P-SADO-ISLAND,JP-15,JP,3,Island,travel,Sado Island,佐渡島,sado-island,yes,,,Q998623,5337717,38.06750,138.39750,10,Japan › Chūbu › Niigata Prefecture › Sado Island,,Curated,draft
+JP-22,JP-R-CHUBU,JP,2,Prefecture,admin,Shizuoka Prefecture,静岡県,shizuoka-prefecture,,,JP-22,Q131320,3793581,34.976944444,138.383,8,Japan › Chūbu › Shizuoka Prefecture,,Wikidata,reviewed
+JP-P-IZU-PENINSULA,JP-22,JP,3,Coast,travel,Izu Peninsula,伊豆半島,izu-peninsula,yes,,,Q822822,9444296,34.86417,138.92500,9,Japan › Chūbu › Shizuoka Prefecture › Izu Peninsula,,Curated,draft
+JP-16,JP-R-CHUBU,JP,2,Prefecture,admin,Toyama Prefecture,富山県,toyama-prefecture,,,JP-16,Q132929,3793529,36.695305555,137.211305555,8,Japan › Chūbu › Toyama Prefecture,,Wikidata,reviewed
+JP-P-TATEYAMA-KUROBE-ALPINE-ROUTE,JP-16,JP,3,Mountains,travel,Tateyama Kurobe Alpine Route,立山黒部アルペンルート,tateyama-kurobe-alpine-route,yes,,,Q6425988,,36.56955,137.53196,10,Japan › Chūbu › Toyama Prefecture › Tateyama Kurobe Alpine Route,,Curated,draft
+JP-19,JP-R-CHUBU,JP,2,Prefecture,admin,Yamanashi Prefecture,山梨県,yamanashi-prefecture,,,JP-19,Q132720,3578391,35.664138888,138.568416666,8,Japan › Chūbu › Yamanashi Prefecture,,Wikidata,reviewed
+JP-P-FUJI-FIVE-LAKES,JP-19,JP,3,Lakes,travel,Fuji Five Lakes,富士五湖,fuji-five-lakes,yes,,,Q952163,,35.41583,138.87111,10,Japan › Chūbu › Yamanashi Prefecture › Fuji Five Lakes,Mount Fuji itself straddles Yamanashi and Shizuoka.,Curated,draft
+JP-R-CHUGOKU,JP,JP,1,Region,travel,Chūgoku,中国地方,chugoku,,,,Q127864,,34.83072,133.21021,6,Japan › Chūgoku,,Curated,draft
+JP-34,JP-R-CHUGOKU,JP,2,Prefecture,admin,Hiroshima Prefecture,広島県,hiroshima-prefecture,,,JP-34,Q617375,3218753,34.396388888,132.459722222,8,Japan › Chūgoku › Hiroshima Prefecture,,Wikidata,reviewed
+JP-P-HIROSHIMA,JP-34,JP,3,City,travel,Hiroshima,広島市,hiroshima,yes,,,Q34664,4097196,34.39139,132.45194,11,Japan › Chūgoku › Hiroshima Prefecture › Hiroshima,,Curated,draft
+JP-P-MIYAJIMA,JP-34,JP,3,Island,travel,Miyajima,厳島,miyajima,yes,JP-P-HIROSHIMA,,Q875301,4830304,34.27556,132.30778,10,Japan › Chūgoku › Hiroshima Prefecture › Miyajima,,Curated,draft
+JP-P-ONOMICHI,JP-34,JP,3,Town,travel,Onomichi,尾道市,onomichi,yes,,,Q696694,4090359,34.40911,133.20544,13,Japan › Chūgoku › Hiroshima Prefecture › Onomichi,Start of the Shimanami Kaidō cycling route to Shikoku.,Curated,draft
+JP-33,JP-R-CHUGOKU,JP,2,Prefecture,admin,Okayama Prefecture,岡山県,okayama-prefecture,,,JP-33,Q132936,3794962,34.661666666,133.934722222,8,Japan › Chūgoku › Okayama Prefecture,,Wikidata,reviewed
+JP-P-KURASHIKI,JP-33,JP,3,City,travel,Kurashiki,倉敷市,kurashiki,yes,JP-P-OKAYAMA,,Q467487,3938622,34.58508,133.77211,11,Japan › Chūgoku › Okayama Prefecture › Kurashiki,,Curated,draft
+JP-P-OKAYAMA,JP-33,JP,3,City,travel,Okayama,岡山市,okayama,yes,,,Q200078,3939644,34.65511,133.91958,11,Japan › Chūgoku › Okayama Prefecture › Okayama,,Curated,draft
+JP-32,JP-R-CHUGOKU,JP,2,Prefecture,admin,Shimane Prefecture,島根県,shimane-prefecture,,,JP-32,Q132751,3346137,35.472222222,133.050277777,8,Japan › Chūgoku › Shimane Prefecture,,Wikidata,reviewed
+JP-P-IZUMO,JP-32,JP,3,City,travel,Izumo,出雲市,izumo,yes,,,Q825166,4088005,35.36703,132.75467,11,Japan › Chūgoku › Shimane Prefecture › Izumo,,Curated,draft
+JP-P-MATSUE,JP-32,JP,3,City,travel,Matsue,松江市,matsue,yes,,,Q207321,4088064,35.46811,133.04853,11,Japan › Chūgoku › Shimane Prefecture › Matsue,,Curated,draft
+JP-31,JP-R-CHUGOKU,JP,2,Prefecture,admin,Tottori Prefecture,鳥取県,tottori-prefecture,,,JP-31,Q133935,3285636,35.503888888,134.2375,8,Japan › Chūgoku › Tottori Prefecture,,Wikidata,reviewed
+JP-P-TOTTORI,JP-31,JP,3,City,travel,Tottori,鳥取市,tottori,yes,,,Q200731,4110890,35.49439,134.22161,11,Japan › Chūgoku › Tottori Prefecture › Tottori,,Curated,draft
+JP-35,JP-R-CHUGOKU,JP,2,Prefecture,admin,Yamaguchi Prefecture,山口県,yamaguchi-prefecture,,,JP-35,Q127264,4016543,34.186111111,131.470277777,8,Japan › Chūgoku › Yamaguchi Prefecture,,Wikidata,reviewed
+JP-R-HOKKAIDO,JP,JP,1,Region,travel,Hokkaidō,北海道,hokkaido,,,,Q1037393,3795658,42.91580,141.66762,6,Japan › Hokkaidō,,Curated,draft
+JP-01,JP-R-HOKKAIDO,JP,2,Prefecture,admin,Hokkaido,北海道,hokkaido,,,JP-01,Q1037393,3795658,43.064333333,141.346888888,8,Japan › Hokkaidō › Hokkaido,,Wikidata,reviewed
+JP-P-FURANO-BIEI,JP-01,JP,3,Countryside,travel,Furano & Biei,富良野市,furano-biei,yes,,,Q654738,4064385,43.34203,142.38319,10,Japan › Hokkaidō › Hokkaido › Furano & Biei,,Curated,draft
+JP-P-HAKODATE,JP-01,JP,3,City,travel,Hakodate,函館市,hakodate,yes,,,Q26418,4088019,41.76867,140.72892,11,Japan › Hokkaidō › Hokkaido › Hakodate,,Curated,draft
+JP-P-LAKE-TOYA,JP-01,JP,3,Lakes,travel,Lake Tōya,洞爺湖,lake-toya,yes,,,Q1323974,,42.58333,140.85000,10,Japan › Hokkaidō › Hokkaido › Lake Tōya,,Curated,draft
+JP-P-NISEKO,JP-01,JP,3,Mountains,travel,Niseko,ニセコ町,niseko,yes,,,Q1204586,4087840,42.80500,140.68792,10,Japan › Hokkaidō › Hokkaido › Niseko,,Curated,draft
+JP-P-NOBORIBETSU,JP-01,JP,3,Hot-spring town,travel,Noboribetsu,登別市,noboribetsu,yes,,,Q428989,4085858,42.41275,141.10658,13,Japan › Hokkaidō › Hokkaido › Noboribetsu,,Curated,draft
+JP-P-OTARU,JP-01,JP,3,Town,travel,Otaru,小樽市,otaru,yes,JP-P-SAPPORO,,Q242108,4085754,43.19072,140.99436,13,Japan › Hokkaidō › Hokkaido › Otaru,,Curated,draft
+JP-P-SAPPORO,JP-01,JP,3,City,travel,Sapporo,札幌市,sapporo,yes,,,Q37951,4085749,43.06194,141.35444,11,Japan › Hokkaidō › Hokkaido › Sapporo,,Curated,draft
+JP-P-SHIRETOKO,JP-01,JP,3,National park,travel,Shiretoko,知床国立公園,shiretoko,yes,,,Q739391,5664674,44.16194,145.23556,9,Japan › Hokkaidō › Hokkaido › Shiretoko,,Curated,draft
+JP-R-KANSAI,JP,JP,1,Region,travel,Kansai,近畿地方,kansai,,,,Q164256,,34.72081,135.57363,6,Japan › Kansai,,Curated,draft
+JP-28,JP-R-KANSAI,JP,2,Prefecture,admin,Hyōgo Prefecture,兵庫県,hyogo-prefecture,,,JP-28,Q130290,356912,34.69125,135.183083333,8,Japan › Kansai › Hyōgo Prefecture,,Wikidata,reviewed
+JP-P-HIMEJI,JP-28,JP,3,City,travel,Himeji,姫路市,himeji,yes,JP-P-OSAKA,,Q209801,900269,34.81517,134.68539,11,Japan › Kansai › Hyōgo Prefecture › Himeji,,Curated,draft
+JP-P-KINOSAKI-ONSEN,JP-28,JP,3,Hot-spring town,travel,Kinosaki Onsen,城崎温泉,kinosaki-onsen,yes,,,Q11426141,,35.62778,134.80000,13,Japan › Kansai › Hyōgo Prefecture › Kinosaki Onsen,,Curated,draft
+JP-P-KOBE,JP-28,JP,3,City,travel,Kobe,神戸市,kobe,yes,JP-P-OSAKA,,Q48320,900329,34.69017,135.19544,11,Japan › Kansai › Hyōgo Prefecture › Kobe,,Curated,draft
+JP-26,JP-R-KANSAI,JP,2,Prefecture,admin,Kyoto Prefecture,京都府,kyoto-prefecture,,,JP-26,Q120730,2137477,35.021027777,135.755583333,8,Japan › Kansai › Kyoto Prefecture,,Wikidata,reviewed
+JP-P-AMANOHASHIDATE-INE,JP-26,JP,3,Coast,travel,Amanohashidate & Ine,天橋立,amanohashidate-ine,yes,,,Q259727,,35.56956,135.19201,9,Japan › Kansai › Kyoto Prefecture › Amanohashidate & Ine,,Curated,draft
+JP-P-KYOTO,JP-26,JP,3,City,travel,Kyoto,京都市,kyoto,yes,,,Q34600,357794,35.01161,135.76811,11,Japan › Kansai › Kyoto Prefecture › Kyoto,,Curated,draft
+JP-24,JP-R-KANSAI,JP,2,Prefecture,admin,Mie Prefecture,三重県,mie-prefecture,,,JP-24,Q128196,812190,34.73025,136.508666666,8,Japan › Kansai › Mie Prefecture,,Wikidata,reviewed
+JP-P-ISE,JP-24,JP,3,City,travel,Ise,伊勢市,ise,yes,,,Q328067,4538518,34.48750,136.70931,11,Japan › Kansai › Mie Prefecture › Ise,,Curated,draft
+JP-29,JP-R-KANSAI,JP,2,Prefecture,admin,Nara Prefecture,奈良県,nara-prefecture,,,JP-29,Q131287,358631,34.685194444,135.832944444,8,Japan › Kansai › Nara Prefecture,,Wikidata,reviewed
+JP-P-NARA,JP-29,JP,3,City,travel,Nara,奈良市,nara,yes,JP-P-OSAKA,,Q169134,3227707,34.68500,135.80478,11,Japan › Kansai › Nara Prefecture › Nara,,Curated,draft
+JP-27,JP-R-KANSAI,JP,2,Prefecture,admin,Osaka Prefecture,大阪府,osaka-prefecture,,,JP-27,Q122723,341906,34.686333333,135.519861111,8,Japan › Kansai › Osaka Prefecture,,Wikidata,reviewed
+JP-P-OSAKA,JP-27,JP,3,City,travel,Osaka,大阪市,osaka,yes,,,Q35765,358674,34.69375,135.50211,11,Japan › Kansai › Osaka Prefecture › Osaka,,Curated,draft
+JP-25,JP-R-KANSAI,JP,2,Prefecture,admin,Shiga Prefecture,滋賀県,shiga-prefecture,,,JP-25,Q131358,357800,35.004361111,135.8685,8,Japan › Kansai › Shiga Prefecture,,Wikidata,reviewed
+JP-30,JP-R-KANSAI,JP,2,Prefecture,admin,Wakayama Prefecture,和歌山県,wakayama-prefecture,,,JP-30,Q131314,908959,34.226027777,135.1675,8,Japan › Kansai › Wakayama Prefecture,,Wikidata,reviewed
+JP-P-KUMANO-KODO,JP-30,JP,3,Trails,travel,Kumano Kodō,熊野古道,kumano-kodo,yes,,,Q17050475,17094647,34.45246,136.72130,9,Japan › Kansai › Wakayama Prefecture › Kumano Kodō,,Curated,draft
+JP-P-KOYASAN,JP-30,JP,3,Mountains,travel,Kōyasan,高野山,koyasan,yes,,,Q535065,,34.21778,135.58333,10,Japan › Kansai › Wakayama Prefecture › Kōyasan,,Curated,draft
+JP-P-SHIRAHAMA,JP-30,JP,3,Coast,travel,Shirahama,白浜町,shirahama,yes,,,Q1202728,3341935,33.67814,135.34811,9,Japan › Kansai › Wakayama Prefecture › Shirahama,,Curated,draft
+JP-R-KANTO,JP,JP,1,Region,travel,Kantō,関東地方,kanto,,,,Q132480,1803923,34.88294,139.67426,6,Japan › Kantō,,Curated,draft
+JP-12,JP-R-KANTO,JP,2,Prefecture,admin,Chiba Prefecture,千葉県,chiba-prefecture,,,JP-12,Q80011,2679957,35.604444444,140.123055555,8,Japan › Kantō › Chiba Prefecture,,Wikidata,reviewed
+JP-10,JP-R-KANTO,JP,2,Prefecture,admin,Gunma Prefecture,群馬県,gunma-prefecture,,,JP-10,Q129499,1851649,36.39,139.06,8,Japan › Kantō › Gunma Prefecture,,Wikidata,reviewed
+JP-P-KUSATSU-ONSEN,JP-10,JP,3,Hot-spring town,travel,Kusatsu Onsen,草津町,kusatsu-onsen,yes,,,Q1358949,3628186,36.62069,138.59608,13,Japan › Kantō › Gunma Prefecture › Kusatsu Onsen,,Curated,draft
+JP-08,JP-R-KANTO,JP,2,Prefecture,admin,Ibaraki Prefecture,茨城県,ibaraki-prefecture,,,JP-08,Q83273,2682940,36.341722222,140.446833333,8,Japan › Kantō › Ibaraki Prefecture,,Wikidata,reviewed
+JP-14,JP-R-KANTO,JP,2,Prefecture,admin,Kanagawa Prefecture,神奈川県,kanagawa-prefecture,,,JP-14,Q127513,2689487,35.44775,139.642527777,8,Japan › Kantō › Kanagawa Prefecture,,Wikidata,reviewed
+JP-P-HAKONE,JP-14,JP,3,Mountains,travel,Hakone,箱根町,hakone,yes,JP-P-TOKYO,,Q671040,2689439,35.23236,139.10694,10,Japan › Kantō › Kanagawa Prefecture › Hakone,Often an overnight onsen stay rather than a day trip.,Curated,draft
+JP-P-KAMAKURA,JP-14,JP,3,Town,travel,Kamakura,鎌倉,kamakura,yes,JP-P-TOKYO,,Q10939227,,35.31881,139.55192,13,Japan › Kantō › Kanagawa Prefecture › Kamakura,,Curated,draft
+JP-P-YOKOHAMA,JP-14,JP,3,City,travel,Yokohama,横浜市,yokohama,yes,JP-P-TOKYO,,Q38283,2689482,35.45033,139.63422,11,Japan › Kantō › Kanagawa Prefecture › Yokohama,,Curated,draft
+JP-11,JP-R-KANTO,JP,2,Prefecture,admin,Saitama Prefecture,埼玉県,saitama-prefecture,,,JP-11,Q128186,1768185,35.857166666,139.649194444,8,Japan › Kantō › Saitama Prefecture,,Wikidata,reviewed
+JP-P-CHICHIBU,JP-11,JP,3,Countryside,travel,Chichibu,秩父市,chichibu,yes,JP-P-TOKYO,,Q647079,1765979,35.99178,139.08547,10,Japan › Kantō › Saitama Prefecture › Chichibu,,Curated,draft
+JP-P-KAWAGOE,JP-11,JP,3,City,travel,Kawagoe,川越市,kawagoe,yes,JP-P-TOKYO,,Q319740,1768985,35.92514,139.48578,11,Japan › Kantō › Saitama Prefecture › Kawagoe,,Curated,draft
+JP-09,JP-R-KANTO,JP,2,Prefecture,admin,Tochigi Prefecture,栃木県,tochigi-prefecture,,,JP-09,Q44843,1800742,36.565555555,139.883527777,8,Japan › Kantō › Tochigi Prefecture,,Wikidata,reviewed
+JP-P-NIKKO,JP-09,JP,3,Town,travel,Nikkō,日光市,nikko,yes,JP-P-TOKYO,,Q235753,4196326,36.71983,139.69817,13,Japan › Kantō › Tochigi Prefecture › Nikkō,,Curated,draft
+JP-13,JP-R-KANTO,JP,2,Prefecture,admin,Tokyo,東京都,tokyo,,,JP-13,Q1490,1543125,35.689444444,139.691666666,8,Japan › Kantō › Tokyo,,Wikidata,reviewed
+JP-P-OGASAWARA-ISLANDS,JP-13,JP,3,Islands,travel,Ogasawara Islands,小笠原群島,ogasawara-islands,yes,,,Q243634,11775500,26.99806,142.21806,8,Japan › Kantō › Tokyo › Ogasawara Islands,"1,000 km south of the city: a 24-hour ferry, never a day trip.",Curated,draft
+JP-P-TOKYO,JP-13,JP,3,City,travel,Tokyo,東京都,tokyo,yes,,,Q1490,1543125,35.68944,139.69167,11,Japan › Kantō › Tokyo › Tokyo,Tokyo Metropolis on the mainland: the 23 wards plus Tama (Mount Takao). The Izu and Ogasawara islands are separate.,Curated,draft
+JP-R-KYUSHU,JP,JP,1,Region,travel,Kyūshū & Okinawa,九州地方,kyushu-okinawa,,,,Q13393883,1842245,30.39389,129.39402,6,Japan › Kyūshū & Okinawa,,Curated,draft
+JP-40,JP-R-KYUSHU,JP,2,Prefecture,admin,Fukuoka Prefecture,福岡県,fukuoka-prefecture,,,JP-40,Q123258,1553735,33.606111111,130.418055555,8,Japan › Kyūshū & Okinawa › Fukuoka Prefecture,,Wikidata,reviewed
+JP-P-FUKUOKA,JP-40,JP,3,City,travel,Fukuoka,福岡市,fukuoka,yes,,,Q26600,4008611,33.59014,130.40172,11,Japan › Kyūshū & Okinawa › Fukuoka Prefecture › Fukuoka,,Curated,draft
+JP-46,JP-R-KYUSHU,JP,2,Prefecture,admin,Kagoshima Prefecture,鹿児島県,kagoshima-prefecture,,,JP-46,Q15701,1842186,31.56,130.558055555,8,Japan › Kyūshū & Okinawa › Kagoshima Prefecture,,Wikidata,reviewed
+JP-P-KAGOSHIMA,JP-46,JP,3,City,travel,Kagoshima,鹿児島市,kagoshima,yes,,,Q15674,3962762,31.59681,130.55714,11,Japan › Kyūshū & Okinawa › Kagoshima Prefecture › Kagoshima,,Curated,draft
+JP-P-YAKUSHIMA,JP-46,JP,3,Island,travel,Yakushima,屋久島,yakushima,yes,,,Q242176,4098977,30.35861,130.52861,10,Japan › Kyūshū & Okinawa › Kagoshima Prefecture › Yakushima,,Curated,draft
+JP-43,JP-R-KYUSHU,JP,2,Prefecture,admin,Kumamoto Prefecture,熊本県,kumamoto-prefecture,,,JP-43,Q130308,1842185,32.789722222,130.741388888,8,Japan › Kyūshū & Okinawa › Kumamoto Prefecture,,Wikidata,reviewed
+JP-P-ASO,JP-43,JP,3,Mountains,travel,Aso,阿蘇山,aso,yes,,,Q733710,,32.88500,131.10417,10,Japan › Kyūshū & Okinawa › Kumamoto Prefecture › Aso,,Curated,draft
+JP-P-KUMAMOTO,JP-43,JP,3,City,travel,Kumamoto,熊本市,kumamoto,yes,,,Q199889,4000503,32.80300,130.70786,11,Japan › Kyūshū & Okinawa › Kumamoto Prefecture › Kumamoto,,Curated,draft
+JP-45,JP-R-KYUSHU,JP,2,Prefecture,admin,Miyazaki Prefecture,宮崎県,miyazaki-prefecture,,,JP-45,Q130300,1842184,31.910833333,131.423611111,8,Japan › Kyūshū & Okinawa › Miyazaki Prefecture,,Wikidata,reviewed
+JP-P-TAKACHIHO,JP-45,JP,3,Town,travel,Takachiho,高千穂町,takachiho,yes,,,Q1350939,3990262,32.71167,131.30775,13,Japan › Kyūshū & Okinawa › Miyazaki Prefecture › Takachiho,,Curated,draft
+JP-42,JP-R-KYUSHU,JP,2,Prefecture,admin,Nagasaki Prefecture,長崎県,nagasaki-prefecture,,,JP-42,Q169376,1842151,32.75,129.8675,8,Japan › Kyūshū & Okinawa › Nagasaki Prefecture,,Wikidata,reviewed
+JP-P-NAGASAKI,JP-42,JP,3,City,travel,Nagasaki,長崎市,nagasaki,yes,,,Q38234,4011885,32.74953,129.87964,11,Japan › Kyūshū & Okinawa › Nagasaki Prefecture › Nagasaki,,Curated,draft
+JP-47,JP-R-KYUSHU,JP,2,Prefecture,admin,Okinawa Prefecture,沖縄県,okinawa-prefecture,,,JP-47,Q766445,3795635,26.212222222,127.680833333,8,Japan › Kyūshū & Okinawa › Okinawa Prefecture,,Wikidata,reviewed
+JP-P-ISHIGAKI-ISLAND,JP-47,JP,3,Island,travel,Ishigaki Island,石垣島,ishigaki-island,yes,,,Q714339,4858186,24.40333,124.19361,10,Japan › Kyūshū & Okinawa › Okinawa Prefecture › Ishigaki Island,,Curated,draft
+JP-P-KERAMA-ISLANDS,JP-47,JP,3,Islands,travel,Kerama Islands,慶良間諸島,kerama-islands,yes,JP-P-OKINAWA-ISLAND,,Q198422,,26.20000,127.35000,8,Japan › Kyūshū & Okinawa › Okinawa Prefecture › Kerama Islands,,Curated,draft
+JP-P-MIYAKO-ISLAND,JP-47,JP,3,Island,travel,Miyako Island,宮古島市,miyako-island,yes,,,Q714636,4559235,24.79006,125.29489,10,Japan › Kyūshū & Okinawa › Okinawa Prefecture › Miyako Island,,Curated,draft
+JP-P-OKINAWA-ISLAND,JP-47,JP,3,Island,travel,Okinawa Island,沖縄本島,okinawa-island,yes,,,Q600614,4098955,26.48333,127.95000,10,Japan › Kyūshū & Okinawa › Okinawa Prefecture › Okinawa Island,Naha and the main island.,Curated,draft
+JP-41,JP-R-KYUSHU,JP,2,Prefecture,admin,Saga Prefecture,佐賀県,saga-prefecture,,,JP-41,Q160420,1842150,33.249166666,130.299444444,8,Japan › Kyūshū & Okinawa › Saga Prefecture,,Wikidata,reviewed
+JP-44,JP-R-KYUSHU,JP,2,Prefecture,admin,Ōita Prefecture,大分県,oita-prefecture,,,JP-44,Q133924,356911,33.238055555,131.6125,8,Japan › Kyūshū & Okinawa › Ōita Prefecture,,Wikidata,reviewed
+JP-P-BEPPU,JP-44,JP,3,Hot-spring town,travel,Beppu,別府市,beppu,yes,,,Q273880,4004877,33.28461,131.49128,13,Japan › Kyūshū & Okinawa › Ōita Prefecture › Beppu,,Curated,draft
+JP-P-YUFUIN,JP-44,JP,3,Hot-spring town,travel,Yufuin,湯布院町,yufuin,yes,,,Q8189446,,33.26442,131.35558,13,Japan › Kyūshū & Okinawa › Ōita Prefecture › Yufuin,,Curated,draft
+JP-R-SHIKOKU,JP,JP,1,Region,travel,Shikoku,四国地方,shikoku,,,,Q60213044,1847663,34.01518,133.63488,6,Japan › Shikoku,,Curated,draft
+JP-38,JP-R-SHIKOKU,JP,2,Prefecture,admin,Ehime Prefecture,愛媛県,ehime-prefecture,,,JP-38,Q123376,3795063,33.841388888,132.765555555,8,Japan › Shikoku › Ehime Prefecture,,Wikidata,reviewed
+JP-P-MATSUYAMA,JP-38,JP,3,City,travel,Matsuyama,松山市,matsuyama,yes,,,Q200022,4050217,33.83917,132.76564,11,Japan › Shikoku › Ehime Prefecture › Matsuyama,,Curated,draft
+JP-37,JP-R-SHIKOKU,JP,2,Prefecture,admin,Kagawa Prefecture,香川県,kagawa-prefecture,,,JP-37,Q161454,3795064,34.34,134.043055555,8,Japan › Shikoku › Kagawa Prefecture,,Wikidata,reviewed
+JP-P-NAOSHIMA,JP-37,JP,3,Island,travel,Naoshima,直島町,naoshima,yes,,,Q1350060,4051409,34.45981,133.99564,10,Japan › Shikoku › Kagawa Prefecture › Naoshima,,Curated,draft
+JP-P-TAKAMATSU,JP-37,JP,3,City,travel,Takamatsu,高松市,takamatsu,yes,,,Q200707,4051287,34.34281,134.04661,11,Japan › Shikoku › Kagawa Prefecture › Takamatsu,,Curated,draft
+JP-39,JP-R-SHIKOKU,JP,2,Prefecture,admin,Kōchi Prefecture,高知県,kochi-prefecture,,,JP-39,Q134093,3795031,33.559444444,133.530833333,8,Japan › Shikoku › Kōchi Prefecture,,Wikidata,reviewed
+JP-P-KOCHI,JP-39,JP,3,City,travel,Kōchi,高知市,kochi,yes,,,Q200251,4028510,33.55883,133.53122,11,Japan › Shikoku › Kōchi Prefecture › Kōchi,,Curated,draft
+JP-36,JP-R-SHIKOKU,JP,2,Prefecture,admin,Tokushima Prefecture,徳島県,tokushima-prefecture,,,JP-36,Q160734,3795000,34.065555555,134.559166666,8,Japan › Shikoku › Tokushima Prefecture,,Wikidata,reviewed
+JP-P-IYA-VALLEY,JP-36,JP,3,Countryside,travel,Iya Valley,祖谷渓,iya-valley,yes,,,Q3408660,,33.87528,133.83528,10,Japan › Shikoku › Tokushima Prefecture › Iya Valley,,Curated,draft
+JP-R-TOHOKU,JP,JP,1,Region,travel,Tōhoku,東北地方,tohoku,,,,Q129465,,38.78408,140.57077,6,Japan › Tōhoku,,Curated,draft
+JP-05,JP-R-TOHOKU,JP,2,Prefecture,admin,Akita Prefecture,秋田県,akita-prefecture,,,JP-05,Q81863,3791413,39.718611111,140.1025,8,Japan › Tōhoku › Akita Prefecture,,Wikidata,reviewed
+JP-P-KAKUNODATE,JP-05,JP,3,Town,travel,Kakunodate,角館町,kakunodate,yes,,,Q2054493,,39.59628,140.56203,13,Japan › Tōhoku › Akita Prefecture › Kakunodate,,Curated,draft
+JP-02,JP-R-TOHOKU,JP,2,Prefecture,admin,Aomori Prefecture,青森県,aomori-prefecture,,,JP-02,Q71699,1834655,40.824611111,140.740555555,8,Japan › Tōhoku › Aomori Prefecture,,Wikidata,reviewed
+JP-P-HIROSAKI,JP-02,JP,3,City,travel,Hirosaki,弘前市,hirosaki,yes,,,Q194087,4107507,40.60311,140.46383,11,Japan › Tōhoku › Aomori Prefecture › Hirosaki,,Curated,draft
+JP-P-LAKE-TOWADA-OIRASE,JP-02,JP,3,Lakes,travel,Lake Towada & Oirase,十和田湖,lake-towada-oirase,yes,,,Q1196132,253938,40.46667,140.86667,10,Japan › Tōhoku › Aomori Prefecture › Lake Towada & Oirase,,Curated,draft
+JP-07,JP-R-TOHOKU,JP,2,Prefecture,admin,Fukushima Prefecture,福島県,fukushima-prefecture,,,JP-07,Q71707,1800608,37.750277777,140.46775,8,Japan › Tōhoku › Fukushima Prefecture,,Wikidata,reviewed
+JP-P-AIZU-WAKAMATSU,JP-07,JP,3,City,travel,Aizu-Wakamatsu,会津若松市,aizu-wakamatsu,yes,,,Q237699,4174424,37.49483,139.92975,11,Japan › Tōhoku › Fukushima Prefecture › Aizu-Wakamatsu,,Curated,draft
+JP-P-OUCHI-JUKU,JP-07,JP,3,Village,travel,Ōuchi-juku,大内宿,ouchi-juku,yes,JP-P-AIZU-WAKAMATSU,,Q3594058,,37.33417,139.86078,14,Japan › Tōhoku › Fukushima Prefecture › Ōuchi-juku,,Curated,draft
+JP-03,JP-R-TOHOKU,JP,2,Prefecture,admin,Iwate Prefecture,岩手県,iwate-prefecture,,,JP-03,Q48326,3792412,39.7035,141.152722222,8,Japan › Tōhoku › Iwate Prefecture,,Wikidata,reviewed
+JP-P-HIRAIZUMI,JP-03,JP,3,Town,travel,Hiraizumi,平泉町,hiraizumi,yes,,,Q1203004,963775,38.98661,141.11383,13,Japan › Tōhoku › Iwate Prefecture › Hiraizumi,,Curated,draft
+JP-04,JP-R-TOHOKU,JP,2,Prefecture,admin,Miyagi Prefecture,宮城県,miyagi-prefecture,,,JP-04,Q47896,3790801,38.268583333,140.872027777,8,Japan › Tōhoku › Miyagi Prefecture,,Wikidata,reviewed
+JP-P-MATSUSHIMA,JP-04,JP,3,Coast,travel,Matsushima,松島町,matsushima,yes,JP-P-SENDAI,,Q1349082,4158839,38.38017,141.06733,9,Japan › Tōhoku › Miyagi Prefecture › Matsushima,,Curated,draft
+JP-P-SENDAI,JP-04,JP,3,City,travel,Sendai,仙台市,sendai,yes,,,Q46747,4135014,38.26822,140.86942,11,Japan › Tōhoku › Miyagi Prefecture › Sendai,,Curated,draft
+JP-06,JP-R-TOHOKU,JP,2,Prefecture,admin,Yamagata Prefecture,山形県,yamagata-prefecture,,,JP-06,Q125863,3790869,38.240444444,140.363555555,8,Japan › Tōhoku › Yamagata Prefecture,,Wikidata,reviewed
+JP-P-GINZAN-ONSEN,JP-06,JP,3,Hot-spring town,travel,Ginzan Onsen,銀山温泉,ginzan-onsen,yes,,,Q5563313,,38.56972,140.53111,13,Japan › Tōhoku › Yamagata Prefecture › Ginzan Onsen,,Curated,draft
+JP-P-ZAO,JP-06,JP,3,Mountains,travel,Zaō,蔵王連峰,zao,yes,,,Q167951,,38.14100,140.44300,10,Japan › Tōhoku › Yamagata Prefecture › Zaō,,Curated,draft
+TH,,TH,0,Country,admin,Thailand,ประเทศไทย,thailand,,,,Q869,2067731,14.0,101.0,5,Thailand,,Wikidata,reviewed
+TH-R-ANDAMAN,TH,TH,1,Coast,travel,Andaman coast,ทะเลอันดามัน,andaman-coast,,,,Q47632,,7.92614,98.71935,9,Thailand › Andaman coast,,Curated,draft
+TH-P-KHAO-LAK,TH-R-ANDAMAN,TH,2,Coast,travel,Khao Lak,,khao-lak,yes,,,Q340034,,8.62991,98.24431,9,Thailand › Andaman coast › Khao Lak,,Curated,draft
+TH-P-KHAO-SOK,TH-R-ANDAMAN,TH,2,National park,travel,Khao Sok,อุทยานแห่งชาติเขาสก,khao-sok,yes,,,Q1760520,,8.93667,98.53028,9,Thailand › Andaman coast › Khao Sok,"Inland, but visited with the Andaman coast.",Curated,draft
+TH-P-KO-LANTA,TH-R-ANDAMAN,TH,2,Island,travel,Ko Lanta,อำเภอเกาะลันตา,ko-lanta,yes,,,Q475797,,7.65500,99.04167,10,Thailand › Andaman coast › Ko Lanta,,Curated,draft
+TH-P-KO-LIPE,TH-R-ANDAMAN,TH,2,Island,travel,Ko Lipe,เกาะหลีเป๊ะ,ko-lipe,yes,,,Q498252,,6.49000,99.30000,10,Thailand › Andaman coast › Ko Lipe,,Curated,draft
+TH-P-KO-PHI-PHI,TH-R-ANDAMAN,TH,2,Islands,travel,Ko Phi Phi,หมู่เกาะพีพี,ko-phi-phi,yes,,,Q511957,6099530,7.73333,98.76667,8,Thailand › Andaman coast › Ko Phi Phi,,Curated,draft
+TH-P-KRABI,TH-R-ANDAMAN,TH,2,Coast,travel,Krabi (Ao Nang & Railay),ตำบลอ่าวนาง,krabi,yes,,,Q375819,,8.04444,98.80861,9,Thailand › Andaman coast › Krabi (Ao Nang & Railay),,Curated,draft
+TH-P-PHUKET,TH-R-ANDAMAN,TH,2,Island,travel,Phuket,เกาะภูเก็ต,phuket,yes,,,Q1777775,,7.99361,98.34389,10,Thailand › Andaman coast › Phuket,,Curated,draft
+TH-R-CENTRAL,TH,TH,1,Region,travel,Central Thailand,ภาคกลาง,central-thailand,,,,Q190829,,13.67435,100.14543,6,Thailand › Central Thailand,,Curated,draft
+TH-P-AYUTTHAYA,TH-R-CENTRAL,TH,2,City,travel,Ayutthaya,เทศบาลนครพระนครศรีอยุธยา,ayutthaya,yes,TH-P-BANGKOK,,Q203370,10839539,14.35936,100.57615,11,Thailand › Central Thailand › Ayutthaya,,Curated,draft
+TH-P-BANGKOK,TH-R-CENTRAL,TH,2,City,travel,Bangkok,กรุงเทพมหานคร,bangkok,yes,,,Q1861,92277,13.75000,100.51667,11,Thailand › Central Thailand › Bangkok,,Curated,draft
+TH-P-HUA-HIN,TH-R-CENTRAL,TH,2,Town,travel,Hua Hin,เทศบาลนครหัวหิน,hua-hin,yes,,,Q667576,,12.56861,99.95778,13,Thailand › Central Thailand › Hua Hin,,Curated,draft
+TH-P-KANCHANABURI,TH-R-CENTRAL,TH,2,City,travel,Kanchanaburi,เทศบาลเมืองกาญจนบุรี,kanchanaburi,yes,,,Q239121,,14.01944,99.53111,11,Thailand › Central Thailand › Kanchanaburi,,Curated,draft
+TH-R-EAST,TH,TH,1,Region,travel,Eastern Thailand,ภาคตะวันออก,eastern-thailand,,,,Q1045682,,12.54032,101.56655,6,Thailand › Eastern Thailand,,Curated,draft
+TH-P-KO-CHANG,TH-R-EAST,TH,2,Island,travel,Ko Chang,เกาะช้าง,ko-chang,yes,,,Q941265,5660060,12.10361,102.35194,10,Thailand › Eastern Thailand › Ko Chang,,Curated,draft
+TH-P-KO-SAMET,TH-R-EAST,TH,2,Island,travel,Ko Samet,เกาะเสม็ด,ko-samet,yes,,,Q1073840,,12.56778,101.45472,10,Thailand › Eastern Thailand › Ko Samet,,Curated,draft
+TH-P-PATTAYA,TH-R-EAST,TH,2,City,travel,Pattaya,เมืองพัทยา,pattaya,yes,,,Q170919,12645794,12.94956,100.89300,11,Thailand › Eastern Thailand › Pattaya,,Curated,draft
+TH-R-GULF,TH,TH,1,Islands,travel,Gulf islands,อ่าวไทย,gulf-islands,,,,Q131217,9443847,9.77667,99.95600,8,Thailand › Gulf islands,,Curated,draft
+TH-P-KO-PHA-NGAN,TH-R-GULF,TH,2,Island,travel,Ko Pha-ngan,เกาะพะงัน,ko-pha-ngan,yes,,,Q1069922,,9.74000,100.03000,10,Thailand › Gulf islands › Ko Pha-ngan,,Curated,draft
+TH-P-KO-SAMUI,TH-R-GULF,TH,2,Island,travel,Ko Samui,เกาะสมุย,ko-samui,yes,,,Q270375,,9.50000,100.00000,10,Thailand › Gulf islands › Ko Samui,,Curated,draft
+TH-P-KO-TAO,TH-R-GULF,TH,2,Island,travel,Ko Tao,เกาะเต่า,ko-tao,yes,,,Q525940,,10.09000,99.83800,10,Thailand › Gulf islands › Ko Tao,,Curated,draft
+TH-R-NORTHEAST,TH,TH,1,Region,travel,Isan (Northeast),ภาคอีสาน,isan,,,,Q381897,,14.35000,101.44000,6,Thailand › Isan (Northeast),,Curated,draft
+TH-P-KHAO-YAI,TH-R-NORTHEAST,TH,2,National park,travel,Khao Yai,อุทยานแห่งชาติเขาใหญ่,khao-yai,yes,,,Q386420,2971358,14.35000,101.44000,9,Thailand › Isan (Northeast) › Khao Yai,,Curated,draft
+TH-R-NORTH,TH,TH,1,Region,travel,Northern Thailand,ภาคเหนือ,northern-thailand,,,,Q750014,,18.76951,99.23861,6,Thailand › Northern Thailand,,Curated,draft
+TH-P-CHIANG-MAI,TH-R-NORTH,TH,2,City,travel,Chiang Mai,เทศบาลนครเชียงใหม่,chiang-mai,yes,,,Q52028,,18.78889,98.98333,11,Thailand › Northern Thailand › Chiang Mai,,Curated,draft
+TH-P-CHIANG-RAI,TH-R-NORTH,TH,2,City,travel,Chiang Rai,เทศบาลนครเชียงราย,chiang-rai,yes,,,Q856772,,19.90944,99.82750,11,Thailand › Northern Thailand › Chiang Rai,,Curated,draft
+TH-P-PAI,TH-R-NORTH,TH,2,Town,travel,Pai,อำเภอปาย,pai,yes,,,Q476320,,19.35861,98.44000,13,Thailand › Northern Thailand › Pai,,Curated,draft
+TH-P-SUKHOTHAI,TH-R-NORTH,TH,2,Town,travel,Sukhothai,อุทยานประวัติศาสตร์สุโขทัย,sukhothai,yes,,,Q423654,,17.02111,99.70361,13,Thailand › Northern Thailand › Sukhothai,,Curated,draft
+SG,,SG,0,Country,admin,Singapore,Singapore,singapore,yes,,,Q334,536780,1.3,103.8,11,Singapore,,Wikidata,reviewed

@@ -1,0 +1,564 @@
+place_id,name_en,query,wikidata,wikidata_label,wikidata_description,why
+FR-P-PARIS,Paris,Paris,Q90,Paris,capital and most populous city in France,country + coordinates
+FR-P-VERSAILLES,Versailles,Versailles,Q621,Versailles,"French city and commune in Yvelines, in Île-de-France",country + coordinates
+FR-P-FONTAINEBLEAU,Fontainebleau,Fontainebleau,Q182872,Fontainebleau,"commune in Seine-et-Marne, France",country + coordinates
+FR-P-DISNEYLAND-PARIS,Disneyland Paris,Disneyland Paris,Q206521,Disneyland Paris,"theme park resort in France, partially owned by The Walt Disney Company",country + coordinates
+FR-P-MONT-SAINT-MICHEL,Mont-Saint-Michel,Mont-Saint-Michel,Q20892,Le Mont Saint-Michel,French commune in the Manche department,country + coordinates
+FR-P-BAYEUX-THE-D-DAY-BEACHES,Bayeux & the D-Day beaches,Bayeux,Q183910,Bayeux,"commune in Calvados, France",country + coordinates
+FR-P-ROUEN,Rouen,Rouen,Q30974,Rouen,"commune in Seine-Maritime, France",country + coordinates
+FR-P-HONFLEUR,Honfleur,Honfleur,Q231720,Honfleur,"commune in Calvados, France",country + coordinates
+FR-P-ETRETAT,Étretat,Étretat,Q290936,Étretat,"commune in Seine-Maritime, France",country + coordinates
+FR-P-GIVERNY,Giverny,Giverny,Q165061,Giverny,"commune in Eure, France",country + coordinates
+FR-P-SAINT-MALO,Saint-Malo,Saint-Malo,Q163108,Saint-Malo,"commune in Ille-et-Vilaine, France",country + coordinates
+FR-P-RENNES,Rennes,Rennes,Q647,Rennes,"capital city of the region of Brittany, France",country + coordinates
+FR-P-CARNAC-QUIBERON,Carnac & Quiberon,Carnac,Q70925,Carnac,"commune in Morbihan, France",country + coordinates
+FR-P-LILLE,Lille,Lille,Q648,Lille,"city and commune in Nord, Hauts-de-France, Northern France",country + coordinates
+FR-P-CHANTILLY,Chantilly,Chantilly,Q126675,Chantilly,"commune in Oise, France",country + coordinates
+FR-P-STRASBOURG,Strasbourg,Strasbourg,Q6602,Strasbourg,"capital and largest city of Grand Est, located in the historical region of Alsace",country + coordinates
+FR-P-COLMAR-THE-ALSACE-WINE-ROUTE,Colmar & the Alsace Wine Route,Colmar,Q130994,Colmar,"commune in Haut-Rhin, France",country + coordinates
+FR-P-REIMS,Reims,Reims,Q41876,Reims,"city in Marne, France",country + coordinates
+FR-P-EPERNAY,Épernay,Épernay,Q205537,Épernay,"commune in Marne, France",country + coordinates
+FR-P-LOIRE-VALLEY,Loire Valley (Tours & Amboise),Loire Valley,Q1050483,Loire Valley,French World Heritage Site,country + coordinates
+FR-P-CHARTRES,Chartres,Chartres,Q130272,Chartres,"commune in Eure-et-Loir, France",country + coordinates
+FR-P-NANTES,Nantes,Nantes,Q12191,Nantes,"city in Loire-Atlantique, Pays de la Loire, France",country + coordinates
+FR-P-DIJON,Dijon,Dijon,Q7003,Dijon,"commune in Côte-d'Or, France",country + coordinates
+FR-P-BEAUNE,Beaune,Beaune,Q16121,Beaune,"commune in Côte-d'Or, France",country + coordinates
+FR-P-LYON,Lyon,Lyon,Q456,Lyon,city of France,country + coordinates
+FR-P-ANNECY,Annecy,Annecy,Q50189,Annecy,"commune in Haute-Savoie, France",country + coordinates
+FR-P-CHAMONIX-MONT-BLANC,Chamonix-Mont-Blanc,Chamonix,Q83236,Chamonix-Mont-Blanc,"commune in Haute-Savoie, France",country + coordinates
+FR-P-LES-TROIS-VALLEES,Les Trois Vallées,Les Trois Vallées,Q1548034,Les 3 Vallées,"The world's largest ski area. Located in Savoie, French Alps",country + coordinates
+FR-P-BORDEAUX,Bordeaux,Bordeaux,Q1479,Bordeaux,"city and commune in Gironde, New Aquitaine, France",country + coordinates
+FR-P-SAINT-EMILION,Saint-Émilion,Saint-Émilion,Q192548,Saint-Émilion,"commune in Gironde, France",country + coordinates
+FR-P-BIARRITZ-THE-BASQUE-COAST,Biarritz & the Basque Coast,Biarritz,Q132790,Biarritz,"commune in Pyrénées-Atlantiques, France",country + coordinates
+FR-P-DORDOGNE-VALLEY,Dordogne Valley (Sarlat),Sarlat-la-Canéda,Q6381,Sarlat-la-Canéda,"French commune in Dordogne, New Aquitaine",country + coordinates
+FR-P-LA-ROCHELLE,La Rochelle,La Rochelle,Q82185,La Rochelle,"French commune and prefecture of Charente-Maritime, New Aquitaine",country + coordinates
+FR-P-TOULOUSE,Toulouse,Toulouse,Q7880,Toulouse,"French commune and city in Haute-Garonne, Occitania",country + coordinates
+FR-P-CARCASSONNE,Carcassonne,Carcassonne,Q6582,Carcassonne,"French commune in Aude, Occitania",country + coordinates
+FR-P-MONTPELLIER,Montpellier,Montpellier,Q6441,Montpellier,"city in Hérault, France",country + coordinates
+FR-P-NIMES-PONT-DU-GARD,Nîmes & Pont du Gard,Nîmes,Q42807,Nîmes,city and prefecture of the Gard department in the Occitanie region of Southern France,country + coordinates
+FR-P-LOURDES,Lourdes,Lourdes,Q3327,Lourdes,"commune in Hautes-Pyrénées, France",country + coordinates
+FR-R-COTE-AZUR,Côte d'Azur (French Riviera),French Riviera,Q182822,French Riviera,Mediterranean coastline of the southeast corner of France,country + coordinates
+FR-R-PROVENCE,Provence,(picked by hand),Q101081,Provence,region and historical province of southeastern France,country + coordinates
+FR-P-NICE,Nice,Nice,Q33959,Nice,"city and commune in Alpes-Maritimes, Provence-Alpes-Côte d'Azur, France",country + coordinates
+FR-P-CANNES,Cannes,Cannes,Q39984,Cannes,"French commune and city in Alpes-Maritimes, Provence-Alpes-Côte d'Azur",country + coordinates
+FR-P-ANTIBES,Antibes,Antibes,Q126898,Antibes,"commune in Alpes-Maritimes, France",country + coordinates
+FR-P-EZE,Èze,Èze,Q242617,Èze,"commune in Alpes-Maritimes, France",country + coordinates
+FR-P-SAINT-TROPEZ,Saint-Tropez,Saint-Tropez,Q1813,Saint-Tropez,"French commune in Var, Provence-Alpes-Côte d'Azur",country + coordinates
+FR-P-MENTON,Menton,Menton,Q180083,Menton,"commune in Alpes-Maritimes, France",country + coordinates
+FR-P-MARSEILLE,Marseille,Marseille,Q23482,Marseille,French commune,country + coordinates
+FR-P-AIX-EN-PROVENCE,Aix-en-Provence,Aix-en-Provence,Q47465,Aix-en-Provence,"French commune in Bouches-du-Rhône, Provence-Alpes-Côte d'Azur",country + coordinates
+FR-P-AVIGNON,Avignon,Avignon,Q6397,Avignon,"commune in Vaucluse, France",country + coordinates
+FR-P-ARLES,Arles,Arles,Q48292,Arles,"commune in Bouches-du-Rhône, France",country + coordinates
+FR-P-LUBERON,Luberon,Luberon,Q1780121,Luberon,mountains in France,country + coordinates
+FR-P-GORGES-DU-VERDON,Gorges du Verdon,Verdon Gorge,Q687057,Verdon Gorge,"river canyon in Provence-Alpes-Côte d'Azur, France",country + coordinates
+FR-P-CASSIS-THE-CALANQUES,Cassis & the Calanques,Cassis,Q243002,Cassis,"commune in Bouches-du-Rhône, France",country + coordinates
+FR-P-AJACCIO,Ajaccio,Ajaccio,Q40104,Ajaccio,French commune and prefecture of Corse-du-Sud and Corsica,country + coordinates
+FR-P-BONIFACIO,Bonifacio,Bonifacio,Q204051,Bonifacio,"French commune in Corse-du-Sud, Corsica",country + coordinates
+FR-P-CALVI,Calvi,"Calvi, Haute-Corse",Q202439,Calvi,"commune in Haute-Corse, France",country + coordinates
+ES-R-COSTA-SOL,Costa del Sol,Costa del Sol,Q215254,Costa del Sol,"coastal area in Andalusia, Spain",country + coordinates
+ES-P-SEVILLE,Seville,Seville,Q8717,Seville,"municipality of Andalusia, Spain",country + coordinates
+ES-P-GRANADA,Granada,Granada,Q8810,Granada,"municipality and capital of the province of Granada, Spain",country + coordinates
+ES-P-CORDOBA,Córdoba,"Córdoba, Spain",Q5818,Córdoba,"municipality in the province of Córdoba, Spain",country + coordinates
+ES-P-CADIZ,Cádiz,Cádiz,Q15682,Cádiz,"municipality and capital city of the province of Cádiz, Spain",country + coordinates
+ES-P-RONDA,Ronda,Ronda,Q13153,Ronda,City in the Spanish province of Málaga,country + coordinates
+ES-P-SIERRA-NEVADA,Sierra Nevada,Sierra Nevada (Spain),Q26955,Sierra Nevada,mountain range in southern Spain,country + coordinates
+ES-P-MALAGA,Málaga,Málaga,Q8851,Málaga,"municipality and capital of the province of Málaga, in Spain",country + coordinates
+ES-P-MARBELLA,Marbella,Marbella,Q484799,Marbella,city in Spain,country + coordinates
+ES-P-NERJA,Nerja,Nerja,Q13149,Nerja,"municipality and town in Andalusia, Spain",country + coordinates
+ES-P-BARCELONA,Barcelona,Barcelona,Q1492,Barcelona,"city in Catalonia, Spain",country + coordinates
+ES-P-GIRONA,Girona,Girona,Q7038,Girona,"municipality and capital city of the Province of Girona, Catalonia, Spain",country + coordinates
+ES-P-COSTA-BRAVA,Costa Brava,Costa Brava,Q216884,Costa Brava,Spanish coastal region in Catalonia,country + coordinates
+ES-P-SITGES,Sitges,Sitges,Q15551,Sitges,"town in Catalonia, Spain",country + coordinates
+ES-P-MONTSERRAT,Montserrat,(picked by hand),Q732115,Montserrat,"multi-peaked mountain in Catalonia, Spain",country + coordinates
+ES-P-TARRAGONA,Tarragona,Tarragona,Q15088,Tarragona,"municipality in Catalonia, Spain",country + coordinates
+ES-P-MADRID,Madrid,Madrid,Q2807,Madrid,capital of Spain,country + coordinates
+ES-P-TOLEDO,Toledo,"Toledo, Spain",Q5836,Toledo,municipality in central Spain,country + coordinates
+ES-P-CUENCA,Cuenca,"Cuenca, Spain",Q15098,Cuenca,"municipality and capital of the province of Cuenca, Spain",country + coordinates
+ES-P-SEGOVIA,Segovia,Segovia,Q15684,Segovia,"Spanish municipality, in Castilla y León, capital of the province of the same name",country + coordinates
+ES-P-AVILA,Ávila,Ávila,Q15688,Ávila,"municipality in Castile and León, Spain",country + coordinates
+ES-P-SALAMANCA,Salamanca,Salamanca,Q15695,Salamanca,"city in Castile and León, Spain",country + coordinates
+ES-P-BURGOS,Burgos,Burgos,Q9580,Burgos,"municipality in Castile and Leon, Spain",country + coordinates
+ES-P-LEON,León,(picked by hand),Q15699,León,"municipality in Castile and León, Spain",country + coordinates
+ES-P-VALENCIA,Valencia,Valencia,Q8818,Valencia,"capital city of the Valencian Community, Spain",country + coordinates
+ES-P-ALICANTE,Alicante,Alicante,Q11959,Alicante,"city in Valencian Community, Spain",country + coordinates
+ES-P-BENIDORM,Benidorm,Benidorm,Q487981,Benidorm,"municipality in the Province of Alicante, Valencian Community, Spain",country + coordinates
+ES-P-MALLORCA,Mallorca,Mallorca,Q8828,Mallorca,island in the Mediterranean Sea,country + coordinates
+ES-P-IBIZA,Ibiza,(picked by hand),Q52631,Ibiza,"island in the Balearic Islands, Spain",country + coordinates
+ES-P-MENORCA,Menorca,Menorca,Q52636,Menorca,island in Spain,country + coordinates
+ES-P-FORMENTERA,Formentera,Formentera,Q52626,Formentera,"municipality of Baleares, Spain, containing the island of the same name",country + coordinates
+ES-P-TENERIFE,Tenerife,Tenerife,Q40846,Tenerife,One of the main islands of the Canary archipelago,country + coordinates
+ES-P-GRAN-CANARIA,Gran Canaria,Gran Canaria,Q178925,Gran Canaria,One of the main islands of the Canary archipelago,country + coordinates
+ES-P-LANZAROTE,Lanzarote,Lanzarote,Q182432,Lanzarote,"one of the main islands of the Canary Islands, Spain",country + coordinates
+ES-P-FUERTEVENTURA,Fuerteventura,Fuerteventura,Q192534,Fuerteventura,One of the main islands of the Canary archipelago,country + coordinates
+ES-P-LA-PALMA,La Palma,La Palma,Q201689,La Palma,"One of the main islands of the Canary archipelago, Spain",country + coordinates
+ES-P-SAN-SEBASTIAN,San Sebastián,San Sebastián,Q10313,San Sebastián,"municipality in Basque Country, Spain",country + coordinates
+ES-P-BILBAO,Bilbao,Bilbao,Q8692,Bilbao,municipality and city in Spain,country + coordinates
+ES-P-SANTIAGO-DE-COMPOSTELA,Santiago de Compostela,Santiago de Compostela,Q14314,Santiago de Compostela,"municipality of Galicia, Spain",country + coordinates
+ES-P-PAMPLONA,Pamplona,Pamplona,Q10282,Pamplona,"municipality in Spain, capital of Navarre and main municipality of the historical Kingdom of Navarre",country + coordinates
+ES-P-PICOS-DE-EUROPA,Picos de Europa,Picos de Europa,Q1141172,Picos de Europa,mountain range,country + coordinates
+ES-P-OVIEDO,Oviedo,Oviedo,Q14317,Oviedo,"municipality of Asturias, Spain",country + coordinates
+ES-P-SANTANDER,Santander,"Santander, Spain",Q12233,Santander,"capital of the autonomous community of Cantabria, Spain",country + coordinates
+ES-P-ZARAGOZA,Zaragoza,Zaragoza,Q10305,Zaragoza,"municipality in the autonomous community of Aragon, Spain",country + coordinates
+ES-P-CACERES,Cáceres,"Cáceres, Spain",Q15678,Cáceres,"town of Extremadura, Spain",country + coordinates
+ES-P-LA-RIOJA-WINE-COUNTRY,La Rioja wine country (Logroño),Logroño,Q31917806,Logroño,city in Spain,country + coordinates
+US-R-SOCAL,Southern California,(picked by hand),Q844837,Southern California,geographic and cultural region,country + coordinates
+US-R-NORCAL,Northern California,Northern California,Q1066807,Northern California,"region of California, United States",country + coordinates
+US-R-CENTRAL-COAST,Central Coast,Central Coast (California),Q2413435,Central Coast,"region in California, United States",country + coordinates
+US-P-LOS-ANGELES,Los Angeles,Los Angeles,Q65,Los Angeles,"seat of Los Angeles County, and largest city in California, United States",country + coordinates
+US-P-SAN-DIEGO,San Diego,San Diego,Q16552,San Diego,"seat of San Diego County, California, United States; second-largest city in California",country + coordinates
+US-P-PALM-SPRINGS,Palm Springs,Palm Springs,Q488004,Palm Springs,"resort city in Riverside County, California, United States",country + coordinates
+US-P-JOSHUA-TREE,Joshua Tree,Joshua Tree National Park,Q735202,Joshua Tree National Park,national park of the United States,country + coordinates
+US-P-DEATH-VALLEY,Death Valley,Death Valley National Park,Q242111,Death Valley National Park,national park in California and Nevada in the United States,country + coordinates
+US-P-SAN-FRANCISCO,San Francisco,San Francisco,Q62,San Francisco,"city and county in California, United States",country + coordinates
+US-P-NAPA-VALLEY,Napa Valley,Napa Valley AVA,Q1151105,Napa Valley AVA,wine region,country + coordinates
+US-P-YOSEMITE,Yosemite,Yosemite National Park,Q180402,Yosemite National Park,"national park in California, United States",country + coordinates
+US-P-LAKE-TAHOE,Lake Tahoe,Lake Tahoe,Q169962,Lake Tahoe,"lake in California and Nevada, United States",country + coordinates
+US-P-SEQUOIA-KINGS-CANYON,Sequoia & Kings Canyon,Sequoia National Park,Q152660,Sequoia National Park,"national park in the Sierra Nevada mountains, California, U.S.",country + coordinates
+US-P-REDWOOD,Redwood,Redwood National and State Parks,Q63863168,Redwood National and State Parks,collaborative group of parks in California,country + coordinates
+US-P-BIG-SUR-MONTEREY,Big Sur & Monterey,Big Sur,Q859413,Big Sur,"region in Monterey County, California, United States",country + coordinates
+US-P-SANTA-BARBARA,Santa Barbara,"Santa Barbara, California",Q159288,Santa Barbara,"city in and county seat of Santa Barbara County, California, United States",country + coordinates
+US-P-NEW-YORK-CITY,New York City,New York City,Q60,New York City,most populous city in the United States,country + coordinates
+US-P-NIAGARA-FALLS,Niagara Falls,"Niagara Falls, New York",Q128133,Niagara Falls,"city in New York, United States",country + coordinates
+US-P-HUDSON-VALLEY,Hudson Valley,Hudson Valley,Q1140235,Hudson Valley,comprises the valley of the Hudson River and its adjacent communities in the U.S. state of New York,country + coordinates
+US-P-THE-HAMPTONS,The Hamptons,The Hamptons,Q1574020,The Hamptons,"seaside group of towns, villages and hamlets in Long Island, New York",country + coordinates
+US-P-MIAMI,Miami,Miami,Q8652,Miami,"city in Miami-Dade County, Florida, United States",country + coordinates
+US-P-ORLANDO,Orlando,Orlando,Q49233,Orlando,"city in and county seat of Orange County, Florida, United States",country + coordinates
+US-P-FLORIDA-KEYS,Florida Keys,Florida Keys,Q537749,Florida Keys,"coral cay archipelago in Florida, United States of America",country + coordinates
+US-P-EVERGLADES,Everglades,Everglades National Park,Q274131,Everglades National Park,one-and-a-half million acres in Florida (US) managed by the National Park Service,country + coordinates
+US-P-LAS-VEGAS,Las Vegas,Las Vegas,Q23768,Las Vegas,"seat of Clark County, and largest city in state of Nevada, United States",country + coordinates
+US-P-GRAND-CANYON,Grand Canyon,Grand Canyon National Park,Q220289,Grand Canyon National Park,"national park in Coconino and Mohave counties in Arizona, United States",country + coordinates
+US-P-SEDONA,Sedona,"Sedona, Arizona",Q80041,Sedona,"city in Yavapai and Coconino counties in Arizona, United States",country + coordinates
+US-P-PAGE,Page (Antelope Canyon & Horseshoe Bend),"Page, Arizona",Q79940,Page,"city in Coconino County, Arizona, United States",country + coordinates
+US-P-SCOTTSDALE,Scottsdale,Scottsdale,Q49221,Scottsdale,"city in Maricopa County, Arizona, United States",country + coordinates
+US-P-ZION,Zion,Zion National Park,Q205325,Zion National Park,"national park in Washington, Iron, and Kane counties in Utah, United States",country + coordinates
+US-P-BRYCE-CANYON,Bryce Canyon,Bryce Canyon National Park,Q219562,Bryce Canyon National Park,"national park in Garfield and Kane counties in Utah, United States",country + coordinates
+US-P-MOAB,Moab (Arches & Canyonlands),"Moab, Utah",Q130134,Moab,"city in and county seat of Grand County, Utah, United States",country + coordinates
+US-P-PARK-CITY,Park City,"Park City, Utah",Q482993,Park City,"city in Summit County, Utah, United States",country + coordinates
+US-P-OAHU,Oʻahu,Oahu,Q131347,Oahu,"island of Hawaii, United States",country + coordinates
+US-P-MAUI,Maui,(picked by hand),Q188705,Maui,"second-largest of the Hawaiian Islands, in the United States",country + coordinates
+US-P-HAWAII-ISLAND,Hawaiʻi Island,(picked by hand),Q68740,Hawaii,largest of the Hawaiian islands,country + coordinates
+US-P-KAUAI,Kauaʻi,Kauai,Q201026,Kauaʻi,northernmost populated island of the Hawaiian archipelago,country + coordinates
+US-P-SEATTLE,Seattle,Seattle,Q5083,Seattle,"city in and county seat of King County, State of Washington, United States",country + coordinates
+US-P-MOUNT-RAINIER,Mount Rainier,Mount Rainier National Park,Q944329,Mount Rainier National Park,national park of the United States,country + coordinates
+US-P-OLYMPIC,Olympic,Olympic National Park,Q372093,Olympic National Park,"national park on the Olympic Peninsula in Washington State, USA",country + coordinates
+US-P-SAN-JUAN-ISLANDS,San Juan Islands,San Juan Islands,Q1196315,San Juan Islands,"island group in Washington State, USA",country + coordinates
+US-P-PORTLAND,Portland,"Portland, Oregon",Q6106,Portland,"seat of Multnomah County, and largest city in state of Oregon, United States",country + coordinates
+US-P-CRATER-LAKE,Crater Lake,Crater Lake National Park,Q239304,Crater Lake National Park,"national park in Klamath, Douglas, and Jackson counties in Oregon, United States",country + coordinates
+US-P-DENVER,Denver,Denver,Q16554,Denver,consolidated city-county and capital of the U.S. state of Colorado,country + coordinates
+US-P-ROCKY-MOUNTAIN,Rocky Mountain,Rocky Mountain National Park,Q777183,Rocky Mountain National Park,"national park in Colorado, United States",country + coordinates
+US-P-ASPEN,Aspen,"Aspen, Colorado",Q205842,Aspen,"city in and county seat of Pitkin County, Colorado, United States",country + coordinates
+US-P-YELLOWSTONE,Yellowstone,Yellowstone National Park,Q351,Yellowstone National Park,"first national park in the world, located in Wyoming, Montana, and Idaho in the United States",country + coordinates
+US-P-GRAND-TETON,Grand Teton (Jackson Hole),Grand Teton National Park,Q222695,Grand Teton National Park,United States National Park in northwestern Wyoming,country + coordinates
+US-P-GLACIER,Glacier,Glacier National Park (U.S.),Q373567,Glacier National Park,"national park in Flathead and Glacier counties in Montana, United States",country + coordinates
+US-P-BLACK-HILLS,Black Hills (Mount Rushmore),Black Hills,Q250937,Black Hills,mountain range in South Dakota and Wyoming and holy site of Native Americans,country + coordinates
+US-P-CHICAGO,Chicago,Chicago,Q1297,Chicago,"city and county seat of Cook County, and largest city in State of Illinois, United States of America",country + coordinates
+US-P-BOSTON,Boston,Boston,Q100,Boston,capital city of the U.S. state of Massachusetts and seat of Suffolk County,country + coordinates
+US-P-CAPE-COD,Cape Cod,Cape Cod,Q49152,Cape Cod,"peninsula in Massachusetts, United States",country + coordinates
+US-P-PHILADELPHIA,Philadelphia,Philadelphia,Q1345,Philadelphia,largest city in the U.S. state of Pennsylvania and seat of Philadelphia County,country + coordinates
+US-P-NEW-ORLEANS,New Orleans,New Orleans,Q34404,New Orleans,"largest city of the state of Louisiana, United States",country + coordinates
+US-P-NASHVILLE,Nashville,Nashville,Q23197,Nashville,capital city of the U.S. state of Tennessee and seat of Davidson County,country + coordinates
+US-P-MEMPHIS,Memphis,"Memphis, Tennessee",Q16563,Memphis,"city in and county seat of Shelby County, Tennessee, United States",country + coordinates
+US-P-GREAT-SMOKY-MOUNTAINS,Great Smoky Mountains,Great Smoky Mountains National Park,Q464004,Great Smoky Mountains National Park,U.S. national park in Tennessee and North Carolina,country + coordinates
+US-P-AUSTIN,Austin,"Austin, Texas",Q16559,Austin,capital city of the U.S. state of Texas and seat of Travis County,country + coordinates
+US-P-SAN-ANTONIO,San Antonio,San Antonio,Q975,San Antonio,city in Texas,country + coordinates
+US-P-BIG-BEND,Big Bend,Big Bend National Park,Q1427197,Big Bend National Park,"U.S. national park located in Southern Texas, bordering Mexico",country + coordinates
+US-P-SAVANNAH,Savannah,"Savannah, Georgia",Q83813,Savannah,"city in and county seat of Chatham County, Georgia, United States",country + coordinates
+US-P-CHARLESTON,Charleston,"Charleston, South Carolina",Q47716,Charleston,largest city in the U.S. state of South Carolina,country + coordinates
+US-P-ASHEVILLE,Asheville,Asheville,Q648501,Asheville,"county seat of Buncombe County, North Carolina, United States",country + coordinates
+US-P-DENALI,Denali,Denali National Park and Preserve,Q217136,Denali National Park and Preserve,"national park and preserve in Alaska, USA",country + coordinates
+US-P-JUNEAU,Juneau,Juneau,Q29445,Juneau,consolidated city-borough and capital of the U.S. state of Alaska,country + coordinates
+US-P-SANTA-FE,Santa Fe,"Santa Fe, New Mexico",Q38555,Santa Fe,capital city of the U.S. state of New Mexico and seat of Santa Fe County,country + coordinates
+US-P-ACADIA,Acadia (Bar Harbor),Acadia National Park,Q337396,Acadia National Park,national park in the US state of Maine,country + coordinates
+IT-P-ROME,Rome,Rome,Q220,Rome,capital and largest city of Italy,country + coordinates
+IT-P-TIVOLI,Tivoli,Tivoli,Q159605,Tivoli,Italian comune,country + coordinates
+IT-P-FLORENCE,Florence,Florence,Q2044,Florence,"Italian city and commune, located in Tuscany",country + coordinates
+IT-P-SIENA,Siena,Siena,Q2751,Siena,"city in Tuscany, Italy and capital of the province of Siena",country + coordinates
+IT-P-PISA,Pisa,Pisa,Q13375,Pisa,"city in Tuscany, Central Italy",country + coordinates
+IT-P-LUCCA,Lucca,Lucca,Q13373,Lucca,"city and comune in Tuscany, Central Italy",country + coordinates
+IT-P-SAN-GIMIGNANO,San Gimignano,San Gimignano,Q91413,San Gimignano,Italian comune,country + coordinates
+IT-P-CHIANTI,Chianti,Chianti,Q1071629,Chianti,"wine-producing area in Tuscany, Italy",country + coordinates
+IT-P-VAL-D-ORCIA,Val d'Orcia,Val d'Orcia,Q217449,Val d'Orcia,valley and cultural landscape in central Italy; a World Heritage site,country + coordinates
+IT-P-VENICE,Venice,Venice,Q641,Venice,"capital city of Veneto, Italy",country + coordinates
+IT-P-VERONA,Verona,Verona,Q2028,Verona,"city in Veneto, northern Italy",country + coordinates
+IT-P-LAKE-GARDA,Lake Garda,Lake Garda,Q6414,Lake Garda,lake in Italy,country + coordinates
+IT-R-DOLOMITES,Dolomites,Dolomites,Q1283,Dolomites,mountain range in the Alps,country + coordinates
+IT-P-VAL-GARDENA,Val Gardena,Val Gardena,Q384885,Val Gardena,"valley in the Dolomites, South Tyrol, Italy",country + coordinates
+IT-P-ALTA-BADIA,Alta Badia,Alta Badia,Q433534,Alta Badia,ski resort in Italy,country + coordinates
+IT-P-CORTINA-D-AMPEZZO,Cortina d'Ampezzo,Cortina d'Ampezzo,Q41158,Cortina d'Ampezzo,"town and comune in the Province of Belluno, in the Veneto region of Northern Italy",country + coordinates
+IT-P-MILAN,Milan,Milan,Q490,Milan,Italian commune and capital city of Lombardy,country + coordinates
+IT-P-LAKE-COMO,Lake Como,Lake Como,Q15523,Lake Como,"lake in Lombardy, Italy",country + coordinates
+IT-P-BERGAMO,Bergamo,(picked by hand),Q628,Bergamo,"comune in Lombardy, Italy",country + coordinates
+IT-P-NAPLES,Naples,Naples,Q2634,Naples,"capital city of Campania, Italy",country + coordinates
+IT-P-AMALFI-COAST,Amalfi Coast,Amalfi Coast,Q212214,Amalfi Coast,"coastal area in the Campania region, Italy",country + coordinates
+IT-P-SORRENTO,Sorrento,Sorrento,Q72672,Sorrento,"city in Campania, Italy",country + coordinates
+IT-P-CAPRI,Capri,Capri,Q173292,Capri,island near Naples,country + coordinates
+IT-P-POMPEII,Pompeii,Pompeii,Q43332,Pompeii,"ancient Roman city near modern Naples, Italy",country + coordinates
+IT-P-CINQUE-TERRE,Cinque Terre,Cinque Terre,Q275639,Cinque Terre,"rugged portion of coast on the Italian Riviera, Liguria",country + coordinates
+IT-P-GENOA,Genoa,Genoa,Q1449,Genoa,Italian city,country + coordinates
+IT-P-PORTOFINO,Portofino,Portofino,Q232782,Portofino,Italian comune,country + coordinates
+IT-P-TURIN,Turin,Turin,Q495,Turin,city and commune in Italy,country + coordinates
+IT-P-LANGHE,Langhe,Langhe,Q19865,Langhe,"hilly area in Piedmont, Italy",country + coordinates
+IT-P-PALERMO,Palermo,Palermo,Q2656,Palermo,"capital of Sicily, Italy",country + coordinates
+IT-P-TAORMINA,Taormina,Taormina,Q199952,Taormina,Italian comune,country + coordinates
+IT-P-CATANIA-MOUNT-ETNA,Catania & Mount Etna,Catania,Q1903,Catania,"city in Sicily, Italy",country + coordinates
+IT-P-SYRACUSE,Syracuse,"Syracuse, Sicily",Q13670,Syracuse,Italian municipality,country + coordinates
+IT-P-AGRIGENTO,Agrigento,Agrigento,Q13678,Agrigento,Italian comune in Sicily,country + coordinates
+IT-P-AEOLIAN-ISLANDS,Aeolian Islands,Aeolian Islands,Q179883,Aeolian Islands,archipelago,country + coordinates
+IT-P-COSTA-SMERALDA,Costa Smeralda,Costa Smeralda,Q1136383,Costa Smeralda,"coastal area and tourist destination in northern Sardinia, Italy",country + coordinates
+IT-P-CAGLIARI,Cagliari,Cagliari,Q1897,Cagliari,"Italian municipality, capital of Sardinia",country + coordinates
+IT-P-ALGHERO,Alghero,Alghero,Q166282,Alghero,Italian commune,country + coordinates
+IT-P-BARI,Bari,Bari,Q3519,Bari,"Italian city, capital of the Apulia region",country + coordinates
+IT-P-LECCE,Lecce,Lecce,Q13386,Lecce,Italian comune,country + coordinates
+IT-P-ALBEROBELLO,Alberobello,Alberobello,Q51812,Alberobello,Italian comune,country + coordinates
+IT-P-POLIGNANO-A-MARE,Polignano a Mare,Polignano a Mare,Q51842,Polignano a Mare,Italian comune,country + coordinates
+IT-P-MATERA,Matera,Matera,Q13616,Matera,Italian comune,country + coordinates
+IT-P-BOLOGNA,Bologna,Bologna,Q1891,Bologna,"city and commune in Emilia-Romagna, Italy",country + coordinates
+IT-P-PARMA,Parma,Parma,Q2683,Parma,city in the northern Italian region of Emilia-Romagna,country + coordinates
+IT-P-MODENA,Modena,Modena,Q279,Modena,Italian city and municipality,country + coordinates
+IT-P-RAVENNA,Ravenna,Ravenna,Q13364,Ravenna,city in northern Italy,country + coordinates
+IT-P-RIMINI,Rimini,Rimini,Q13369,Rimini,Italian comune,country + coordinates
+IT-P-ASSISI,Assisi,Assisi,Q20103,Assisi,Italian commune in Umbria,country + coordinates
+IT-P-PERUGIA,Perugia,Perugia,Q3437,Perugia,Italian comune,country + coordinates
+IT-P-ORVIETO,Orvieto,Orvieto,Q541,Orvieto,Italian comune,country + coordinates
+IT-P-TRIESTE,Trieste,Trieste,Q546,Trieste,city and seaport in northeastern Italy,country + coordinates
+IT-P-COURMAYEUR,Courmayeur,Courmayeur,Q34993,Courmayeur,Italian municipality in the Aosta Valley,country + coordinates
+IT-P-TROPEA,Tropea,Tropea,Q54747,Tropea,Italian comune,country + coordinates
+CN-P-CHENGDE,Chengde,Chengde,Q58675,Chengde,"prefecture-level city in Hebei, China",country + coordinates
+CN-P-XI-AN,Xi'an,Xi'an,Q5826,Xi'an,"capital of Shaanxi Province, China",country + coordinates
+CN-P-MOUNT-HUA,Mount Hua,Mount Hua,Q112568,Mount Hua,"Mountain in Shaanxi, China",country + coordinates
+CN-P-GUILIN,Guilin,Guilin,Q189633,Guilin,"prefecture-level city in Guangxi, China",country + coordinates
+CN-P-YANGSHUO,Yangshuo,Yangshuo County,Q31358,Yangshuo County,"county in Guangxi, China",country + coordinates
+CN-P-LONGJI-RICE-TERRACES,Longji Rice Terraces,Longji Rice Terraces,Q124394317,Longji Rice Terraces,"rice plantation in Guangxi, China",country + coordinates
+CN-P-CHENGDU,Chengdu,Chengdu,Q30002,Chengdu,"capital of Sichuan Province, China",country + coordinates
+CN-P-JIUZHAIGOU,Jiuzhaigou,Jiuzhaigou Valley,Q4111,Jiuzhaigou Valley,nature reserve and national park in northern Sichuan. China,country + coordinates
+CN-P-LESHAN,Leshan,Leshan,Q426868,Leshan,"prefecture-level city in Sichuan, China",country + coordinates
+CN-P-MOUNT-EMEI,Mount Emei,Mount Emei,Q134927,Mount Emei,"mountain in Sichuan, China",country + coordinates
+CN-P-ZHANGJIAJIE,Zhangjiajie,Zhangjiajie National Forest Park,Q3895620,Zhangjiajie National Forest Park,park in Hunan province in China,country + coordinates
+CN-P-FENGHUANG,Fenghuang,Fenghuang County,Q664864,Fenghuang County,"administration of Xiangxi Tujia and Miao Autonomous Prefecture, Hunan province",country + coordinates
+CN-P-HUANGSHAN,Huangshan,(picked by hand),Q36034,Huangshan,mountain range in southern Anhui province in eastern China,country + coordinates
+CN-P-HONGCUN-XIDI,Hongcun & Xidi,Hongcun,Q10948011,Hongcun,"town in Yixian, Huangshan, Anhui, China",country + coordinates
+CN-P-HANGZHOU,Hangzhou,Hangzhou,Q4970,Hangzhou,"capital of Zhejiang Province, China",country + coordinates
+CN-P-WUZHEN,Wuzhen,(picked by hand),Q1371343,Wuzhen,"town in Zhejiang, China",country + coordinates
+CN-P-SUZHOU,Suzhou,Suzhou,Q42622,Suzhou,"prefecture-level city in Jiangsu, China, former capital of the kingdom of Wu",country + coordinates
+CN-P-NANJING,Nanjing,Nanjing,Q16666,Nanjing,"capital city of Jiangsu Province, China, former capital of the Republic of China and China's Ming dynasty",country + coordinates
+CN-P-ZHOUZHUANG,Zhouzhuang,Zhouzhuang,Q198070,Zhouzhuang Town,"town in Jiangyin, Wuxi, Jiangsu, China",country + coordinates
+CN-P-KUNMING,Kunming,Kunming,Q182852,Kunming,"capital of Yunnan province, China",country + coordinates
+CN-P-DALI,Dali,Dali City,Q855228,Dali,"City in Yunnan, People's Republic of China",country + coordinates
+CN-P-LIJIANG,Lijiang,Lijiang,Q205914,Lijiang,"prefecture-level city in Yunnan, China",country + coordinates
+CN-P-SHANGRI-LA,Shangri-La,Shangri-La City,Q933866,Shangri-La City,county-level city,country + coordinates
+CN-P-YUANYANG-RICE-TERRACES,Yuanyang Rice Terraces,Honghe Hani Rice Terraces,Q11605230,Honghe Hani Rice Terraces,"terraces in Honghe Prefecture, Yunnan, China",country + coordinates
+CN-P-XISHUANGBANNA,Xishuangbanna,Xishuangbanna Dai Autonomous Prefecture,Q868046,Xishuangbanna Dai Autonomous Prefecture,autonomous prefecture,country + coordinates
+CN-P-LHASA,Lhasa,Lhasa,Q5869,Lhasa,prefecture-level city and capital of Tibet,country + coordinates
+CN-P-GUANGZHOU,Guangzhou,Guangzhou,Q16572,Guangzhou,"capital city of Guangdong Province, China",country + coordinates
+CN-P-SHENZHEN,Shenzhen,Shenzhen,Q15174,Shenzhen,city in China,country + coordinates
+CN-P-XIAMEN,Xiamen,Xiamen,Q68744,Xiamen,"prefecture-level city in Fujian, China",country + coordinates
+CN-P-FUJIAN-TULOU,Fujian Tulou,Fujian tulou,Q718001,Fujian Tulou sites,Chinese rural dwellings and a world heritage site,country + coordinates
+CN-P-SANYA,Sanya,Sanya,Q319804,Sanya,"prefecture-level city in Hainan, China",country + coordinates
+CN-P-DUNHUANG,Dunhuang,Dunhuang,Q319114,Dunhuang,"county-level city in Jiuquan, Gansu, China",country + coordinates
+CN-P-ZHANGYE,Zhangye,Zhangye,Q197402,Zhangye,"prefecture-level city in Gansu, China",country + coordinates
+CN-P-KASHGAR,Kashgar,Kashgar,Q170521,Kashgar,"city in Kashgar Prefecture, Xinjiang, China",country + coordinates
+CN-P-URUMQI,Ürümqi,Ürümqi,Q16959,Ürümqi,"capital of Xinjiang Uyghur Autonomous Region, China",country + coordinates
+CN-P-TURPAN,Turpan,Turpan,Q868527,Turpan,"prefecture-level city in Xinjiang, China",country + coordinates
+CN-P-KANAS-LAKE,Kanas Lake,Kanas Lake,Q1723644,Kanas Lake,lake in People's Republic of China,country + coordinates
+CN-P-HARBIN,Harbin,Harbin,Q42956,Harbin,"capital of Heilongjiang province, China",country + coordinates
+CN-P-QINGDAO,Qingdao,Qingdao,Q170322,Qingdao,"prefecture-level city in Shandong, China",country + coordinates
+CN-P-MOUNT-TAI,Mount Tai,Mount Tai,Q216059,Mount Tai,"mountain in Shandong, China",country + coordinates
+CN-P-QUFU,Qufu,Qufu,Q210287,Qufu,county-level city,country + coordinates
+CN-P-LUOYANG,Luoyang,(picked by hand),Q187136,Luoyang,"prefecture-level city in Henan, People's Republic of China",country + coordinates
+CN-P-DENGFENG,Dengfeng (Shaolin),Dengfeng,Q877609,Dengfeng,"county-level city in Henan, China",country + coordinates
+CN-P-PINGYAO,Pingyao,Pingyao,Q500061,Pingyao,"town in central Shanxi, China, preserving Ming and Qing era architecture",country + coordinates
+CN-P-DATONG,Datong,Datong,Q72877,Datong,"prefecture-level city in Shanxi, China",country + coordinates
+CN-P-WUHAN,Wuhan,Wuhan,Q11746,Wuhan,"capital city of Hubei Province, China",country + coordinates
+CN-P-THREE-GORGES,Three Gorges,(picked by hand),Q673287,Three Gorges,"gorges in the Yangtze River, in China",country + coordinates
+CN-P-WUYUAN,Wuyuan,"Wuyuan County, Jiangxi",Q1357710,Wuyuan County,"county in Shangrao, Jiangxi, China",country + coordinates
+CN-P-ANSHUN,Anshun (Huangguoshu),Anshun,Q486149,Anshun,"prefecture-level city in Guizhou, China",country + coordinates
+CN-P-QINGHAI-LAKE,Qinghai Lake,Qinghai Lake,Q201294,Qinghai Lake,"lake in Qinghai, China",country + coordinates
+CN-P-CHANGBAI-MOUNTAIN,Changbai Mountain,Changbai Mountain,Q107635,Baekdu Mountain,volcano on the border between North Korea and China,country + coordinates
+TR-R-MARMARA,Marmara,Marmara Region,Q155583,Marmara Region,region of Turkey,country + coordinates
+TR-R-AEGEAN,Aegean,Aegean Region,Q155564,Aegean Region,region of Turkey,country + coordinates
+TR-R-MEDITERRANEAN,Mediterranean,(picked by hand),Q155552,Mediterranean Region,region of Turkey,country + coordinates
+TR-R-CENTRAL-ANATOLIA,Central Anatolia,Central Anatolia Region,Q155526,Central Anatolia Region,region of Turkey,country + coordinates
+TR-R-BLACK-SEA,Black Sea,Black Sea Region,Q155533,Black Sea Region,geographical region of Turkey,country + coordinates
+TR-R-EASTERN-ANATOLIA,Eastern Anatolia,Eastern Anatolia Region,Q155542,Eastern Anatolia Region,region of East Turkey,country + coordinates
+TR-R-SOUTHEASTERN-ANATOLIA,Southeastern Anatolia,Southeastern Anatolia Region,Q155638,Southeastern Anatolia Region,region of Turkey,country + coordinates
+TR-P-ISTANBUL,Istanbul,Istanbul,Q406,Istanbul,largest city in Turkey,country + coordinates
+TR-P-BURSA,Bursa,Bursa,Q40738,Bursa,city in Bursa province in western Turkey,country + coordinates
+TR-P-CANAKKALE,Çanakkale (Gallipoli & Troy),(picked by hand),Q199712,Çanakkale,"central district and city in Çanakkale Province, Turkey",country + coordinates
+TR-P-EDIRNE,Edirne,Edirne,Q43387,Edirne,"central district and city in Edirne Province, Turkey",country + coordinates
+TR-P-IZMIR,İzmir,İzmir,Q35997,İzmir,"city in İzmir Province, Turkey",country + coordinates
+TR-P-SELCUK,Selçuk (Ephesus),Selçuk,Q876176,Selçuk,"town and district in İzmir Province, Turkey",country + coordinates
+TR-P-PAMUKKALE,Pamukkale,Pamukkale,Q3892919,Pamukkale,"mahalle (administrative quarter) in Pamukkale, Denizli, southwestern Turkey",country + coordinates
+TR-P-KUSADAS,Kuşadası,Kuşadası,Q211952,Kuşadası,"district and town of Aydın, Turkey",country + coordinates
+TR-P-BODRUM,Bodrum,Bodrum,Q172267,Bodrum,"district and town of Muğla, Turkey",country + coordinates
+TR-P-CESME-ALACAT,Çeşme & Alaçatı,Çeşme,Q217720,Çeşme,"town and district in İzmir Province, Turkey",country + coordinates
+TR-P-FETHIYE,Fethiye,(picked by hand),Q207998,,"district and town in Muğla Province, Turkey",country + coordinates
+TR-P-MARMARIS,Marmaris,Marmaris,Q209908,Marmaris,"district and town of Muğla Province, Turkey",country + coordinates
+TR-P-DALYAN,Dalyan,"Dalyan, Muğla",Q518586,Dalyan,"mahalle (administrative quarter) in Ortaca, Muğla, southwestern Turkey",country + coordinates
+TR-P-ANTALYA,Antalya,Antalya,Q6487,Antalya,city in Turkey,country + coordinates
+TR-P-KAS,Kaş,Kaş,Q1004438,Kaş,"district and town in Antalya, Turkey",country + coordinates
+TR-P-SIDE,Side,"Side, Turkey",Q152405,Side,"mahalle (administrative quarter) in Manavgat, Antalya, southwestern Turkey",country + coordinates
+TR-P-ALANYA,Alanya,Alanya,Q171810,Alanya,"district and town in Antalya, Turkey",country + coordinates
+TR-P-KEMER,Kemer,Kemer,Q217047,Kemer,"town and district in Antalya Province, Turkey",country + coordinates
+TR-P-CAPPADOCIA,Cappadocia,Cappadocia,Q217265,Cappadocia,historical region of Anatolia in Turkey,country + coordinates
+TR-P-ANKARA,Ankara,Ankara,Q3640,Ankara,capital of Turkey,country + coordinates
+TR-P-KONYA,Konya,Konya,Q79857,Konya,"metropolitan municipality in Central Anatolia, Turkey",country + coordinates
+TR-P-TRABZON,Trabzon,Trabzon,Q45301,Trabzon,city in Turkey,country + coordinates
+TR-P-SAFRANBOLU,Safranbolu,Safranbolu,Q192501,Safranbolu,"district and town in Karabük Province, Turkey",country + coordinates
+TR-P-VAN,Van,"Van, Turkey",Q83061,Van,city in Turkey,country + coordinates
+TR-P-KARS,Kars,Kars,Q127063,Kars,"central district and city in Kars Province, Turkey",country + coordinates
+TR-P-SANLURFA,Şanlıurfa,Şanlıurfa,Q133118,Şanlıurfa,city in Turkey,country + coordinates
+TR-P-MARDIN,Mardin,Mardin,Q188022,Mardin,city in Turkey,country + coordinates
+TR-P-GAZIANTEP,Gaziantep,(picked by hand),Q93338,Gaziantep,city in Turkey,country + coordinates
+TR-P-MOUNT-NEMRUT,Mount Nemrut (Kâhta),Mount Nemrut,Q207917,Mount Nemrut,mountain and UNESCO World Heritage Site in Turkey,country + coordinates
+MX-P-TEOTIHUACAN,Teotihuacán,Teotihuacan,Q172613,Teotihuacan,ancient Mesoamerican city,country + coordinates
+MX-R-RIVIERA-MAYA,Riviera Maya,Riviera Maya,Q2061038,Riviera Maya,area just south of the tip of the Yucatán Peninsula in Mexico,country + coordinates
+MX-P-CANCUN,Cancún,Cancún,Q8969,Cancun,"municipal seat of Juárez, State of Quintana Roo, Mexico",country + coordinates
+MX-P-ISLA-MUJERES,Isla Mujeres,Isla Mujeres,Q20238448,Isla Mujeres,"municipal seat of Isla Mujeres, State of Quintana Roo, Mexico",country + coordinates
+MX-P-HOLBOX,Holbox,Holbox Island,Q1535905,Isla Holbox,island,country + coordinates
+MX-P-BACALAR,Bacalar,(picked by hand),Q1709140,Bacalar,"municipal seat of Bacalar, State of Quintana Roo, Mexico",country + coordinates
+MX-P-PLAYA-DEL-CARMEN,Playa del Carmen,(picked by hand),Q989988,Playa del Carmen,"municipal seat of Playa del Carmen, State of Quintana Roo, Mexico",country + coordinates
+MX-P-TULUM,Tulum,(picked by hand),Q277408,Tulum,"municipal seat of Tulum, State of Quintana Roo, Mexico",country + coordinates
+MX-P-COZUMEL,Cozumel,Cozumel,Q20119933,Cozumel Island,"island in Quintana Roo, Mexico",country + coordinates
+MX-P-MERIDA,Mérida,"Mérida, Yucatán",Q165204,Mérida,"capital city of Yucatan, Mexico",country + coordinates
+MX-P-VALLADOLID,Valladolid,(picked by hand),Q1024731,Valladolid,"municipal seat of Valladolid, State of Yucatán, Mexico",country + coordinates
+MX-P-CHICHEN-ITZA,Chichén Itzá,Chichén Itzá,Q20275587,Chichén-Itzá,human settlement in Mexico,country + coordinates
+MX-P-CAMPECHE,Campeche,San Francisco de Campeche,Q61301,San Francisco de Campeche,capital city of the Mexican state of Campeche,country + coordinates
+MX-P-OAXACA-CITY,Oaxaca City,Oaxaca City,Q131429,Oaxaca de Juárez,capital of the Mexican state of Oaxaca,country + coordinates
+MX-P-PUERTO-ESCONDIDO,Puerto Escondido,"Puerto Escondido, Oaxaca",Q1752991,Puerto Escondido,"town in San Pedro Mixtepec Distrito 22 Municipality, State of Oaxaca, Mexico",country + coordinates
+MX-P-HUATULCO,Huatulco,Huatulco,Q3893101,Santa María Huatulco Municipality,"municipality in the State of Oaxaca, Mexico",country + coordinates
+MX-P-SAN-MIGUEL-DE-ALLENDE,San Miguel de Allende,(picked by hand),Q753891,San Miguel de Allende,"municipal seat of Allende, State of Guanajuato, Mexico",country + coordinates
+MX-P-GUANAJUATO-CITY,Guanajuato City,Guanajuato City,Q61306,Guanajuato,"capital city of the State of Guanajuato, Mexico",country + coordinates
+MX-P-GUADALAJARA,Guadalajara,Guadalajara,Q9022,Guadalajara,"capital of the State of Jalisco, Mexico",country + coordinates
+MX-P-PUERTO-VALLARTA,Puerto Vallarta,Puerto Vallarta,Q853258,Puerto Vallarta,"municipal seat of Puerto Vallarta, State of Jalisco, Mexico",country + coordinates
+MX-P-TEQUILA,Tequila,(picked by hand),Q847764,Tequila,"municipal seat of Tequila, State of Jalisco, Mexico",country + coordinates
+MX-P-SAYULITA-RIVIERA-NAYARIT,Sayulita & Riviera Nayarit,Sayulita,Q3048851,Sayulita,"town in Bahía de Banderas Municipality, State of Nayarit, Mexico",country + coordinates
+MX-P-LOS-CABOS,Los Cabos,Los Cabos Municipality,Q659516,Los Cabos Municipality,"municipality in the State of Baja California Sur, Mexico",country + coordinates
+MX-P-LA-PAZ,La Paz,"La Paz, Baja California Sur",Q214215,La Paz,"capital city of Baja California Sur, México",country + coordinates
+MX-P-SAN-CRISTOBAL-DE-LAS-CASAS,San Cristóbal de las Casas,San Cristóbal de las Casas,Q2884933,San Cristóbal de Las Casas Municipality,"municipality in the State of Chiapas, Mexico",country + coordinates
+MX-P-PALENQUE,Palenque,(picked by hand),Q1573453,Palenque,"municipal seat of Palenque, State of Chiapas, Mexico",country + coordinates
+MX-P-PUEBLA,Puebla,(picked by hand),Q125293,Heroica Puebla de Zaragoza,"capital of the State of Puebla, Mexico",country + coordinates
+MX-P-CHOLULA,Cholula,Cholula,Q20241486,Cholula,human settlement in Mexico,country + coordinates
+MX-P-TAXCO,Taxco,Taxco,Q990095,Taxco de Alarcón,"municipal seat of Taxco, State of Guerrero, Mexico",country + coordinates
+MX-P-ACAPULCO,Acapulco,Acapulco,Q81398,Acapulco de Juárez,"municipal seat of Acapulco, State of Guerrero, Mexico",country + coordinates
+MX-P-TEPOZTLAN,Tepoztlán,Tepoztlán,Q1020785,Tepoztlán,"municipal seat of Tepoztlán, State of Morelos, Mexico",country + coordinates
+MX-P-MAZATLAN,Mazatlán,Mazatlán,Q40194,Mazatlán,"municipal seat of Mazatlán, State of Sinaloa, Mexico",country + coordinates
+MX-P-COPPER-CANYON,Copper Canyon,Copper Canyon,Q674485,Copper Canyon,mountain range in Mexico,country + coordinates
+GB-R-LONDON,London,London,Q84,London,capital and largest city of England and the United Kingdom,country + coordinates
+GB-R-SOUTH-EAST,South East England,South East England,Q48015,South East England,region of England,country + coordinates
+GB-R-SOUTH-WEST,South West England,South West England,Q48026,South West England,region of England,country + coordinates
+GB-R-EAST,East of England,East of England,Q48006,East of England,region of England,country + coordinates
+GB-R-WEST-MIDLANDS,West Midlands,West Midlands (region),Q48038,West Midlands,one of nine official regions of England,country + coordinates
+GB-R-EAST-MIDLANDS,East Midlands,East Midlands,Q47994,East Midlands,official region of England,country + coordinates
+GB-R-YORKSHIRE,Yorkshire,Yorkshire and the Humber,Q48063,Yorkshire and the Humber,region of England,country + coordinates
+GB-R-NORTH-WEST,North West England,North West England,Q47967,North West England,region of England,country + coordinates
+GB-R-NORTH-EAST,North East England,North East England,Q47983,North East England,region of England,country + coordinates
+GB-P-WINDSOR,Windsor,(picked by hand),Q464955,Windsor,"town in the Royal Borough of Windsor and Maidenhead in Berkshire, England",country + coordinates
+GB-P-OXFORD,Oxford,(picked by hand),Q34217,Oxford,"city in Oxfordshire, England",country + coordinates
+GB-P-BRIGHTON,Brighton,Brighton,Q131491,Brighton,"part of Brighton & Hove, East Sussex, England",country + coordinates
+GB-P-CANTERBURY,Canterbury,Canterbury,Q29303,Canterbury,"cathedral city in Kent, England",country + coordinates
+GB-P-BATH,Bath,Bath,Q22889,Bath,"city in Somerset, England, United Kingdom",country + coordinates
+GB-P-THE-COTSWOLDS,The Cotswolds,Cotswolds,Q301833,Cotswolds,protected area in south central England,country + coordinates
+GB-P-CORNWALL,Cornwall,Cornwall,Q23148,Cornwall,historic county of England and Celtic nation,country + coordinates
+GB-P-JURASSIC-COAST,Jurassic Coast,Jurassic Coast,Q575976,Jurassic Coast,World Heritage Site in England,country + coordinates
+GB-P-BRISTOL,Bristol,Bristol,Q23154,Bristol,"city in South West England, United Kingdom",country + coordinates
+GB-P-STONEHENGE,Stonehenge,Stonehenge,Q39671,Stonehenge,"Neolithic henge monument in Amesbury, Wiltshire, England, UK",country + coordinates
+GB-P-CAMBRIDGE,Cambridge,Cambridge,Q350,Cambridge,"city in Cambridgeshire, England",country + coordinates
+GB-P-STRATFORD-UPON-AVON,Stratford-upon-Avon,Stratford-upon-Avon,Q189288,Stratford-upon-Avon,"town in Warwickshire, England",country + coordinates
+GB-P-PEAK-DISTRICT,Peak District,Peak District,Q1330811,Peak District,upland area in central and northern England,country + coordinates
+GB-P-YORK,York,York,Q42462,York,"city in North Yorkshire, England, United Kingdom",country + coordinates
+GB-P-YORKSHIRE-DALES,Yorkshire Dales,Yorkshire Dales,Q977613,Yorkshire Dales,upland area of the Pennines in Northern England,country + coordinates
+GB-P-MANCHESTER,Manchester,Manchester,Q18125,Manchester,"city in Greater Manchester, England",country + coordinates
+GB-P-LIVERPOOL,Liverpool,Liverpool,Q24826,Liverpool,"city in Merseyside, England, United Kingdom",country + coordinates
+GB-P-LAKE-DISTRICT,Lake District,Lake District,Q211778,Lake District,"mountainous region in North West England, UK",country + coordinates
+GB-P-NEWCASTLE-UPON-TYNE,Newcastle upon Tyne,Newcastle upon Tyne,Q1425428,Newcastle upon Tyne,"city in Tyne and Wear, England, UK",country + coordinates
+GB-P-DURHAM,Durham,"Durham, England",Q179815,Durham,city and the county town of County Durham in North East England,country + coordinates
+GB-P-EDINBURGH,Edinburgh,Edinburgh,Q23436,Edinburgh,"capital city of Scotland, UK",country + coordinates
+GB-P-GLASGOW,Glasgow,Glasgow,Q4093,Glasgow,"city in Scotland, United Kingdom",country + coordinates
+GB-P-INVERNESS-LOCH-NESS,Inverness & Loch Ness,Inverness,Q160493,Inverness,"city in the Highlands of Scotland, United Kingdom",country + coordinates
+GB-P-ISLE-OF-SKYE,Isle of Skye,Isle of Skye,Q107393,Isle of Skye,largest and most northerly large island in the Inner Hebrides of Scotland,country + coordinates
+GB-P-GLENCOE-FORT-WILLIAM,Glencoe & Fort William,Glen Coe,Q92671,Glen Coe,"glen in Highland, Scotland, UK",country + coordinates
+GB-P-LOCH-LOMOND-THE-TROSSACHS,Loch Lomond & the Trossachs,Loch Lomond and The Trossachs National Park,Q116661,Loch Lomond and The Trossachs National Park,national park in Scotland,country + coordinates
+GB-P-CAIRNGORMS,Cairngorms,Cairngorms National Park,Q1025953,Cairngorms National Park,"national park in Scotland, United Kingdom",country + coordinates
+GB-P-ST-ANDREWS,St Andrews,St Andrews,Q207736,St Andrews,"town on the east coast of Fife in Scotland, UK",country + coordinates
+GB-P-CARDIFF,Cardiff,Cardiff,Q10690,Cardiff,"capital city of Wales, United Kingdom",country + coordinates
+GB-P-ERYRI,Eryri (Snowdonia),Snowdonia National Park,Q20888920,Eryri National Park,national park in Wales,country + coordinates
+GB-P-PEMBROKESHIRE-COAST,Pembrokeshire Coast,Pembrokeshire Coast National Park,Q1893297,Pembrokeshire Coast National Park,national park along the Pembrokeshire coast in west Wales,country + coordinates
+GB-P-BELFAST,Belfast,Belfast,Q10686,Belfast,capital city of Northern Ireland,country + coordinates
+GB-P-CAUSEWAY-COAST,Causeway Coast,Causeway Coast and Glens,Q5054638,Causeway Coast and Glens,one of the 11 local government districts of Northern Ireland established 2015,country + coordinates
+DE-P-MUNICH,Munich,Munich,Q1726,Munich,"capital and most populous city of Bavaria, Germany",country + coordinates
+DE-P-FUSSEN,Füssen (Neuschwanstein),Füssen,Q262684,Füssen,"urban municipality in the district of Ostallgäu, Bavaria, Germany",country + coordinates
+DE-P-NUREMBERG,Nuremberg,Nuremberg,Q2090,Nuremberg,city in the German state of Bavaria,country + coordinates
+DE-P-ROTHENBURG-OB-DER-TAUBER,Rothenburg ob der Tauber,Rothenburg ob der Tauber,Q153494,Rothenburg ob der Tauber,town in Germany,country + coordinates
+DE-P-BAMBERG,Bamberg,Bamberg,Q3936,Bamberg,"town in Bavaria, Germany",country + coordinates
+DE-P-WURZBURG,Würzburg,Würzburg,Q2999,Würzburg,"city in the region of Franconia, Northern Bavaria, Germany",country + coordinates
+DE-P-REGENSBURG,Regensburg,Regensburg,Q2978,Regensburg,"city in Bavaria, Germany",country + coordinates
+DE-P-GARMISCH-PARTENKIRCHEN,Garmisch-Partenkirchen,Garmisch-Partenkirchen,Q127043,Garmisch-Partenkirchen,"market municipality in Bavaria, Germany",country + coordinates
+DE-P-BERCHTESGADEN,Berchtesgaden,Berchtesgaden,Q278221,Berchtesgaden,market municipality of Germany,country + coordinates
+DE-P-POTSDAM,Potsdam,Potsdam,Q1711,Potsdam,capital city of the German state of Brandenburg,country + coordinates
+DE-P-SPREEWALD,Spreewald,Spreewald,Q148859,Spreewald,"region in Brandenburg, Germany",country + coordinates
+DE-P-HEIDELBERG,Heidelberg,Heidelberg,Q2966,Heidelberg,"large city in Baden-Württemberg, Germany",country + coordinates
+DE-P-BLACK-FOREST,Black Forest,Black Forest,Q4204,Black Forest,"mountain range in Baden-Württemberg, southwestern Germany",country + coordinates
+DE-P-BADEN-BADEN,Baden-Baden,Baden-Baden,Q4100,Baden-Baden,"town in Baden-Württemberg, Germany",country + coordinates
+DE-P-STUTTGART,Stuttgart,Stuttgart,Q1022,Stuttgart,"city on the Neckar river and capital of the federal state Baden-Württemberg, Germany",country + coordinates
+DE-P-LAKE-CONSTANCE,Lake Constance,Lake Constance,Q4127,Lake Constance,"lake in Germany, Switzerland and Austria",country + coordinates
+DE-P-MIDDLE-RHINE-VALLEY,Middle Rhine Valley,Middle Rhine,Q571607,Middle Rhine,landscape of Rhine valley between Nahe mouth and Bonn,country + coordinates
+DE-P-MOSELLE-VALLEY,Moselle Valley (Cochem),Cochem,Q502749,Cochem,municipality of Germany,country + coordinates
+DE-P-TRIER,Trier,Trier,Q3138,Trier,"city in Rhineland-Palatinate, Germany",country + coordinates
+DE-P-COLOGNE,Cologne,Cologne,Q365,Cologne,"most populous city in North Rhine-Westphalia, Germany",country + coordinates
+DE-P-DUSSELDORF,Düsseldorf,Düsseldorf,Q1718,Düsseldorf,capital city of the German federated state of North Rhine-Westphalia,country + coordinates
+DE-P-FRANKFURT,Frankfurt,Frankfurt am Main,Q1794,Frankfurt,"most populated city of Hesse, Germany",country + coordinates
+DE-P-DRESDEN,Dresden,Dresden,Q1731,Dresden,capital city of the Free State of Saxony in Germany,country + coordinates
+DE-P-LEIPZIG,Leipzig,Leipzig,Q2079,Leipzig,"largest city in Saxony, Germany",country + coordinates
+DE-P-SAXON-SWITZERLAND,Saxon Switzerland,Saxon Switzerland National Park,Q702566,Saxon Switzerland National Park,"national park in Saxony, Germany",country + coordinates
+DE-P-WEIMAR,Weimar,Weimar,Q3955,Weimar,"city in the federal state of Thuringia, Germany",country + coordinates
+DE-P-RUGEN,Rügen,Rügen,Q3237,Rügen,island in the Baltic Sea off the Pomeranian coast of Germany,country + coordinates
+DE-P-LUBECK,Lübeck,Lübeck,Q2843,Lübeck,city in Schleswig-Holstein in northern Germany,country + coordinates
+DE-P-SYLT,Sylt,Sylt,Q21008,Sylt,"municipality in Schleswig-Holstein state, Germany on the island of the same name",country + coordinates
+DE-P-HARZ-MOUNTAINS,Harz Mountains (Goslar),Goslar,Q3896,Goslar,"municipality in Lower Saxony, Germany",country + coordinates
+GR-P-ATHENS,Athens,Athens,Q1524,Athens,capital and largest city of Greece,country + coordinates
+GR-P-AEGINA,Aegina,Aegina,Q191082,Aegina,Greek island of the Saronic Gulf,country + coordinates
+GR-P-HYDRA,Hydra,(picked by hand),Q208319,Ýdra,one of the Saronic Islands of Greece,country + coordinates
+GR-R-CYCLADES,Cyclades,Cyclades,Q171132,Cyclades,Greek island group in the Aegean Sea,country + coordinates
+GR-R-DODECANESE,Dodecanese,Dodecanese,Q131555,Dodecanese,group of Greek islands in the Aegean Sea,country + coordinates
+GR-P-SANTORINI,Santorini,Santorini,Q129296,Santorini,Greek island in the Cyclades,country + coordinates
+GR-P-MYKONOS,Mykonos,Mykonos,Q190210,Mykonos,"island in the Cyclades, Greece",country + coordinates
+GR-P-NAXOS,Naxos,Naxos,Q188527,Naxos Island,Greek island in the Aegean Sea,country + coordinates
+GR-P-PAROS,Paros,Paros,Q201272,Paros,"Greek island, part of the Cyclades",country + coordinates
+GR-P-MILOS,Milos,(picked by hand),Q203979,Milos,"island of the Cyclades, Greece",country + coordinates
+GR-P-RHODES,Rhodes,Rhodes,Q43048,Rhodes,"island in Aegean sea, Greece",country + coordinates
+GR-P-KOS,Kos,Kos,Q187027,Kos,Greek island,country + coordinates
+GR-P-PATMOS,Patmos,Patmos,Q190053,Patmos,island in the Aegean Sea,country + coordinates
+GR-P-CHANIA,Chania,Chania,Q182299,Chania,"city in Crete, Greece",country + coordinates
+GR-P-HERAKLION,Heraklion,Heraklion,Q160544,Heraklion,"city in the island of Crete, Greece",country + coordinates
+GR-P-RETHYMNO,Rethymno,Rethymno,Q200908,Rethymno,"city in Crete, Greece",country + coordinates
+GR-P-AGIOS-NIKOLAOS-ELOUNDA,Agios Nikolaos & Elounda,(picked by hand),Q211463,Agios Nikolaos,"town in Crete, Greece",country + coordinates
+GR-P-CORFU,Corfu,Corfu,Q121378,Corfu,Greek island in the Ionian Sea,country + coordinates
+GR-P-ZAKYNTHOS,Zakynthos,Zakynthos,Q144880,Zakynthos,Greek island in the Ionian Sea,country + coordinates
+GR-P-KEFALONIA,Kefalonia,Kefalonia,Q178488,Cephalonia,Greek island in the Ionian Sea,country + coordinates
+GR-P-LEFKADA,Lefkada,Lefkada,Q190138,Lefkada,Greek island in the Ionian Sea,country + coordinates
+GR-P-METEORA,Meteora (Kalambaka),Meteora,Q3125051,Meteora,rock formation with cluster of Greek Orthodox monasteries,country + coordinates
+GR-P-PELION,Pelion,Pelion,Q1334825,Pelion,mountain at the southeastern part of Thessaly in central Greece,country + coordinates
+GR-P-SKIATHOS,Skiathos,Skiathos,Q515085,Skiathos,"island in Aegean sea, Greece",country + coordinates
+GR-P-SKOPELOS,Skopelos,Skopelos,Q212027,Skopelos,"inhabited island in the Sporades, Greece",country + coordinates
+GR-P-DELPHI,Delphi,Delphi,Q75459,Delphi,"ancient town in Fokida, Greece",country + coordinates
+GR-P-NAFPLIO,Nafplio,Nafplio,Q202337,Nafplio,"town in Argolis, Peloponnese, Greece",country + coordinates
+GR-P-MONEMVASIA,Monemvasia,Monemvasia,Q654616,Monemvasia,"coastal settlement in Lakonia, Greece",country + coordinates
+GR-P-OLYMPIA,Olympia,"Olympia, Greece",Q38888,Olympia,"town on the Peloponnese peninsula in Greece, site of the ancient Olympic Games",country + coordinates
+GR-P-THESSALONIKI,Thessaloniki,Thessaloniki,Q17151,Thessaloniki,"city in Macedonia, Greece",country + coordinates
+GR-P-HALKIDIKI,Halkidiki,Halkidiki,Q204728,Chalkidiki,"peninsula of Macedonia, Greece",country + coordinates
+GR-P-ZAGORI,Zagori,Zagori,Q2712111,Zagori,"historical and geographical region of Epirus, Greece",country + coordinates
+GR-P-LESBOS,Lesbos,Lesbos,Q128087,Lesbos,Greek island located in the northeastern Aegean Sea,country + coordinates
+JP-R-HOKKAIDO,Hokkaidō,Hokkaido region,Q1037393,Hokkaido,prefecture of Japan,country + coordinates
+JP-R-TOHOKU,Tōhoku,Tōhoku region,Q129465,Tōhoku region,"region in the northeastern portion of Honshu, Japan",country + coordinates
+JP-R-KANTO,Kantō,Kantō region,Q132480,Kantō region,one of 8 regions in Japan encompassing 8 prefectures,country + coordinates
+JP-R-CHUBU,Chūbu,Chūbu region,Q134638,Chūbu region,one of 8 regions of Japan in the central island of Honshū,country + coordinates
+JP-R-KANSAI,Kansai,Kansai region,Q164256,Kansai region,region of Japan,country + coordinates
+JP-R-CHUGOKU,Chūgoku,Chūgoku region,Q127864,Chūgoku region,region of Japan,country + coordinates
+JP-R-SHIKOKU,Shikoku,(picked by hand),Q60213044,Shikoku Region,one of 8 regions in Japan encompassing 4 prefectures,country + coordinates
+JP-R-KYUSHU,Kyūshū & Okinawa,Kyushu region,Q13393883,Kyūshū region,region of Japan,country + coordinates
+JP-P-SAPPORO,Sapporo,Sapporo,Q37951,Sapporo,"city on Hokkaido, Japan",country + coordinates
+JP-P-OTARU,Otaru,Otaru,Q242108,Otaru,"city in Hokkaido, Japan",country + coordinates
+JP-P-NISEKO,Niseko,"Niseko, Hokkaido",Q1204586,Niseko,"town in Abuta district, Hokkaido, Japan",country + coordinates
+JP-P-FURANO-BIEI,Furano & Biei,Furano,Q654738,Furano,"city in Hokkaido, Japan",country + coordinates
+JP-P-HAKODATE,Hakodate,Hakodate,Q26418,Hakodate,"city in Hokkaido, Japan",country + coordinates
+JP-P-NOBORIBETSU,Noboribetsu,Noboribetsu,Q428989,Noboribetsu,"city in Hokkaidō, Japan",country + coordinates
+JP-P-LAKE-TOYA,Lake Tōya,Lake Tōya,Q1323974,Lake Tōya,"crater lake in Hokkaido, Japan",country + coordinates
+JP-P-SHIRETOKO,Shiretoko,Shiretoko National Park,Q739391,Shiretoko National Park,"national park in Hokkaidō, Japan",country + coordinates
+JP-P-HIROSAKI,Hirosaki,Hirosaki,Q194087,Hirosaki,"city in Tōhoku, Aomori, Japan",country + coordinates
+JP-P-LAKE-TOWADA-OIRASE,Lake Towada & Oirase,Lake Towada,Q1196132,Lake Towada,crater lake,country + coordinates
+JP-P-HIRAIZUMI,Hiraizumi,Hiraizumi,Q1203004,Hiraizumi,"town in Nishiiwai district, Iwate prefecture, Japan",country + coordinates
+JP-P-SENDAI,Sendai,Sendai,Q46747,Sendai,"city in Miyagi Prefecture, Japan",country + coordinates
+JP-P-MATSUSHIMA,Matsushima,"Matsushima, Miyagi",Q1349082,Matsushima,"town in Miyagi district, Miyagi prefecture, Japan",country + coordinates
+JP-P-KAKUNODATE,Kakunodate,Kakunodate,Q2054493,Kakunodate,"dissolved municipality in Senboku district, Akita prefecture, Japan",country + coordinates
+JP-P-GINZAN-ONSEN,Ginzan Onsen,Ginzan Onsen,Q5563313,Ginzan Onsen,"building in Yamagata Prefecture, Japan",country + coordinates
+JP-P-ZAO,Zaō,Mount Zaō,Q167951,Mount Zaō,"mountain in Miyagi Prefecture, Japan",country + coordinates
+JP-P-AIZU-WAKAMATSU,Aizu-Wakamatsu,Aizu-Wakamatsu,Q237699,Aizuwakamatsu,"city in Fukushima prefecture, Japan",country + coordinates
+JP-P-OUCHI-JUKU,Ōuchi-juku,Ōuchi-juku,Q3594058,Ōuchi-juku,"Post station in Fukushima, Japan",country + coordinates
+JP-P-NIKKO,Nikkō,Nikkō,Q235753,Nikkō-shi,"city in Tochigi prefecture, Japan",country + coordinates
+JP-P-KUSATSU-ONSEN,Kusatsu Onsen,"Kusatsu, Gunma",Q1358949,Kusatsu,"town in Agatsuma district, Gunma prefecture, Japan",country + coordinates
+JP-P-KAWAGOE,Kawagoe,Kawagoe,Q319740,Kawagoe,"city in Saitama Prefecture, Japan",country + coordinates
+JP-P-CHICHIBU,Chichibu,Chichibu,Q647079,Chichibu,"city in Saitama prefecture, Japan",country + coordinates
+JP-P-TOKYO,Tokyo,Tokyo,Q1490,Tokyo,capital and largest city of Japan,country + coordinates
+JP-P-OGASAWARA-ISLANDS,Ogasawara Islands,Bonin Islands,Q243634,Bonin Islands,North Pacific island group belonging to Japan,country + coordinates
+JP-P-YOKOHAMA,Yokohama,Yokohama,Q38283,Yokohama,"designated city in Kanagawa Prefecture, Japan",country + coordinates
+JP-P-KAMAKURA,Kamakura,Kamakura,Q10939227,Kamakura,"historic center of Kamakura City, Kanagawa Prefecture, Japan",country + coordinates
+JP-P-HAKONE,Hakone,Hakone,Q671040,Hakone,"town in Ashigarashimo district, Kanagawa prefecture, Japan",country + coordinates
+JP-P-SADO-ISLAND,Sado Island,Sado Island,Q998623,Sado Island,Japanese island,country + coordinates
+JP-P-TATEYAMA-KUROBE-ALPINE-ROUTE,Tateyama Kurobe Alpine Route,Tateyama Kurobe Alpine Route,Q6425988,Tateyama Kurobe Alpine Route,Sightseeing route in Japan,country + coordinates
+JP-P-KANAZAWA,Kanazawa,Kanazawa,Q191130,Kanazawa,"capital city in Ishikawa Prefecture, Japan",country + coordinates
+JP-P-FUJI-FIVE-LAKES,Fuji Five Lakes,Fuji Five Lakes,Q952163,Fuji Five Lakes,group of lakes,country + coordinates
+JP-P-MATSUMOTO,Matsumoto,Matsumoto,Q213324,Matsumoto,"city in Nagano Prefecture, Japan",country + coordinates
+JP-P-KARUIZAWA,Karuizawa,Karuizawa,Q1012064,Karuizawa,"town in Kitasaku district, Nagano prefecture, Japan",country + coordinates
+JP-P-HAKUBA,Hakuba,"Hakuba, Nagano",Q1011157,Hakuba,"village in Kitaazumi district, Nagano prefecture, Japan",country + coordinates
+JP-P-KAMIKOCHI,Kamikōchi,Kamikōchi,Q1048234,Kamikōchi,"tourist attraction in Matsumoto, Nagano, Japan",country + coordinates
+JP-P-YUDANAKA-SHIBU-ONSEN,Yudanaka & Shibu Onsen,Yudanaka Onsen,Q11563754,Yudanaka Onsen,"building in Nagano Prefecture, Japan",country + coordinates
+JP-P-KISO-VALLEY,Kiso Valley (Magome & Tsumago),(picked by hand),Q6416831,Kiso Valley,valley in Japan,country + coordinates
+JP-P-TAKAYAMA,Takayama,Takayama,Q622594,Takayama,"city in Gifu Prefecture, Japan",country + coordinates
+JP-P-SHIRAKAWA-GO,Shirakawa-gō,Shirakawa-gō,Q1002193,Shirakawa-gō,"historic village in Gifu prefecture, Japan",country + coordinates
+JP-P-IZU-PENINSULA,Izu Peninsula,Izu Peninsula,Q822822,Izu Peninsula,peninsula in Japan,country + coordinates
+JP-P-NAGOYA,Nagoya,Nagoya,Q11751,Nagoya,"capital city of Aichi prefecture, Japan",country + coordinates
+JP-P-ISE,Ise,"Ise, Mie",Q328067,Ise,"city in Mie prefecture, Japan",country + coordinates
+JP-P-KYOTO,Kyoto,Kyoto,Q34600,Kyoto,"city in the Kyōto Prefecture, Japan",country + coordinates
+JP-P-AMANOHASHIDATE-INE,Amanohashidate & Ine,Amanohashidate,Q259727,Amanohashidate,one of Japan's three scenic views,country + coordinates
+JP-P-OSAKA,Osaka,Osaka,Q35765,Osaka,"designated city in Osaka Prefecture, Japan",country + coordinates
+JP-P-KOBE,Kobe,Kobe,Q48320,Kobe,"capital city of Hyogo Prefecture, Japan",country + coordinates
+JP-P-HIMEJI,Himeji,Himeji,Q209801,Himeji,"city in Hyōgo Prefecture, Japan",country + coordinates
+JP-P-KINOSAKI-ONSEN,Kinosaki Onsen,Kinosaki Onsen,Q11426141,Kinosaki Onsen,"building in Hyōgo Prefecture, Japan",country + coordinates
+JP-P-NARA,Nara,Nara,Q169134,Nara,"city in Nara prefecture, Japan",country + coordinates
+JP-P-KOYASAN,Kōyasan,Mount Kōya,Q535065,Mount Kōya,"Buddhist temple complex and settlement in Wakayama Prefecture, Japan",country + coordinates
+JP-P-KUMANO-KODO,Kumano Kodō,Kumano Kodō,Q17050475,Kumano Kodō,ancient pilgrimage routes,country + coordinates
+JP-P-SHIRAHAMA,Shirahama,"Shirahama, Wakayama",Q1202728,Shirahama,"town in Nishimuro district, Wakayama prefecture, Japan",country + coordinates
+JP-P-TOTTORI,Tottori,Tottori (city),Q200731,Tottori,"city in Tottori Prefecture, Japan",country + coordinates
+JP-P-MATSUE,Matsue,Matsue,Q207321,Matsue,"city in Shimane prefecture, Japan",country + coordinates
+JP-P-IZUMO,Izumo,"Izumo, Shimane",Q825166,Izumo,"city in Shimane Prefecture, Japan",country + coordinates
+JP-P-OKAYAMA,Okayama,Okayama (city),Q200078,Okayama,"city in Okayama prefecture, Japan",country + coordinates
+JP-P-KURASHIKI,Kurashiki,Kurashiki,Q467487,Kurashiki,"city in Okayama prefecture, Japan",country + coordinates
+JP-P-HIROSHIMA,Hiroshima,Hiroshima,Q34664,Hiroshima,"capital city of Hiroshima Prefecture, Japan",country + coordinates
+JP-P-MIYAJIMA,Miyajima,Itsukushima,Q875301,Itsukushima,"island in Hiroshima, Japan",country + coordinates
+JP-P-ONOMICHI,Onomichi,Onomichi,Q696694,Onomichi,"city in Hiroshima Prefecture, Japan",country + coordinates
+JP-P-IYA-VALLEY,Iya Valley,Iya Valley,Q3408660,Iya Valley,valley in Japan,country + coordinates
+JP-P-TAKAMATSU,Takamatsu,Takamatsu,Q200707,Takamatsu,"city in Kagawa prefecture, Japan",country + coordinates
+JP-P-NAOSHIMA,Naoshima,"Naoshima, Kagawa",Q1350060,Naoshima,"town in Kagawa district, Kagawa prefecture, Japan",country + coordinates
+JP-P-MATSUYAMA,Matsuyama,"Matsuyama, Ehime",Q200022,Matsuyama,"city in Ehime prefecture, Japan",country + coordinates
+JP-P-KOCHI,Kōchi,Kōchi (city),Q200251,Kōchi-shi,"capital city of Kochi Prefecture, Japan",country + coordinates
+JP-P-FUKUOKA,Fukuoka,Fukuoka,Q26600,Fukuoka,"capital city of Fukuoka prefecture, Japan",country + coordinates
+JP-P-NAGASAKI,Nagasaki,Nagasaki,Q38234,Nagasaki,"core city in Kyushu, Japan",country + coordinates
+JP-P-KUMAMOTO,Kumamoto,Kumamoto,Q199889,Kumamoto,"city in Kumamoto prefecture, Japan",country + coordinates
+JP-P-ASO,Aso,Mount Aso,Q733710,Mount Aso,"volcano in Kumamoto Prefecture, Japan",country + coordinates
+JP-P-BEPPU,Beppu,Beppu,Q273880,Beppu,"city in Ōita Prefecture, Japan",country + coordinates
+JP-P-YUFUIN,Yufuin,Yufuin,Q8189446,Yufuin,"dissolved municipality in Ōita district, Ōita prefecture, Japan (1955-2005)",country + coordinates
+JP-P-TAKACHIHO,Takachiho,"Takachiho, Miyazaki",Q1350939,Takachiho,"town in Nishiusuki district, Miyazaki prefecture, Japan",country + coordinates
+JP-P-KAGOSHIMA,Kagoshima,Kagoshima,Q15674,Kagoshima,capital city of Kagoshima prefecture,country + coordinates
+JP-P-YAKUSHIMA,Yakushima,Yakushima,Q242176,Yakushima,"island in Kagoshima, Japan",country + coordinates
+JP-P-OKINAWA-ISLAND,Okinawa Island,Okinawa Island,Q600614,Okinawa,smallest of the five main islands of Japan,country + coordinates
+JP-P-KERAMA-ISLANDS,Kerama Islands,Kerama Islands,Q198422,Kerama Islands,island group,country + coordinates
+JP-P-ISHIGAKI-ISLAND,Ishigaki Island,Ishigaki Island,Q714339,Ishigaki Island,"island in Okinawa, Japan",country + coordinates
+JP-P-MIYAKO-ISLAND,Miyako Island,Miyako-jima,Q714636,Miyakojima,"city in Okinawa Prefecture, Japan",country + coordinates
+TH-R-CENTRAL,Central Thailand,Central Thailand,Q190829,Central Thailand,region of Thailand,country + coordinates
+TH-R-NORTH,Northern Thailand,Northern Thailand,Q750014,Northern Thailand,region of Thailand,country + coordinates
+TH-R-NORTHEAST,Isan (Northeast),Isan,Q381897,Isan/North eastern Thailand,region of Thailand,country + coordinates
+TH-R-EAST,Eastern Thailand,Eastern Thailand,Q1045682,Eastern Thailand,region of Thailand,country + coordinates
+TH-R-GULF,Gulf islands,Gulf of Thailand,Q131217,Gulf of Thailand,shallow inlet in the western part of the South China and Eastern Archipelagic Seas,country + coordinates
+TH-R-ANDAMAN,Andaman coast,Andaman Sea,Q47632,Andaman Sea,sea of the Indian Ocean,country + coordinates
+TH-P-BANGKOK,Bangkok,Bangkok,Q1861,Bangkok,capital of Thailand,country + coordinates
+TH-P-AYUTTHAYA,Ayutthaya,(picked by hand),Q203370,Phra Nakhon Si Ayutthaya,"city in Phra Nakhon Si Ayutthaya province, Thailand",country + coordinates
+TH-P-KANCHANABURI,Kanchanaburi,(picked by hand),Q239121,Kanchanaburi,"town in Kanchanaburi province, Thailand",country + coordinates
+TH-P-HUA-HIN,Hua Hin,Hua Hin,Q667576,Hua Hin,"city in Prachuap Khiri Khan province, Thailand",country + coordinates
+TH-P-CHIANG-MAI,Chiang Mai,(picked by hand),Q52028,Chiang Mai,"city in Chiang Mai province, Thailand",country + coordinates
+TH-P-CHIANG-RAI,Chiang Rai,(picked by hand),Q856772,Chiang Rai,"city in Chiang Rai province, Thailand",country + coordinates
+TH-P-PAI,Pai,(picked by hand),Q476320,Pai,"district in Mae Hong Son province, Thailand",country + coordinates
+TH-P-SUKHOTHAI,Sukhothai,Sukhothai Historical Park,Q423654,Sukhothai Historical Park,"ruins of Sukhothai, literally ""Dawn of Happiness"", capital of the Sukhothai Kingdom in the 13th and 14th centuries, located near the modern city of Sukhothai, in what is now Northern Thailand",country + coordinates
+TH-P-KHAO-YAI,Khao Yai,Khao Yai National Park,Q386420,Khao Yai National Park,nature reserve in Thailand,country + coordinates
+TH-P-PATTAYA,Pattaya,Pattaya,Q170919,Pattaya,"city in Chon Buri province, Thailand",country + coordinates
+TH-P-KO-SAMET,Ko Samet,Ko Samet,Q1073840,Ko Samet,island in the Gulf of Thailand,country + coordinates
+TH-P-KO-CHANG,Ko Chang,Ko Chang (Trat),Q941265,Ko Chang,island in eastern Thailand,country + coordinates
+TH-P-KO-SAMUI,Ko Samui,Ko Samui,Q270375,Ko Samui,island in the gulf of Thailand,country + coordinates
+TH-P-KO-PHA-NGAN,Ko Pha-ngan,Ko Pha-ngan,Q1069922,Ko Pha-ngan,island in the gulf of Thailand,country + coordinates
+TH-P-KO-TAO,Ko Tao,Ko Tao,Q525940,Ko Tao,island in the Gulf of Thailand,country + coordinates
+TH-P-PHUKET,Phuket,(picked by hand),Q1777775,Phuket,island in Thailand,country + coordinates
+TH-P-KRABI,Krabi (Ao Nang & Railay),Ao Nang,Q375819,Ao Nang,"subdistrict in Mueang Krabi district, Krabi province, Thailand",country + coordinates
+TH-P-KO-PHI-PHI,Ko Phi Phi,Phi Phi Islands,Q511957,Phi Phi Islands,archipelago in the Andaman Sea,country + coordinates
+TH-P-KO-LANTA,Ko Lanta,Ko Lanta,Q475797,Ko Lanta,"district in Krabi province, Thailand",country + coordinates
+TH-P-KHAO-LAK,Khao Lak,Khao Lak,Q340034,Khao Lak,"human settlement in Phang Nga Province, Thailand",country + coordinates
+TH-P-KHAO-SOK,Khao Sok,Khao Sok National Park,Q1760520,Khao Sok,national park in southern Thailand,country + coordinates
+TH-P-KO-LIPE,Ko Lipe,Ko Lipe,Q498252,Ko Lipe,island in the Andaman Sea,country + coordinates

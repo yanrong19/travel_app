@@ -1,0 +1,82 @@
+# China: Country > Province-level division (admin, 31) > Planning unit.
+# Hong Kong, Macau and Taiwan are separate ISO entries and are left for later.
+# Municipalities that are one city (Beijing, Shanghai, Tianjin, Chongqing) are their own planning unit.
+M CN-BJ
+M CN-SH
+M CN-TJ
+M CN-CQ
+= CN-HE
+P Chengde | City | trip=Beijing
+= CN-SN
+P Xi'an | City
+P Mount Hua | Mountains | q=Mount Hua; trip=Xi'an
+= CN-GX
+P Guilin | City
+P Yangshuo | Town | q=Yangshuo County
+P Longji Rice Terraces | Countryside | q=Longji Rice Terraces; trip=Guilin
+= CN-SC
+P Chengdu | City
+P Jiuzhaigou | National park | q=Jiuzhaigou Valley
+P Leshan | City | trip=Chengdu
+P Mount Emei | Mountains | q=Mount Emei
+= CN-HN
+P Zhangjiajie | National park | q=Zhangjiajie National Forest Park
+P Fenghuang | Town | q=Fenghuang County
+= CN-AH
+P Huangshan | Mountains | q=Huangshan
+P Hongcun & Xidi | Village | q=Hongcun; trip=Huangshan
+= CN-ZJ
+P Hangzhou | City
+P Wuzhen | Town | trip=Hangzhou
+= CN-JS
+P Suzhou | City | trip=Shanghai
+P Nanjing | City
+P Zhouzhuang | Town | trip=Suzhou
+= CN-YN
+P Kunming | City
+P Dali | City | q=Dali City
+P Lijiang | City
+P Shangri-La | City | q=Shangri-La City
+P Yuanyang Rice Terraces | Countryside | q=Honghe Hani Rice Terraces
+P Xishuangbanna | Countryside | q=Xishuangbanna Dai Autonomous Prefecture
+= CN-XZ
+P Lhasa | City
+= CN-GD
+P Guangzhou | City
+P Shenzhen | City
+= CN-FJ
+P Xiamen | City
+P Fujian Tulou | Countryside | q=Fujian tulou
+= CN-HI
+P Sanya | City
+= CN-GS
+P Dunhuang | City
+P Zhangye | City | note=The Danxia rainbow mountains.
+= CN-XJ
+P Kashgar | City
+P Ürümqi | City
+P Turpan | City
+P Kanas Lake | Lakes | q=Kanas Lake
+= CN-HL
+P Harbin | City
+= CN-SD
+P Qingdao | City
+P Mount Tai | Mountains | q=Mount Tai
+P Qufu | City
+= CN-HA
+P Luoyang | City
+P Dengfeng (Shaolin) | City | q=Dengfeng
+= CN-SX
+P Pingyao | Town | q=Pingyao
+P Datong | City
+= CN-HB
+P Wuhan | City
+P Three Gorges | River | q=Three Gorges; link=CN-CQ; note=Usually a Yangtze cruise between Chongqing and Yichang.
+= CN-JX
+P Wuyuan | Countryside | q=Wuyuan County, Jiangxi
+= CN-GZ
+P Anshun (Huangguoshu) | City | q=Anshun
+= CN-QH
+P Qinghai Lake | Lakes
+= CN-JL
+P Changbai Mountain | Mountains | q=Changbai Mountain
