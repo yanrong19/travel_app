@@ -9000,3 +9000,121 @@ button.lvl-crumb:hover {
     top: 132px;
   }
 }
+
+/* ---------- The day, folded to a strip while Browse is open ---------- */
+/* One button: "Day 2", a numbered thumbnail per stop, "Open ▾". Pressing it brings the day back. */
+
+.ds {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  transition: border-color 0.2s;
+}
+.ds:hover {
+  border-color: var(--cedar);
+}
+.ds:focus-visible {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+}
+.ds-day {
+  flex: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.ds-stops {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Room for the number badges, which sit over the thumbnails' corners. */
+  padding: 7px 4px 3px 6px;
+  overflow: hidden;
+}
+.ds-none {
+  color: var(--muted);
+  font-size: 13px;
+}
+.ds-stop {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--raised);
+}
+.ds-stop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  object-fit: cover;
+}
+.ds-n {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 999px;
+  border: 1.5px solid var(--surface);
+  background: var(--cedar);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ds-stop.is-flash {
+  outline: 2px solid var(--cedar);
+  outline-offset: 2px;
+  animation: ds-flash 1.2s ease-out;
+}
+@keyframes ds-flash {
+  0% {
+    transform: scale(1.5);
+  }
+  25% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-stop.is-flash {
+    animation: none;
+  }
+}
+.ds-open {
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ds:hover .ds-open {
+  color: var(--cedar);
+}
+@media (max-width: 760px) {
+  /* In the sheet the strip pins under the day dropdown while the list scrolls beneath it. */
+  .plan-sheet .ds {
+    position: sticky;
+    top: calc(var(--sheet-top) + 62px);
+    z-index: 3;
+    /* Hides the list passing through the gap above it. */
+    box-shadow: 0 -10px 0 var(--mist);
+  }
+  .plan-sheet .dl.is-wet .ds {
+    box-shadow: 0 -10px 0 #d8e4ec;
+  }
+}

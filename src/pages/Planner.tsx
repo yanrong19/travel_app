@@ -174,6 +174,9 @@ function PlannerPage({ trip }: { trip: Trip }) {
     [setParams],
   );
   const [hoverId, setHoverId] = useState<string | null>(null);
+  // The place just added from Browse: its thumbnail lights in the day strip for a moment.
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
   // The dot under the pointer on the map (not the list), for the hover preview card.
   const [peekId, setPeekId] = useState<string | null>(null);
   const canHover = useMedia('(hover: hover) and (pointer: fine)');
@@ -476,7 +479,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
   };
 
   /** Where the card, the search, Browse and the Saved tray add to: the day, or its wet-weather plan while the toggle is on. */
-  const add = (sid: string) => (toWet ? addToWet(sid) : addToDay(sid));
+  const add = (sid: string) => {
+    if (toWet) addToWet(sid);
+    else addToDay(sid);
+    setFlashId(sid);
+    window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setFlashId(null), 1200);
+  };
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
 
   /** The card's own action for the attraction it shows. */
   const cardAction = (sid: string) => {
@@ -968,6 +978,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       onOpen={openStop}
       hotId={selected ?? hoverId}
       onHover={setHoverId}
+      flashId={flashId}
       replacing={target?.id ?? null}
       onCancelReplace={() => setReplace(null)}
       rainFlags={wetDay ? summary.conditions.rainSensitive : []}

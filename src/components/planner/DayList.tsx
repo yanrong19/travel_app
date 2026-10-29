@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode, type Ref } from 'react';
+import { useEffect, useId, useMemo, useRef, type KeyboardEvent, type ReactNode, type Ref } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ATTRACTIONS } from '../../data/attractions';
 import type { Attraction } from '../../data/types';
@@ -13,6 +13,7 @@ import { dayPlace } from '../../lib/tripPlaces';
 import { DAY_END, DAY_START, dateOf, type Trip } from '../../lib/trips';
 import { Icon } from '../Icon';
 import { DayPicker } from './DayPicker';
+import { DayStrip } from './DayStrip';
 import { DayTimes } from './DayTimes';
 
 const byId = new Map(ATTRACTIONS.map((a) => [a.id, a]));
@@ -71,6 +72,8 @@ interface Props {
   /** The attraction lit on the map; its row lights too. */
   hotId?: string | null;
   onHover?: (id: string | null) => void;
+  /** The stop just added from Browse: its thumbnail lights in the folded day strip. */
+  flashId?: string | null;
   /** The stop being replaced, if any. */
   replacing?: string | null;
   onCancelReplace?: () => void;
@@ -124,6 +127,7 @@ export function DayList({
   onOpen,
   hotId,
   onHover,
+  flashId = null,
   replacing,
   onCancelReplace,
   note,
@@ -139,6 +143,11 @@ export function DayList({
   const id = useId();
   const reduced = useReducedMotion();
   const tabs = useRef<HTMLDivElement>(null);
+  const body = useRef<HTMLDivElement>(null);
+  // While Browse is open the day folds to a strip in place of the header and the sub-tabs.
+  const folded = tab === 'browse';
+  // The control that had focus is replaced when the tab changes; focus goes to its counterpart.
+  const refocus = useRef(false);
   const plan = trip.days[day];
   const timed = useMemo(() => schedule(stopsOf(plan?.stops ?? []), plan?.start ?? DAY_START), [plan]);
   // Stops starting in a part of the day rated poor for them, by position in `timed`.
@@ -160,13 +169,24 @@ export function DayList({
   const chance = rain[day];
   const overlay = analysis.mode === 'overlay' && analysis.open;
 
+  /** A sub-tab pick from this list's own controls: focus follows to the strip or the sub-tabs. */
+  const pick = (to: PlanTab) => {
+    refocus.current = to !== tab;
+    onTab(to);
+  };
+  useEffect(() => {
+    if (!refocus.current) return;
+    refocus.current = false;
+    (folded ? body.current?.querySelector<HTMLElement>('.ds') : tabs.current?.querySelector<HTMLElement>('[aria-selected="true"]'))?.focus();
+  }, [folded]);
+
   const onTabKey = (e: KeyboardEvent) => {
     const i = TABS.findIndex((t) => t.id === tab);
     const to = e.key === 'ArrowRight' ? (i + 1) % TABS.length : e.key === 'ArrowLeft' ? (i + TABS.length - 1) % TABS.length : e.key === 'Home' ? 0 : e.key === 'End' ? TABS.length - 1 : null;
     if (to === null) return;
     e.preventDefault();
-    onTab(TABS[to].id);
-    requestAnimationFrame(() => tabs.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus());
+    // Landing on Browse folds the sub-tabs away, so focus follows to the strip (the effect above).
+    if (TABS[to].id !== tab) return pick(TABS[to].id);
   };
 
   // Replace mode starts on Plan; Browse can pick the replacement too. Never with the toggle on.
@@ -192,62 +212,74 @@ export function DayList({
       </div>
 
       <div className={`dl-stage ${overlay ? 'is-covered' : ''}`}>
-        <div className="dl-body" inert={overlay}>
-          <div className="dl-day">
-            <p className="dl-date num">{[date && shortDate(date), timed.length ? plural(timed.length, 'stop') : 'No stops yet'].filter(Boolean).join(' · ')}</p>
-            <DayTimes day={day} start={plan?.start ?? DAY_START} end={plan?.end ?? DAY_END} onChange={(t) => onTimes(day, t)} />
-            <button type="button" className="dl-wet" aria-pressed={wet} onClick={() => onWet(!wet)}>
-              <Icon name="drop" size={15} />
-              <span className="dl-wet-text">
-                Wet weather
-                {chance !== null && (
-                  <>
-                    <span className="num" aria-hidden="true">
-                      {' · '}
-                      {chance}%
-                    </span>
-                    <span className="sr-only">, {chance}% chance of rain</span>
-                  </>
-                )}
-              </span>
-              <span className="dl-switch" aria-hidden="true" />
-            </button>
-            <button
-              ref={analysis.buttonRef}
-              type="button"
-              className="dl-analyse"
-              aria-expanded={analysis.open}
-              aria-controls={analysis.id}
-              aria-describedby={`${id}-hint`}
-              onClick={analysis.onToggle}
-            >
-              <Icon name="analysis" size={16} />
-              Analysis
-            </button>
-          </div>
-          <p className="dl-hint" id={`${id}-hint`}>
-            {hint}
-          </p>
+        <div ref={body} className="dl-body" inert={overlay}>
+          {folded ? (
+            <DayStrip trip={trip} day={day} wet={wet} flashId={flashId} onOpen={() => pick('plan')} />
+          ) : (
+            <>
+              <div className="dl-day">
+                <p className="dl-date num">{[date && shortDate(date), timed.length ? plural(timed.length, 'stop') : 'No stops yet'].filter(Boolean).join(' · ')}</p>
+                <DayTimes day={day} start={plan?.start ?? DAY_START} end={plan?.end ?? DAY_END} onChange={(t) => onTimes(day, t)} />
+                <button type="button" className="dl-wet" aria-pressed={wet} onClick={() => onWet(!wet)}>
+                  <Icon name="drop" size={15} />
+                  <span className="dl-wet-text">
+                    Wet weather
+                    {chance !== null && (
+                      <>
+                        <span className="num" aria-hidden="true">
+                          {' · '}
+                          {chance}%
+                        </span>
+                        <span className="sr-only">, {chance}% chance of rain</span>
+                      </>
+                    )}
+                  </span>
+                  <span className="dl-switch" aria-hidden="true" />
+                </button>
+                <button
+                  ref={analysis.buttonRef}
+                  type="button"
+                  className="dl-analyse"
+                  aria-expanded={analysis.open}
+                  aria-controls={analysis.id}
+                  aria-describedby={`${id}-hint`}
+                  onClick={analysis.onToggle}
+                >
+                  <Icon name="analysis" size={16} />
+                  Analysis
+                </button>
+              </div>
+              <p className="dl-hint" id={`${id}-hint`}>
+                {hint}
+              </p>
 
-          <div ref={tabs} className="dl-subtabs" role="tablist" aria-label={`Day ${day + 1}`} onKeyDown={onTabKey}>
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                id={`${id}-tab-${t.id}`}
-                aria-selected={tab === t.id}
-                aria-controls={`${id}-panel`}
-                tabIndex={tab === t.id ? 0 : -1}
-                className="dl-subtab"
-                onClick={() => onTab(t.id)}
-              >
-                {t.id === 'browse' && typeof browseCount === 'number' ? `${t.label} · ${browseCount}` : t.label}
-              </button>
-            ))}
-          </div>
+              <div ref={tabs} className="dl-subtabs" role="tablist" aria-label={`Day ${day + 1}`} onKeyDown={onTabKey}>
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    id={`${id}-tab-${t.id}`}
+                    aria-selected={tab === t.id}
+                    aria-controls={`${id}-panel`}
+                    tabIndex={tab === t.id ? 0 : -1}
+                    className="dl-subtab"
+                    onClick={() => pick(t.id)}
+                  >
+                    {t.id === 'browse' && typeof browseCount === 'number' ? `${t.label} · ${browseCount}` : t.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
-          <div className="dl-panel" role="tabpanel" data-lenis-prevent id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
+          <div
+            className="dl-panel"
+            data-lenis-prevent
+            id={`${id}-panel`}
+            // Folded, the sub-tabs are gone, so the list is a plain region (a tab panel needs its tab).
+            {...(folded ? { role: 'region', 'aria-label': 'Browse' } : { role: 'tabpanel', 'aria-labelledby': `${id}-tab-${tab}` })}
+          >
             {tab === 'browse' ? (
               <>
                 {replaceBanner}
@@ -271,7 +303,7 @@ export function DayList({
                       <strong>No stops yet</strong>
                       Add places from Browse, the map or search. They line up here in order, with their times.
                     </p>
-                    <button type="button" className="button is-compact is-quiet" onClick={() => onTab('browse')}>
+                    <button type="button" className="button is-compact is-quiet" onClick={() => pick('browse')}>
                       <Icon name="search" size={15} />
                       Browse places
                     </button>
