@@ -17,6 +17,7 @@ import { HeaderDates, TripDatesPanel, cutsPlans } from '../components/planner/He
 import type { TripDatesValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
 import { WetPlan } from '../components/planner/WetPlan';
+import { attractionById } from '../data/attractions';
 import { browseList, browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
 import { summarizeDay } from '../lib/daySummary';
 import { readDayView, writeDayView, type DayView, type PlanTab } from '../lib/dayView';
@@ -50,7 +51,8 @@ import {
   type Trip,
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
-import { attractionHome, countFor, nodeOf, parseRefKey, pathTo, pinsFor, placeAnchor, refKey, sameTree } from '../lib/placeTree';
+import { attractionHome, countFor, nodeOf, parentOf, parseRefKey, pathTo, pinsFor, placeAnchor, refKey, sameTree } from '../lib/placeTree';
+import { neighboursOf, spotHistory } from '../lib/spotlight';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from '../lib/tripUndo';
@@ -66,6 +68,11 @@ const NOTICE_MS = 3600;
 const noop = () => {};
 /** Laptop: the map frames its place between the top bar and search, and the day panel (lib/planSheet). */
 const INSETS_ANALYSIS: Insets = withAnalysis(PLAN_INSETS);
+/** Phone: the docked pin card's gap above the peek (styles.css `.planner .pincard`) and its usual height. */
+const CARD_DOCK_GAP = 30;
+const CARD_PHONE_H = 250;
+/** Phone: the least map height a spot keeps above the card. */
+const SPOT_STRIP_MIN = 96;
 /** Whether the analysis was open beside the day panel, for the rest of the session. */
 const ANALYSIS_KEY = 'fitline.planner.analysis';
 const readAnalysisOpen = () => {
@@ -95,6 +102,9 @@ const indexParam = (v: string | null) => {
   const n = Number(v);
   return v !== null && Number.isInteger(n) && n >= 1 ? n - 1 : 0;
 };
+
+/** True when two view quads have the same corners. */
+const sameQuad = (a: Quad, b: Quad) => a.length === b.length && a.every((p, i) => p[0] === b[i][0] && p[1] === b[i][1]);
 
 /** True for a key event from somewhere the user types. */
 const isTyping = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || t.matches('input, textarea, select'));
@@ -138,8 +148,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
         (p) => {
           const q = new URLSearchParams(p);
           q.set(key, String(index + 1));
-          // Picking a trip place views that place itself.
-          if (key === 'place') q.delete('view');
+          // Picking a trip place views that place itself, out of any spotlight.
+          if (key === 'place') {
+            q.delete('view');
+            q.delete('spot');
+          }
           return q;
         },
         { replace: true, preventScrollReset: true },
@@ -148,12 +161,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
   );
   const setDayIdx = useCallback((d: number) => setParam('day', d), [setParam]);
   const setPlaceIdx = useCallback((i: number) => setParam('place', i), [setParam]);
-  const { tab, wet } = readDayView(params);
+  // The spotlit attraction (&spot=, lib/dayView) is the open card; it shows only once the map views
+  // its home (below).
+  const { tab, wet, spot: spotParam } = readDayView(params);
   const setView = useCallback(
     (next: Partial<DayView>) => setParams((p) => writeDayView(p, next), { replace: true, preventScrollReset: true }),
     [setParams],
   );
-  const [selected, setSelected] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
   // The dot under the pointer on the map (not the list), for the hover preview card.
   const [peekId, setPeekId] = useState<string | null>(null);
@@ -189,27 +203,38 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const node = useMemo(() => (viewed ? nodeOf(viewed) : null), [viewKey]);
   const viewedName = node?.label ?? 'this trip';
   /**
-   * Views a place: as a trip place when it is one, else in the current trip place's tree, else in the
-   * tree of the trip place it belongs to.
+   * Writes a viewed place into a search: as a trip place when it is one, else in the current trip
+   * place's tree, else in the tree of the trip place it belongs to. False (search untouched) when no
+   * trip place's tree holds it.
    */
-  const setViewed = useCallback(
-    (ref: PlaceRef) => {
+  const viewInto = useCallback(
+    (q: URLSearchParams, ref: PlaceRef) => {
       const exact = trip.places.findIndex((p) => sameRef(p, ref));
       const at = exact >= 0 ? exact : place && sameTree(ref, place) ? pi : trip.places.findIndex((p) => sameTree(p, ref));
-      if (at < 0) return;
-      const home = trip.places[at];
+      if (at < 0) return false;
+      q.set('place', String(at + 1));
+      if (sameRef(ref, trip.places[at])) q.delete('view');
+      else q.set('view', refKey(ref));
+      return true;
+    },
+    [place, pi, trip.places],
+  );
+  /** Views a place (see viewInto), out of any spotlight. */
+  const setViewed = useCallback(
+    (ref: PlaceRef) => {
+      const q = new URLSearchParams();
+      if (!viewInto(q, ref)) return;
       setParams(
         (p) => {
-          const q = new URLSearchParams(p);
-          q.set('place', String(at + 1));
-          if (sameRef(ref, home)) q.delete('view');
-          else q.set('view', refKey(ref));
-          return q;
+          const next = new URLSearchParams(p);
+          viewInto(next, ref);
+          next.delete('spot');
+          return next;
         },
         { replace: true, preventScrollReset: true },
       );
     },
-    [place, pi, trip.places, setParams],
+    [viewInto, setParams],
   );
 
   useEffect(() => {
@@ -224,16 +249,36 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // count bubble per child place.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pins = useMemo(() => (viewed ? pinsFor(viewed) : []), [viewKey]);
-  // A neighbourhood frames its own box rather than the pins (which are all of Tokyo).
-  const focus = useMemo<MapFocus | null>(() => (view?.frame ? { kind: 'frame', key: viewKey, bounds: view.frame } : null), [view, viewKey]);
-  // What the map's free area shows, for the in-view Browse list. A new viewed place forgets it
-  // until the map reports again.
-  const [quad, setQuad] = useState<Quad | null>(null);
-  const [quadFor, setQuadFor] = useState(viewKey);
-  if (quadFor !== viewKey) {
-    setQuadFor(viewKey);
-    setQuad(null);
-  }
+  const placesKey = trip.places.map(refKey).join(',');
+  // The spotlight: the &spot= attraction, shown only while the map views an attraction-level place
+  // that is its home (attractionHome) under the current trip place. The open card is this spot.
+  const spotHome = useMemo(
+    () => (spotParam ? attractionHome(spotParam, trip.places, place, viewed) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [spotParam, placesKey, pi, viewKey],
+  );
+  const selected = spotParam && node?.attractionLevel && viewed && spotHome && sameRef(spotHome, viewed) ? spotParam : null;
+  // A spot centres its attraction, labelling the ones within a walk; else a neighbourhood frames its
+  // own box rather than the pins (which are all of Tokyo).
+  const focus = useMemo<MapFocus | null>(() => {
+    const a = selected ? attractionById(selected) : undefined;
+    if (a) return { kind: 'spot', key: `spot:${a.id}`, id: a.id, center: a.lonlat, near: neighboursOf(a.id, pins) };
+    return view?.frame ? { kind: 'frame', key: viewKey, bounds: view.frame } : null;
+  }, [selected, pins, view, viewKey]);
+  // What the map's free area shows, for the in-view Browse list, with the viewed place it was
+  // reported for: a new viewed place forgets it until the map reports again. While a spot is open the
+  // reports are ignored, so the list keeps its rows, even when a spot in the next neighbourhood moves
+  // the view there (and coming back to the place the spot run started from finds its quad still
+  // there); a report equal to the last one changes nothing.
+  const [quadAt, setQuadAt] = useState<{ key: string; quad: Quad; attraction: boolean } | null>(null);
+  const quad = quadAt && (quadAt.key === viewKey || (selected && quadAt.attraction)) ? quadAt.quad : null;
+  const quadRef = useRef({ viewKey, attraction: false, spotOn: false });
+  quadRef.current = { viewKey, attraction: !!node?.attractionLevel, spotOn: !!selected };
+  const onViewQuad = useCallback((q: Quad) => {
+    const { viewKey: key, attraction, spotOn } = quadRef.current;
+    if (spotOn) return;
+    setQuadAt((was) => (was && was.key === key && sameQuad(was.quad, q) ? was : { key, quad: q, attraction }));
+  }, []);
   const setViewedRef = useRef(setViewed);
   setViewedRef.current = setViewed;
   const bubbles = useMemo<MapBubble[] | undefined>(
@@ -252,9 +297,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // The map's calm dots: today's stops numbered in route order, other days' stops in their colour.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const dots = useMemo(() => markersFor(trip, day), [trip.days, day]);
-  // The search covers the viewed place; above the attraction level, every attraction in the trip.
-  const placesKey = trip.places.map(refKey).join(',');
+  // The search covers the viewed place (a neighbourhood's pins, and so its search, are all of its
+  // city's); above the attraction level, every attraction in the trip.
   const scope = useMemo(() => {
+    const city = viewed?.level === 'neighbourhood' ? parentOf(viewed) : null;
+    if (city) return { name: placeLabel(city).name, attractions: pins };
     if (!node || node.attractionLevel) return { name: viewedName, attractions: pins };
     const all = new Map(trip.places.flatMap(attractionsIn).map((a) => [a.id, a]));
     return { name: 'this trip', attractions: [...all.values()] };
@@ -270,13 +317,17 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pool = useMemo(() => browsePool(viewed, trip.places), [viewKey, placesKey]);
   // At the attraction level, only what's on screen once the map has reported its view.
-  const browsing = useMemo(() => browseList(pool, quad, !!node?.attractionLevel), [pool, quad, node]);
+  const listed = useMemo(() => browseList(pool, quad, !!node?.attractionLevel), [pool, quad, node]);
+  // The same rows keep the same array, so a camera that moved without changing what's in view
+  // doesn't drop Browse's held order (it holds while its pool is the same array).
+  const listedIds = listed.list.map((a) => a.id).join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const browseRows = useMemo(() => listed.list, [listedIds]);
+  const browsing = { list: browseRows, inView: listed.inView };
   const [browseFilters, setBrowseFilters] = useState<BrowseFilterId[]>([]);
 
-  // A new day leaves replace mode (the sub-tab stays). A new viewed place closes the card, unless
-  // the search moved the map there to open one (below).
+  // A new day leaves replace mode (the sub-tab stays).
   useEffect(() => setReplace(null), [day]);
-  const pendingOpen = useRef<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
 
@@ -632,7 +683,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       if (e.key !== 'Escape' || e.defaultPrevented || isTyping(e.target)) return;
       if (document.querySelector('dialog[open], .drawer')) return;
       if (searching) closeSearch();
-      else if (selected) setSelected(null);
+      else if (selected) leaveSpotRef.current();
       else if (analysisOpen) showAnalysisRef.current(false);
       else if (replace) setReplace(null);
     };
@@ -648,7 +699,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const safeTop = useSafeTop(narrow);
   const phoneFrame = useMemo(() => phoneInsets(safeTop), [safeTop]);
-  const insets = narrow ? phoneFrame : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
+  // Phone: the card docks above the peek (styles.css), so a spot centres in the strip above the card,
+  // not behind it; a short screen keeps at least SPOT_STRIP_MIN of map for it.
+  const spotFrame = useMemo(() => {
+    const clearCard = SHEET_CLEAR + PEEK_PHONE + CARD_DOCK_GAP + CARD_PHONE_H + 12;
+    const room = window.innerHeight - phoneFrame.top - SPOT_STRIP_MIN;
+    return { ...phoneFrame, bottom: Math.max(phoneFrame.bottom, Math.min(clearCard, room)) };
+  }, [phoneFrame]);
+  const insets = narrow ? (selected ? spotFrame : phoneFrame) : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
   const { open: drawerOpen } = useSaved();
   const { scrollToTop, scrollToGuides, atGuides } = useGuideScroll({
     enabled: narrow,
@@ -660,28 +718,84 @@ function PlannerPage({ trip }: { trip: Trip }) {
   });
   // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
-  /** Shows the attraction's card; on phone the sheet goes back down so the map and the card show. */
-  const showCard = (sid: string) => {
-    setSelected(sid);
-    if (narrow) scrollToTop();
-  };
+  // ---- the spotlight ----
+  // Whether this page pushed the history entry the current run of spots sits on: then leaving steps
+  // back off it (and Back leaves on its own); otherwise (a reload, a link) leaving replaces it.
+  const spotPushed = useRef(false);
   useEffect(() => {
-    const sid = pendingOpen.current;
-    pendingOpen.current = null;
-    if (sid) showCard(sid);
-    else setSelected(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewKey]);
+    if (!spotParam) spotPushed.current = false;
+  }, [spotParam]);
   /**
-   * Every way of opening a card (the day list, the wet-weather plan, the search) comes here: the map
-   * first goes to the attraction-level place that shows its pin, then the card opens.
+   * Every way of opening a card (a dot on the map, Browse, the day list, the wet-weather plan, the
+   * search, "See it on the map") comes here: one URL change views the attraction-level place that
+   * shows its pin and spotlights it. Entering a spot adds a history entry; moving between spots
+   * replaces it. On phone the sheet goes back down so the map and the card show.
    */
   const openStop = (sid: string) => {
     const home = attractionHome(sid, trip.places, place, viewed);
-    if (!home || (viewed && sameRef(home, viewed))) return showCard(sid);
-    pendingOpen.current = sid;
-    setViewed(home);
+    if (!home) return;
+    const push = spotHistory(spotParam, sid) === 'push';
+    setParams(
+      (p) => {
+        const q = new URLSearchParams(p);
+        if (!viewed || !sameRef(home, viewed)) viewInto(q, home);
+        return writeDayView(q, { spot: sid });
+      },
+      { replace: !push, preventScrollReset: true },
+    );
+    if (push) spotPushed.current = true;
+    if (narrow) scrollToTop();
   };
+  // A spot from a reload or a link whose home isn't the viewed place views its home; one with no home
+  // in any trip place is dropped. Both in place: they put the URL right, they aren't steps.
+  useEffect(() => {
+    if (!spotParam || (viewed && spotHome && sameRef(spotHome, viewed))) return;
+    setParams(
+      (p) => {
+        const q = new URLSearchParams(p);
+        if (!spotHome || !viewInto(q, spotHome)) q.delete('spot');
+        return q;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spotParam, placesKey]);
+  /**
+   * Leaves the spotlight (the card's close, Esc, a crumb): one step back when this page pushed the
+   * spot's entry, else the spot is replaced away. `to` (a crumb) is then viewed, if it isn't already.
+   * Guarded like the search: a quick second leave before the router lands does nothing.
+   */
+  const leavingSpot = useRef(false);
+  const afterSpot = useRef<PlaceRef | null>(null);
+  const leaveSpot = (to?: PlaceRef) => {
+    if (!spotParam || leavingSpot.current) return;
+    if (spotPushed.current) {
+      leavingSpot.current = true;
+      afterSpot.current = to ?? null;
+      navigate(-1);
+      return;
+    }
+    setParams(
+      (p) => {
+        const q = writeDayView(p, { spot: null });
+        if (to) viewInto(q, to);
+        return q;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+  };
+  const leaveSpotRef = useRef(leaveSpot);
+  leaveSpotRef.current = leaveSpot;
+  const spotNavKey = useRef(navKey);
+  useEffect(() => {
+    if (spotNavKey.current === navKey) return;
+    spotNavKey.current = navKey;
+    leavingSpot.current = false;
+    const to = afterSpot.current;
+    afterSpot.current = null;
+    if (to && !spotParam && !(viewed && sameRef(to, viewed))) setViewed(to);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navKey]);
   // "See it on the map" on an attraction page in planning comes back here with { open: id } in router
   // state: its card opens once, by the same path as the day list's. The state is cleared first (same
   // URL), so a reload or a later return to this entry doesn't open it again; openStop's own URL change,
@@ -714,33 +828,40 @@ function PlannerPage({ trip }: { trip: Trip }) {
     />
   );
 
-  // The map level: a breadcrumb up the viewed place's tree. The map's bubbles drill in.
+  // The map level: a breadcrumb up the viewed place's tree. The map's bubbles drill in. While a spot
+  // is open its attraction is the last crumb, and every crumb above it (the viewed place too) leaves
+  // the spotlight, then views that place.
   const path = viewed ? pathTo(viewed) : [];
+  const spotName = selected ? (attractionById(selected)?.name ?? null) : null;
+  const crumbs: { key: string; name: string; go?: () => void }[] = path.map((r) => ({
+    key: refKey(r),
+    name: placeLabel(r).name,
+    go: () => (spotName ? leaveSpot(r) : setViewed(r)),
+  }));
+  if (spotName) crumbs.push({ key: `spot:${selected}`, name: spotName });
+  else if (crumbs.length) crumbs[crumbs.length - 1].go = undefined;
   const levels = viewed && (
     <div className="plan-levels" inert={searching}>
       <nav className="lvl-crumbs" aria-label="Map level">
         <ol>
-          {path.map((r, i) => {
-            const name = placeLabel(r).name;
-            return (
-              <li key={refKey(r)}>
-                {i < path.length - 1 ? (
-                  <>
-                    <button type="button" className="lvl-crumb" onClick={() => setViewed(r)}>
-                      {name}
-                    </button>
-                    <span className="lvl-sep" aria-hidden="true">
-                      ›
-                    </span>
-                  </>
-                ) : (
-                  <span className="lvl-crumb is-current" aria-current="location">
-                    {name}
+          {crumbs.map((c) => (
+            <li key={c.key}>
+              {c.go ? (
+                <>
+                  <button type="button" className="lvl-crumb" onClick={c.go}>
+                    {c.name}
+                  </button>
+                  <span className="lvl-sep" aria-hidden="true">
+                    ›
                   </span>
-                )}
-              </li>
-            );
-          })}
+                </>
+              ) : (
+                <span className="lvl-crumb is-current" aria-current="location">
+                  {c.name}
+                </span>
+              )}
+            </li>
+          ))}
         </ol>
       </nav>
     </div>
@@ -796,7 +917,11 @@ function PlannerPage({ trip }: { trip: Trip }) {
           day={day}
           pool={browsing.list}
           inViewCount={browsing.inView}
-          placeName={scope.name === 'this trip' ? 'This trip' : viewedName}
+          // A neighbourhood's pins are all of its city, so while the list follows the map its heading
+          // says what it lists: what's in view, not the neighbourhood.
+          placeName={
+            viewed?.level === 'neighbourhood' && typeof browsing.inView === 'number' ? 'In view' : scope.name === 'this trip' ? 'This trip' : viewedName
+          }
           filters={browseFilters}
           onFilters={setBrowseFilters}
           replacing={wet ? null : (target?.id ?? null)}
@@ -943,7 +1068,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               dots={dots}
               bubbles={bubbles}
               focus={focus}
-              onViewQuad={setQuad}
+              onViewQuad={onViewQuad}
               pickedClearOf={cardRef}
               cardClearOf={narrow ? undefined : panelRef}
               offscreenPill={false}
@@ -955,7 +1080,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               onCountry={noop}
               onRegion={noop}
               onArea={noop}
-              onAttraction={setSelected}
+              onAttraction={openStop}
               onNotice={setNotice}
             />
           </Suspense>
@@ -997,7 +1122,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               transition={{ duration: reduced ? 0 : previewing ? 0.15 : 0.4, ease: EASE_OUT }}
               aria-hidden={previewing || undefined}
             >
-              <PinCard a={picked} onOpen={openDetails} onClose={() => setSelected(null)} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
+              <PinCard a={picked} onOpen={openDetails} onClose={() => leaveSpot()} action={cardAction(picked.id)} save={saveToggle(picked.id)} />
             </motion.div>
           )}
         </AnimatePresence>

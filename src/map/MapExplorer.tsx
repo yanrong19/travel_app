@@ -865,10 +865,6 @@ export function MapExplorer(props: Props) {
         else map.flyTo({ ...cam, duration: 1200, essential: true, curve: 1.5 });
         return;
       }
-      // Framing afresh: cameraForBounds measures inside the map's own padding as well as ours, and
-      // the spot left the insets there. Drop it without moving the view (the spot is flat, north-up).
-      const box = map.getContainer();
-      map.jumpTo({ padding: NO_PAD, center: map.unproject([box.clientWidth / 2, box.clientHeight / 2]) });
     }
     if (onlyInsets && panOnInsets && !stillFramed(map)) {
       // The free area's centre moves by half the change; the view follows it, gently.
@@ -876,6 +872,15 @@ export function MapExplorer(props: Props) {
       const dy = (insets.bottom - was.bottom - (insets.top - was.top)) / 2;
       map.panBy([dx, dy], { duration: prefersReducedMotion() ? 0 : 450, essential: true });
       return;
+    }
+    // Framing afresh: cameraForBounds measures inside the map's own padding as well as ours, and a
+    // spot leaves the insets there, as does a flight back from one that this framing cuts short (a
+    // crumb right after leaving a spot). Drop it without moving the view, before listening for the
+    // framing's own moveend. (From the globe, which pads too, the framing stays as it was.)
+    const pad = map.getPadding();
+    if (focus?.kind !== 'spot' && target.level !== 'world' && !wasKey.startsWith('world:') && (pad.top || pad.right || pad.bottom || pad.left)) {
+      const box = map.getContainer();
+      map.jumpTo({ padding: NO_PAD, center: map.unproject([box.clientWidth / 2, box.clientHeight / 2]) });
     }
     // Listening first: under reduced motion the camera jumps, and its moveend comes at once.
     noteFrame(map);
