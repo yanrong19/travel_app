@@ -29,9 +29,11 @@ for r in rows:
     if not r["wikidata"]:
         problems.append(f"{r['place_id']}: no Wikidata ID")
     if r["is_planning_unit"]:
-        # nothing below a planning unit in v1
-        if any(x["parent_id"] == r["place_id"] for x in rows):
+        # below a planning unit: only neighbourhoods
+        if any(x["parent_id"] == r["place_id"] and x["level_type"] != "Neighbourhood" for x in rows):
             problems.append(f"{r['place_id']}: planning unit has children")
+    if r["level_type"] == "Neighbourhood" and not (r["parent_id"] in ids and ids[r["parent_id"]]["is_planning_unit"]):
+        problems.append(f"{r['place_id']}: neighbourhood not under a planning unit")
 for l in links:
     if l["linked_place_id"] not in ids:
         problems.append(f"link {l['place_id']} -> {l['linked_place_id']} missing")

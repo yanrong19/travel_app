@@ -480,6 +480,22 @@ JP-P-KAWAGOE,Kawagoe,Kawagoe,Q319740,Kawagoe,"city in Saitama Prefecture, Japan"
 JP-P-CHICHIBU,Chichibu,Chichibu,Q647079,Chichibu,"city in Saitama prefecture, Japan",country + coordinates
 JP-P-TOKYO,Tokyo,Tokyo,Q1490,Tokyo,capital and largest city of Japan,country + coordinates
 JP-P-OGASAWARA-ISLANDS,Ogasawara Islands,Bonin Islands,Q243634,Bonin Islands,North Pacific island group belonging to Japan,country + coordinates
+JP-N-TOKYO-SHIBUYA,Shibuya,Shibuya,Q193638,Shibuya,special ward in the Tokyo Metropolis in Japan,country + coordinates
+JP-N-TOKYO-HARAJUKU,Harajuku & Omotesandō,Harajuku,Q746573,Harajuku,"District in Shibuya, Tokyo, Japan",country + coordinates
+JP-N-TOKYO-SHINJUKU,Shinjuku,Shinjuku,Q179645,Shinjuku,"special ward in the Tokyo Metropolis, Japan",country + coordinates
+JP-N-TOKYO-ASAKUSA,Asakusa,Asakusa,Q720644,Asakusa,"town located in Taitō-ku, Tokyo",country + coordinates
+JP-N-TOKYO-UENO,Ueno,"Ueno, Tokyo",Q576781,Ueno,"neighborhood in Taitō city, Tokyo, Japan",country + coordinates
+JP-N-TOKYO-YANAKA,Yanaka,"Yanaka, Tokyo",Q11632597,Yanaka,"neighborhood in Taitō city, Tokyo, Japan",country + coordinates
+JP-N-TOKYO-GINZA,Ginza & Tsukiji,Ginza,Q746052,Ginza,"district of Chūō-ku, Tokyo",country + coordinates
+JP-N-TOKYO-ODAIBA,Odaiba & Toyosu,Odaiba,Q211861,Odaiba,"town located in Minato-ku, Tokyo",country + coordinates
+JP-N-TOKYO-OSHIAGE,Oshiage,Oshiage,Q11497641,Oshiage,"neighborhood in Sumida city, Tokyo, Japan",country + coordinates
+JP-N-TOKYO-RYOGOKU,Ryōgoku,Ryōgoku,Q3083463,Ryōgoku,"town located in Sumida-ku, Tokyo",country + coordinates
+JP-N-TOKYO-KIYOSUMI,Kiyosumi,Kiyosumi,Q11561314,Kiyosumi,"town located in Koto-ku, Tokyo",country + coordinates
+JP-N-TOKYO-SHIMOKITAZAWA,Shimokitazawa,Shimokitazawa,Q735384,Shimokitazawa,"town located in Setagaya-ku, Tokyo",country + coordinates
+JP-N-TOKYO-NAKANO,Nakano,"Nakano, Tokyo",Q234087,Nakano,special ward in the Tokyo Metropolis in Japan,country + coordinates
+JP-N-TOKYO-SETAGAYA,Setagaya,Setagaya,Q231645,Setagaya,special ward in the Tokyo Metropolis in Japan,country + coordinates
+JP-N-TOKYO-MITAKA,Mitaka & Kichijōji,Kichijōji,Q287771,Kichijōji,"neighborhood in Musashino, Tokyo",country + coordinates
+JP-N-TOKYO-TAKAO,Takao,Mount Takao,Q1329959,Mount Takao,"mountain in Tokyo, Japan",country + coordinates
 JP-P-YOKOHAMA,Yokohama,Yokohama,Q38283,Yokohama,"designated city in Kanagawa Prefecture, Japan",country + coordinates
 JP-P-KAMAKURA,Kamakura,Kamakura,Q10939227,Kamakura,"historic center of Kamakura City, Kanagawa Prefecture, Japan",country + coordinates
 JP-P-HAKONE,Hakone,Hakone,Q671040,Hakone,"town in Ashigarashimo district, Kanagawa prefecture, Japan",country + coordinates

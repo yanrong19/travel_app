@@ -2,6 +2,7 @@
 # Syntax: "= ID" sets the parent for following lines. "R id | name | level | search" = travel region.
 # "P name | level | key=value; ..." = planning unit (keys: q search text, trip, link, note, id).
 # "A code > parent" re-parents an official region. "M code" marks an official region as a planning unit.
+# "N name | Neighbourhood | key=value; ..." = neighbourhood inside a planning unit (same keys as P); not a planning unit itself.
 = JP
 R JP-R-HOKKAIDO | Hokkaidō | Region | Hokkaido region
 R JP-R-TOHOKU | Tōhoku | Region | Tōhoku region
@@ -57,6 +58,23 @@ P Chichibu | Countryside | trip=Tokyo
 = JP-13
 P Tokyo | City | id=JP-P-TOKYO; q=Tokyo; note=Tokyo Metropolis on the mainland: the 23 wards plus Tama (Mount Takao). The Izu and Ogasawara islands are separate.
 P Ogasawara Islands | Islands | q=Bonin Islands; note=1,000 km south of the city: a 24-hour ferry, never a day trip.
+= JP-P-TOKYO
+N Shibuya | Neighbourhood | id=JP-N-TOKYO-SHIBUYA; q=Shibuya; note=Wikidata item is the whole Shibuya ward, the closest match.
+N Harajuku & Omotesandō | Neighbourhood | id=JP-N-TOKYO-HARAJUKU; q=Harajuku
+N Shinjuku | Neighbourhood | id=JP-N-TOKYO-SHINJUKU; q=Shinjuku; note=Wikidata item is the whole Shinjuku ward, the closest match.
+N Asakusa | Neighbourhood | id=JP-N-TOKYO-ASAKUSA; q=Asakusa
+N Ueno | Neighbourhood | id=JP-N-TOKYO-UENO; q=Ueno, Tokyo
+N Yanaka | Neighbourhood | id=JP-N-TOKYO-YANAKA; q=Yanaka, Tokyo
+N Ginza & Tsukiji | Neighbourhood | id=JP-N-TOKYO-GINZA; q=Ginza
+N Odaiba & Toyosu | Neighbourhood | id=JP-N-TOKYO-ODAIBA; q=Odaiba
+N Oshiage | Neighbourhood | id=JP-N-TOKYO-OSHIAGE; q=Oshiage
+N Ryōgoku | Neighbourhood | id=JP-N-TOKYO-RYOGOKU; q=Ryōgoku
+N Kiyosumi | Neighbourhood | id=JP-N-TOKYO-KIYOSUMI; q=Kiyosumi
+N Shimokitazawa | Neighbourhood | id=JP-N-TOKYO-SHIMOKITAZAWA; q=Shimokitazawa
+N Nakano | Neighbourhood | id=JP-N-TOKYO-NAKANO; q=Nakano, Tokyo; note=Wikidata item is the whole Nakano ward, the closest match.
+N Setagaya | Neighbourhood | id=JP-N-TOKYO-SETAGAYA; q=Setagaya; note=Wikidata item is the whole Setagaya ward, the closest match.
+N Mitaka & Kichijōji | Neighbourhood | id=JP-N-TOKYO-MITAKA; q=Kichijōji; note=Wikidata item is Kichijōji (Musashino); Mitaka has no separate neighbourhood item.
+N Takao | Neighbourhood | id=JP-N-TOKYO-TAKAO; q=Mount Takao; note=Wikidata item is Mount Takao itself, the closest match for the Takao area.
 = JP-14
 P Yokohama | City | trip=Tokyo
 P Kamakura | Town | trip=Tokyo

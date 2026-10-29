@@ -742,6 +742,22 @@ JP-P-NIKKO,JP-09,JP,3,Town,travel,Nikkō,日光市,nikko,yes,JP-P-TOKYO,,Q235753
 JP-13,JP-R-KANTO,JP,2,Prefecture,admin,Tokyo,東京都,tokyo,,,JP-13,Q1490,1543125,35.689444444,139.691666666,8,Japan › Kantō › Tokyo,,Wikidata,reviewed
 JP-P-OGASAWARA-ISLANDS,JP-13,JP,3,Islands,travel,Ogasawara Islands,小笠原群島,ogasawara-islands,yes,,,Q243634,11775500,26.99806,142.21806,8,Japan › Kantō › Tokyo › Ogasawara Islands,"1,000 km south of the city: a 24-hour ferry, never a day trip.",Curated,draft
 JP-P-TOKYO,JP-13,JP,3,City,travel,Tokyo,東京都,tokyo,yes,,,Q1490,1543125,35.68944,139.69167,11,Japan › Kantō › Tokyo › Tokyo,Tokyo Metropolis on the mainland: the 23 wards plus Tama (Mount Takao). The Izu and Ogasawara islands are separate.,Curated,draft
+JP-N-TOKYO-ASAKUSA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Asakusa,浅草,asakusa,,,,Q720644,,35.71492,139.79652,14,Japan › Kantō › Tokyo › Tokyo › Asakusa,,Curated,draft
+JP-N-TOKYO-GINZA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Ginza & Tsukiji,銀座,ginza-tsukiji,,,,Q746052,4859036,35.67136,139.76562,14,Japan › Kantō › Tokyo › Tokyo › Ginza & Tsukiji,,Curated,draft
+JP-N-TOKYO-HARAJUKU,JP-P-TOKYO,JP,4,Neighbourhood,travel,Harajuku & Omotesandō,原宿,harajuku-omotesando,,,,Q746573,,35.67017,139.70269,14,Japan › Kantō › Tokyo › Tokyo › Harajuku & Omotesandō,,Curated,draft
+JP-N-TOKYO-KIYOSUMI,JP-P-TOKYO,JP,4,Neighbourhood,travel,Kiyosumi,清澄,kiyosumi,,,,Q11561314,16951961,35.68142,139.79653,14,Japan › Kantō › Tokyo › Tokyo › Kiyosumi,,Curated,draft
+JP-N-TOKYO-MITAKA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Mitaka & Kichijōji,吉祥寺,mitaka-kichijoji,,,,Q287771,,35.70306,139.57972,14,Japan › Kantō › Tokyo › Tokyo › Mitaka & Kichijōji,Wikidata item is Kichijōji (Musashino),Curated,draft
+JP-N-TOKYO-NAKANO,JP-P-TOKYO,JP,4,Neighbourhood,travel,Nakano,中野区,nakano,,,,Q234087,1543056,35.70728,139.66375,14,Japan › Kantō › Tokyo › Tokyo › Nakano,"Wikidata item is the whole Nakano ward, the closest match.",Curated,draft
+JP-N-TOKYO-ODAIBA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Odaiba & Toyosu,お台場,odaiba-toyosu,,,,Q211861,3782450,35.63000,139.77500,14,Japan › Kantō › Tokyo › Tokyo › Odaiba & Toyosu,,Curated,draft
+JP-N-TOKYO-OSHIAGE,JP-P-TOKYO,JP,4,Neighbourhood,travel,Oshiage,押上,oshiage,,,,Q11497641,17354015,35.71044,139.81386,14,Japan › Kantō › Tokyo › Tokyo › Oshiage,,Curated,draft
+JP-N-TOKYO-RYOGOKU,JP-P-TOKYO,JP,4,Neighbourhood,travel,Ryōgoku,両国,ryogoku,,,,Q3083463,17000650,35.69386,139.79285,14,Japan › Kantō › Tokyo › Tokyo › Ryōgoku,,Curated,draft
+JP-N-TOKYO-SETAGAYA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Setagaya,世田谷区,setagaya,,,,Q231645,,35.64656,139.65322,14,Japan › Kantō › Tokyo › Tokyo › Setagaya,"Wikidata item is the whole Setagaya ward, the closest match.",Curated,draft
+JP-N-TOKYO-SHIBUYA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Shibuya,渋谷区,shibuya,,,,Q193638,1759477,35.66367,139.69772,14,Japan › Kantō › Tokyo › Tokyo › Shibuya,"Wikidata item is the whole Shibuya ward, the closest match.",Curated,draft
+JP-N-TOKYO-SHIMOKITAZAWA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Shimokitazawa,下北沢,shimokitazawa,,,,Q735384,,35.66161,139.66656,14,Japan › Kantō › Tokyo › Tokyo › Shimokitazawa,,Curated,draft
+JP-N-TOKYO-SHINJUKU,JP-P-TOKYO,JP,4,Neighbourhood,travel,Shinjuku,新宿区,shinjuku,,,,Q179645,1758858,35.69389,139.70342,14,Japan › Kantō › Tokyo › Tokyo › Shinjuku,"Wikidata item is the whole Shinjuku ward, the closest match.",Curated,draft
+JP-N-TOKYO-TAKAO,JP-P-TOKYO,JP,4,Neighbourhood,travel,Takao,高尾山,takao,,,,Q1329959,,35.62528,139.24361,14,Japan › Kantō › Tokyo › Tokyo › Takao,"Wikidata item is Mount Takao itself, the closest match for the Takao area.",Curated,draft
+JP-N-TOKYO-UENO,JP-P-TOKYO,JP,4,Neighbourhood,travel,Ueno,上野,ueno,,,,Q576781,18158684,35.71333,139.77639,14,Japan › Kantō › Tokyo › Tokyo › Ueno,,Curated,draft
+JP-N-TOKYO-YANAKA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Yanaka,谷中,yanaka,,,,Q11632597,18711641,35.72379,139.76842,14,Japan › Kantō › Tokyo › Tokyo › Yanaka,,Curated,draft
 JP-R-KYUSHU,JP,JP,1,Region,travel,Kyūshū & Okinawa,九州地方,kyushu-okinawa,,,,Q13393883,1842245,30.39389,129.39402,6,Japan › Kyūshū & Okinawa,,Curated,draft
 JP-40,JP-R-KYUSHU,JP,2,Prefecture,admin,Fukuoka Prefecture,福岡県,fukuoka-prefecture,,,JP-40,Q123258,1553735,33.606111111,130.418055555,8,Japan › Kyūshū & Okinawa › Fukuoka Prefecture,,Wikidata,reviewed
 JP-P-FUKUOKA,JP-40,JP,3,City,travel,Fukuoka,福岡市,fukuoka,yes,,,Q26600,4008611,33.59014,130.40172,11,Japan › Kyūshū & Okinawa › Fukuoka Prefecture › Fukuoka,,Curated,draft

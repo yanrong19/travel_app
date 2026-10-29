@@ -1,5 +1,5 @@
-"""Assemble the place tree: countries + official regions (from Wikidata) + the hand-curated travel regions
-and planning units in kb/data/curated/*.txt. Curated places are matched to Wikidata for their ID,
+"""Assemble the place tree: countries + official regions (from Wikidata) + the hand-curated travel regions,
+planning units and neighbourhoods in kb/data/curated/*.txt. Curated places are matched to Wikidata for their ID,
 coordinates and local-script name; doubtful matches are flagged for review.
 
 Writes kb/data/places.csv, kb/data/place_links.csv and kb/data/match_report.csv."""
@@ -29,7 +29,7 @@ ZOOM = {
     "Nation": 6, "Municipality": 9, "Autonomous region": 5, "Federal district": 11, "Capital city": 10,
     "Area": 8, "Islands": 8, "Coast": 9, "Mountains": 10, "City": 11, "Town": 13, "Village": 14,
     "Hot-spring town": 13, "Island": 10, "National park": 9, "Countryside": 10, "Lakes": 10, "Ski area": 11,
-    "Resort": 13, "Canyon": 10, "Trails": 9, "Valley": 10, "Archaeological site": 14, "River": 8, "Waterfalls": 12,
+    "Neighbourhood": 14, "Resort": 13, "Canyon": 10, "Trails": 9, "Valley": 10, "Archaeological site": 14, "River": 8, "Waterfalls": 12,
 }
 BIG_COUNTRIES = {"US": 3, "CN": 3, "MX": 4, "TR": 5, "FR": 5, "ES": 5, "IT": 5, "JP": 5, "DE": 5, "GB": 5, "GR": 6, "TH": 5, "SG": 11}
 
@@ -111,14 +111,15 @@ def load():
                     "name_en": name, "is_planning_unit": "", "day_trip_from": "", "notes": "", "_q": q or name,
                     "source": "Curated", "status": "draft",
                 }
-            elif kind == "P":
+            elif kind in ("P", "N"):
+                # N = a neighbourhood inside a planning unit: read like P, but not itself a planning unit.
                 name, level = parts[0], parts[1]
                 opts = parse_opts(parts[2]) if len(parts) > 2 else {}
-                pid = opts.get("id") or f"{iso}-P-{slug(name)}"
+                pid = opts.get("id") or f"{iso}-{kind}-{slug(name)}"
                 assert pid not in rows, f"duplicate id {pid}"
                 rows[pid] = {
                     "place_id": pid, "parent_id": parent, "country_iso2": iso, "level_type": level, "kind": "travel",
-                    "name_en": name, "is_planning_unit": "yes", "day_trip_from": "", "notes": opts.get("note", ""),
+                    "name_en": name, "is_planning_unit": "yes" if kind == "P" else "", "day_trip_from": "", "notes": opts.get("note", ""),
                     "_q": opts.get("q") or name, "source": "Curated", "status": "draft",
                 }
                 if "trip" in opts:
