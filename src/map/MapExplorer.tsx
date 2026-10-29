@@ -183,6 +183,11 @@ type Pad = { top: number; right: number; bottom: number; left: number };
 type Cam = { center: [number, number] | { lng: number; lat: number }; zoom: number; pitch: number; bearing: number; padding?: Pad };
 const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
 
+/** How a framing tilts in 3D: Tokyo-wide (`wide`) a little flatter than a ward or a framed box (`close`); some never do (`flat`). */
+type Tilt = 'flat' | 'wide' | 'close';
+const TILT: Record<Tilt, [pitch: number, bearing: number]> = { flat: [0, 0], wide: [48, -12], close: [55, -18] };
+const tiltOf = (kind: Tilt, tilted: boolean): [number, number] => (tilted ? TILT[kind] : TILT.flat);
+
 export function MapExplorer(props: Props) {
   const {
     target,
@@ -807,8 +812,8 @@ export function MapExplorer(props: Props) {
   const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}:${focus?.key ?? ''}|${insetKey}`;
   const lastKey = useRef('');
   const lastFocus = useRef<MapFocus | null>(null);
-  // The camera from just before a run of spots, and the key it was under, to come back to on leaving them.
-  const spotReturn = useRef<{ key: string; cam: Cam } | null>(null);
+  // The camera from just before a run of spots (with the key, insets, mode and kind of tilt it had), to come back to on leaving them.
+  const spotReturn = useRef<{ key: string; insets: string; mode: MapMode; tilt: Tilt; cam: Cam } | null>(null);
   const lastInsets = useRef(insets);
   // Where the camera came to rest after the last framing, to tell whether the user has moved it since.
   const framedAt = useRef<{ center: [number, number]; zoom: number } | null>(null);
@@ -828,7 +833,7 @@ export function MapExplorer(props: Props) {
     const map = mapRef.current;
     if (!map || !ready || camKey === lastKey.current) return;
     const first = lastKey.current === '';
-    const wasKey = lastKey.current.split('|')[0];
+    const [wasKey, wasInsetKey = ''] = lastKey.current.split('|');
     const onlyInsets = !first && wasKey === camKey.split('|')[0];
     lastKey.current = camKey;
     const was = lastInsets.current;
@@ -836,20 +841,34 @@ export function MapExplorer(props: Props) {
     const wasFocus = lastFocus.current;
     lastFocus.current = focus;
     if (focus?.kind === 'spot' && wasFocus?.kind !== 'spot') {
-      // Entering a spot: remember where the camera was, under the key it was at.
+      // Entering a spot: remember where the camera was, under the key, insets and mode it was at. Not
+      // while it is still flying there: leaving then frames afresh rather than going back half-way.
       const c = map.getCenter();
-      spotReturn.current = first ? null : { key: wasKey, cam: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), padding: { ...NO_PAD, ...map.getPadding() } } };
+      const lv = levelRef.current;
+      const tilt: Tilt = wasFocus?.kind === 'frame' || lv === 'area' ? 'close' : lv === 'region' ? 'wide' : 'flat';
+      spotReturn.current =
+        first || map.isMoving()
+          ? null
+          : { key: wasKey, insets: wasInsetKey, mode: modeRef.current, tilt, cam: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), padding: { ...NO_PAD, ...map.getPadding() } } };
     } else if (focus?.kind !== 'spot' && wasFocus?.kind === 'spot') {
-      // Leaving the spots back to the key they started from: fly back to that camera, not a fresh framing.
+      // Leaving the spots back to the key and free area they started from: fly back to that camera,
+      // not a fresh framing. The map style switched meanwhile: the tilt follows the style.
       const back = spotReturn.current;
       spotReturn.current = null;
-      if (back && back.key === camKey.split('|')[0]) {
+      if (back && back.key === camKey.split('|')[0] && back.insets === insetKey) {
         cancelAnimationFrame(spin.current);
         ++flightId.current;
-        if (prefersReducedMotion()) map.jumpTo(back.cam);
-        else map.flyTo({ ...back.cam, duration: 1200, essential: true, curve: 1.5 });
+        const [pitch, bearing] = back.mode === modeRef.current ? [back.cam.pitch, back.cam.bearing] : tiltOf(back.tilt, modeRef.current === '3d');
+        const cam = { ...back.cam, pitch, bearing };
+        noteFrame(map);
+        if (prefersReducedMotion()) map.jumpTo(cam);
+        else map.flyTo({ ...cam, duration: 1200, essential: true, curve: 1.5 });
         return;
       }
+      // Framing afresh: cameraForBounds measures inside the map's own padding as well as ours, and
+      // the spot left the insets there. Drop it without moving the view (the spot is flat, north-up).
+      const box = map.getContainer();
+      map.jumpTo({ padding: NO_PAD, center: map.unproject([box.clientWidth / 2, box.clientHeight / 2]) });
     }
     if (onlyInsets && panOnInsets && !stillFramed(map)) {
       // The free area's centre moves by half the change; the view follows it, gently.
@@ -913,8 +932,7 @@ export function MapExplorer(props: Props) {
     let maxZoom = 16;
     if (f?.kind === 'frame') {
       bounds = f.bounds;
-      pitch = tilt ? 55 : 0;
-      bearing = tilt ? -18 : 0;
+      [pitch, bearing] = tiltOf('close', tilt);
     } else if (t.level === 'country' && t.country) {
       if (t.country.id === JAPAN_ID) {
         bounds = (focusPrefs?.length && (regionBounds(focusPrefs) as LngLatBoundsLike | null)) || JAPAN_BOUNDS;
@@ -937,13 +955,11 @@ export function MapExplorer(props: Props) {
       bounds = list
         ? boundsOf(list.map((a) => a.lonlat))
         : (geoBounds({ type: 'FeatureCollection', features: TOKYO_AREAS.filter((a) => Number(a.id) < 13300) }) as LngLatBoundsLike);
-      pitch = tilt ? 48 : 0;
-      bearing = tilt ? -12 : 0;
+      [pitch, bearing] = tiltOf('wide', tilt);
       maxZoom = 15;
     } else if (t.level === 'area' && t.area) {
       bounds = geoBounds(t.area) as LngLatBoundsLike;
-      pitch = tilt ? 55 : 0;
-      bearing = tilt ? -18 : 0;
+      [pitch, bearing] = tiltOf('close', tilt);
       maxZoom = 15.5;
     }
     if (!bounds) return;
