@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useNavigate, useNavigationType, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets, Quad } from '../map/camera';
 import type { MapBubble, MapFocus } from '../map/MapExplorer';
@@ -52,7 +52,7 @@ import {
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
 import { attractionHome, countFor, nodeOf, parentOf, parseRefKey, pathTo, pinsFor, placeAnchor, refKey, sameTree } from '../lib/placeTree';
-import { neighboursOf, spotHistory } from '../lib/spotlight';
+import { afterSpotPop, neighboursOf, spotHistory, spotLeave } from '../lib/spotlight';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from '../lib/tripUndo';
@@ -144,7 +144,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const [params, setParams] = useSearchParams();
   // An attraction page opened from here gets this search with the trip, so it shows the trip bar and
   // its Back comes back to the same day, place, view and tab.
-  const { search, state: navState, key: navKey } = useLocation();
+  const { pathname, search, state: navState, key: navKey } = useLocation();
+  const navType = useNavigationType();
   const dayIdx = indexParam(params.get('day'));
   const placeIdx = indexParam(params.get('place'));
   const setParam = useCallback(
@@ -835,19 +836,21 @@ function PlannerPage({ trip }: { trip: Trip }) {
   }, [spotParam, placesKey]);
   /**
    * Leaves the spotlight (the card's close, Esc, a crumb): one step back when this page pushed the
-   * spot's entry, else the spot is replaced away. `to` (a crumb) is then viewed, if it isn't already.
-   * Guarded like the search: a quick second leave before the router lands does nothing.
+   * spot's entry, else the spot is replaced away (spotLeave). `to` (a crumb) is then viewed, if it
+   * isn't already. Guarded like the search: a quick second leave before the router lands does nothing.
    */
   const leavingSpot = useRef(false);
   const afterSpot = useRef<PlaceRef | null>(null);
   const leaveSpot = (to?: PlaceRef) => {
-    if (!spotParam || leavingSpot.current) return;
-    if (spotPushed.current) {
+    if (leavingSpot.current) return;
+    const how = spotLeave(spotParam, spotPushed.current);
+    if (how === 'back') {
       leavingSpot.current = true;
       afterSpot.current = to ?? null;
       navigate(-1);
       return;
     }
+    if (how === 'none') return;
     setParams(
       (p) => {
         const q = writeDayView(p, { spot: null });
@@ -859,14 +862,25 @@ function PlannerPage({ trip }: { trip: Trip }) {
   };
   const leaveSpotRef = useRef(leaveSpot);
   leaveSpotRef.current = leaveSpot;
+  // After every location change. The day, sub-tab and wet toggle aren't steps in history, but while a
+  // spot is open they replace its entry, so a step back off it (a leave above, or the browser's Back)
+  // lands on the old ones: they are put back as they were just before (afterSpotPop), in place, in
+  // the same write as a crumb's place.
   const spotNavKey = useRef(navKey);
+  const lastLoc = useRef({ pathname, search });
   useEffect(() => {
     if (spotNavKey.current === navKey) return;
     spotNavKey.current = navKey;
     leavingSpot.current = false;
+    const prev = lastLoc.current;
+    lastLoc.current = { pathname, search };
     const to = afterSpot.current;
     afterSpot.current = null;
-    if (to && !spotParam && !(viewed && sameRef(to, viewed))) setViewed(to);
+    const kept = afterSpotPop(prev, { pathname, search }, navType === 'POP');
+    const q = kept ?? new URLSearchParams(search);
+    const view = !!to && !spotParam && !(viewed && sameRef(to, viewed)) && viewInto(q, to);
+    if (!kept && !view) return;
+    setParams(q, { replace: true, preventScrollReset: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navKey]);
   // "See it on the map" on an attraction page in planning comes back here with { open: id } in router

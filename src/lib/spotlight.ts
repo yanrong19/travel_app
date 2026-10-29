@@ -35,6 +35,48 @@ export const spotZoom = (width: number): number => (width >= 761 ? 16 : 15.5);
 export const spotHistory = (wasSpot: string | null, nextSpot: string | null): 'push' | 'replace' =>
   wasSpot === null && nextSpot !== null ? 'push' : 'replace';
 
+/**
+ * Leaving the spot (the card's close, Esc, a crumb): one step back when this page pushed the spot's
+ * entry (so the history has no spot entry left behind), else the spot is replaced away; nothing to
+ * do with no spot open.
+ */
+export const spotLeave = (spot: string | null, pushed: boolean): 'back' | 'replace' | 'none' =>
+  !spot ? 'none' : pushed ? 'back' : 'replace';
+
+/**
+ * The planner's search params that aren't steps in history (the day, the Browse sub-tab, the
+ * wet-weather toggle): changed while a spot is open they replace the spot's entry, so stepping back
+ * off it would bring the old ones back. They are carried over instead.
+ */
+export const SPOT_KEPT = ['day', 'tab', 'wet'] as const;
+
+/** A planner location as afterSpotPop reads it. */
+export interface SpotLoc {
+  pathname: string;
+  search: string;
+}
+
+/**
+ * After a location change: when it was a pop (Back, or a leave's step back) off a spot onto the same
+ * page without one, the search it landed on with the day, sub-tab and wet toggle from just before
+ * the pop; null when there is nothing to put back (not such a pop, or they already match).
+ */
+export function afterSpotPop(prev: SpotLoc, next: SpotLoc, pop: boolean): URLSearchParams | null {
+  if (!pop || prev.pathname !== next.pathname) return null;
+  const was = new URLSearchParams(prev.search);
+  const now = new URLSearchParams(next.search);
+  if (!was.get('spot') || now.get('spot')) return null;
+  let changed = false;
+  for (const k of SPOT_KEPT) {
+    const v = was.get(k);
+    if (v === now.get(k)) continue;
+    changed = true;
+    if (v === null) now.delete(k);
+    else now.set(k, v);
+  }
+  return changed ? now : null;
+}
+
 /** The spot's zoom never steps out further than this to fit its neighbours. */
 export const SPOT_ZOOM_MIN = 14.8;
 /** How far inside the free area's edge a neighbour has to sit. */
