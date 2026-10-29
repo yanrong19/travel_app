@@ -76,6 +76,8 @@ const CARD_PHONE_H = 250;
 const SPOT_STRIP_MIN = 96;
 /** Phone: while a spot is open the day sheet shows just its handle above the tab bar. */
 const SPOT_PEEK_PHONE = 24;
+/** Phone: how long the sheet's slide to or from the handle runs (styles.css: 0.35s), with a margin. */
+const SHEET_SLIDE_MS = 450;
 /** Whether the analysis was open beside the day panel, for the rest of the session. */
 const ANALYSIS_KEY = 'fitline.planner.analysis';
 const readAnalysisOpen = () => {
@@ -707,6 +709,19 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // card, measured, so the neighbours have room. A short screen keeps at least SPOT_STRIP_MIN of map.
   const spotPhone = narrow && !!selected;
   const peek = spotPhone ? SPOT_PEEK_PHONE : PEEK_PHONE;
+  // The sheet slides to and from the handle (styles.css, is-sheet-sliding) only around that change,
+  // from the render the peek changes in until the slide is over, not on viewport resizes.
+  const [slideFor, setSlideFor] = useState(spotPhone);
+  const [sliding, setSliding] = useState(false);
+  if (slideFor !== spotPhone) {
+    setSlideFor(spotPhone);
+    setSliding(true);
+  }
+  useEffect(() => {
+    if (!sliding) return;
+    const t = window.setTimeout(() => setSliding(false), SHEET_SLIDE_MS);
+    return () => window.clearTimeout(t);
+  }, [sliding, spotPhone]);
   const [cardH, setCardH] = useState(CARD_PHONE_H);
   const cardShown = picked?.id ?? null;
   useLayoutEffect(() => {
@@ -1012,7 +1027,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
   return (
     <div
       ref={rootRef}
-      className={`explore planner ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''} ${side && analysisOpen ? 'is-analysis' : ''}`}
+      className={`explore planner ${searching ? 'is-searching' : ''} ${picked ? 'has-card' : ''} ${narrow && atGuides ? 'is-covered' : ''} ${side && analysisOpen ? 'is-analysis' : ''} ${sliding ? 'is-sheet-sliding' : ''}`}
       style={
         {
           '--sheet-clear': `${SHEET_CLEAR}px`,

@@ -6638,6 +6638,13 @@ button.lvl-crumb:hover {
   font-size: 15px;
 }
 
+/* Phone: a spot lowers the sheet's peek to its handle and its end raises it again; the sheet slides
+   only then (Planner sets is-sheet-sliding around the change), not on viewport or toolbar resizes. */
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .planner.is-sheet-sliding .plan-sheet {
+    transition: margin-top 0.35s var(--ease-out, ease-out);
+  }
+}
 /* Scoped to the page's own search and map: the place picker in a sheet has its own. */
 .planner > .explore-chrome > .msearch {
   top: 172px;
@@ -8572,8 +8579,6 @@ button.lvl-crumb:hover {
     position: relative;
     z-index: 10;
     margin-top: calc(var(--vh, 100svh) - var(--plan-peek) - var(--sheet-clear));
-    /* A spot lowers the peek to the handle and its end raises it again: the sheet slides. */
-    transition: margin-top 0.35s var(--ease-out, ease-out);
     /* Always tall enough to come fully up, even with little in it. */
     min-height: calc(var(--vh, 100svh) - var(--sheet-top));
     padding: 12px 16px calc(var(--sheet-clear) + 24px);
