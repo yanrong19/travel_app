@@ -3864,12 +3864,17 @@ button.mgroup-row:focus-visible {
   text-align: center;
   transform: translate(-50%, -50%);
 }
-.map-controls .map-tilt {
-  font-size: 13px;
+/* Map | 3D: a two-button group in the controls, the active one inked. */
+.map-controls .map-mode {
+  display: grid;
+  gap: 2px;
+}
+.map-controls .map-mode button {
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
-.map-controls .map-tilt[aria-pressed='true'] {
+.map-controls .map-mode button[aria-pressed='true'] {
   background: var(--ink);
   color: #fff;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { AttributionControl, Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
-import { C, STYLE_URL, restyle } from './style';
+import { C, STYLE_URL, applyMode, restyle } from './style';
+import { useMapMode } from '../lib/mapMode';
 import { geoBounds } from 'd3-geo';
 import type { Attraction } from '../data/types';
 import { ATTRACTIONS } from '../data/attractions';
@@ -211,7 +212,10 @@ export function MapExplorer(props: Props) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [tilted, setTilted] = useState(true);
+  const [mode, setMode] = useMapMode();
+  const tilted = mode === '3d';
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
   const handlers = useRef(props);
   handlers.current = props;
   const levelRef = useRef<Level>(target.level);
@@ -293,7 +297,7 @@ export function MapExplorer(props: Props) {
 
     map.on('style.load', () => {
       clearTimeout(failTimer);
-      restyle(map);
+      restyle(map, undefined, modeRef.current);
       addOurLayers(map);
       map.setProjection({ type: 'globe' });
       setReady(true);
@@ -1012,13 +1016,20 @@ export function MapExplorer(props: Props) {
     cancelAnimationFrame(spin.current);
     map.easeTo({ zoom: map.getZoom() + d, duration: prefersReducedMotion() ? 0 : 400 });
   };
-  const toggleTilt = () => {
+  // Map or 3D: the look switches in place, and the camera tilts or levels out when pins are showing.
+  const appliedMode = useRef<typeof mode | null>(null);
+  useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
-    const next = !tilted;
-    setTilted(next);
-    map.easeTo({ pitch: next ? 52 : 0, bearing: next ? -15 : 0, duration: prefersReducedMotion() ? 0 : 900 });
-  };
+    if (!map || !ready) return;
+    applyMode(map, mode);
+    const first = appliedMode.current === null;
+    const changed = appliedMode.current !== mode;
+    appliedMode.current = mode;
+    if (first || !changed) return;
+    if (levelRef.current !== 'region' && levelRef.current !== 'area') return;
+    const tilt = mode === '3d';
+    map.easeTo({ pitch: tilt ? 52 : 0, bearing: tilt ? -15 : 0, duration: prefersReducedMotion() ? 0 : 900 });
+  }, [mode, ready]);
   const refit = () => flyToTarget(900, true);
 
   const level = target.level;
@@ -1216,9 +1227,14 @@ export function MapExplorer(props: Props) {
         </button>
         {showPins && (
           <>
-            <button type="button" onClick={toggleTilt} aria-pressed={tilted} aria-label={tilted ? 'Switch to flat view' : 'Switch to 3D view'} className="map-tilt">
-              {tilted ? '2D' : '3D'}
-            </button>
+            <div className="map-mode" role="group" aria-label="Map style">
+              <button type="button" onClick={() => setMode('map')} aria-pressed={!tilted}>
+                Map
+              </button>
+              <button type="button" onClick={() => setMode('3d')} aria-pressed={tilted}>
+                3D
+              </button>
+            </div>
             <button type="button" onClick={refit} aria-label="Fit all attractions">
               <Icon name="target" size={18} />
             </button>

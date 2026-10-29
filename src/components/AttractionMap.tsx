@@ -36,7 +36,7 @@ export default function AttractionMap({ a }: { a: Attraction }) {
       setAt({ x: p.x, y: p.y });
     };
     map.on('style.load', () => {
-      restyle(map);
+      restyle(map, undefined, 'map');
       place();
     });
     map.once('idle', () => setReady(true));
