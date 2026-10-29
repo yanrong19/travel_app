@@ -9,7 +9,7 @@ interface Props {
   trip: Trip;
   /** The current day, 0-based. */
   day: number;
-  /** What to list (lib/browse's browsePool): the viewed place's attractions, or the trip's. */
+  /** What to list (lib/browse's browsePool, then browseList): the viewed place's attractions (only those in view once the map follows), or the trip's. */
   pool: Attraction[];
   /** The place the list covers, for its heading. */
   placeName: string;
@@ -33,6 +33,8 @@ interface Props {
   onSave: (id: string) => void;
   /** No checked attractions here, and the panel already says so. */
   quietEmpty?: boolean;
+  /** At the attraction level, once the map has reported its view: how many are on screen (the pool is just those). */
+  inViewCount?: number | null;
 }
 
 const BEST: Record<string, string> = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
@@ -48,7 +50,7 @@ const markerOfRow = (r: BrowseRow, day: number): Marker =>
  * ones come first. Hovering or focusing a row lights its dot on the map; the row opens the card; its
  * buttons add, move or remove it, or save it to the trip.
  */
-export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, wet = false, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty }: Props) {
+export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, wet = false, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty, inViewCount = null }: Props) {
   const id = useId();
   // After an action the order holds (the row changes in place), until the day, the chips, the place or
   // the wet-weather toggle change; leaving the sub-tab unmounts the list, which lists afresh too.
@@ -67,8 +69,17 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
   useEffect(() => () => hoverRef.current(null), []);
   const toggle = (f: BrowseFilterId) => onFilters(filters.includes(f) ? filters.filter((x) => x !== f) : [...filters, f]);
 
+  const following = typeof inViewCount === 'number';
+
   if (!pool.length) {
-    return quietEmpty ? null : (
+    if (quietEmpty) return null;
+    if (following)
+      return (
+        <div className="br-none" role="status">
+          <p>Nothing in view here. Zoom out or move the map.</p>
+        </div>
+      );
+    return (
       <div className="plan-empty" role="status">
         <Icon name="map" size={18} />
         <p>
@@ -83,9 +94,15 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
     <section className="br" aria-labelledby={`${id}-h`}>
       <div className="dl-head">
         <h2 id={`${id}-h`}>{placeName}</h2>
-        <p className="num" aria-live="polite">
-          {filters.length ? `${rows.length} of ${pool.length}` : `${pool.length} attractions`} · {wet ? 'rain-proof first' : 'unplanned first'}
-        </p>
+        {following ? (
+          <p className="num" aria-live="polite">
+            <span className="br-count">{filters.length ? `${rows.length} of ${inViewCount} in view` : `${inViewCount} in view`}</span> · move the map to update
+          </p>
+        ) : (
+          <p className="num" aria-live="polite">
+            {filters.length ? `${rows.length} of ${pool.length}` : `${pool.length} attractions`} · {wet ? 'rain-proof first' : 'unplanned first'}
+          </p>
+        )}
       </div>
 
       <div className="br-filters" role="group" aria-label="Filters">

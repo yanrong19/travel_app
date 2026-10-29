@@ -165,6 +165,16 @@ export function inView(list: Attraction[], quad: Quad | null): Attraction[] {
 }
 
 /**
+ * What Browse shows: at the attraction level, only what's in the map's view, with that count; the
+ * whole pool (count null) until the map reports a view, and always above the attraction level.
+ */
+export function browseList(pool: Attraction[], quad: Quad | null, attractionLevel: boolean): { list: Attraction[]; inView: number | null } {
+  if (!attractionLevel || !quad) return { list: pool, inView: null };
+  const list = inView(pool, quad);
+  return { list, inView: list.length };
+}
+
+/**
  * Right after an action in the list, the rows keep the order they had (the status and button change
  * in place) instead of jumping to their new group. Only while the list holds the same rows: a new
  * filter, day or place lists afresh.

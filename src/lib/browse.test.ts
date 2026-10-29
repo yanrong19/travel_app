@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { ATTRACTIONS, attractionById } from '../data/attractions';
 import {
   BROWSE_FILTERS,
+  browseList,
   browsePool,
   browseRows,
   filterCounts,
@@ -225,11 +226,20 @@ describe('wet-weather toggle', () => {
   });
 });
 
+// South edge 35.65: Shibuya Sky sits at 35.6585.
+const SHIBUYA_QUAD: Quad = [[139.69, 35.68], [139.71, 35.68], [139.71, 35.65], [139.69, 35.65]];
+
 test('inView keeps attractions inside the quad; null quad keeps all', () => {
-  // South edge 35.65: Shibuya Sky sits at 35.6585.
-  const quad: Quad = [[139.69, 35.68], [139.71, 35.68], [139.71, 35.65], [139.69, 35.65]];
-  const ids = inView(ATTRACTIONS, quad).map((a) => a.id);
+  const ids = inView(ATTRACTIONS, SHIBUYA_QUAD).map((a) => a.id);
   expect(ids).toContain('shibuya-sky');
   expect(ids).not.toContain('senso-ji');
   expect(inView(ATTRACTIONS, null)).toHaveLength(ATTRACTIONS.length);
+});
+
+test('browseList: full pool until the map reports; then only what is in view', () => {
+  expect(browseList(ATTRACTIONS, null, true)).toEqual({ list: ATTRACTIONS, inView: null });
+  const r = browseList(ATTRACTIONS, SHIBUYA_QUAD, true);
+  expect(r.inView).toBe(r.list.length);
+  expect(r.list.map((a) => a.id)).toContain('shibuya-sky');
+  expect(browseList(ATTRACTIONS, SHIBUYA_QUAD, false)).toEqual({ list: ATTRACTIONS, inView: null });
 });

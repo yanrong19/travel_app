@@ -6920,6 +6920,10 @@ button.lvl-crumb:hover {
   color: var(--muted);
   border-style: dashed;
 }
+/* Browse following the map: the in-view count reads first, the hint after it stays muted. */
+.br-count {
+  color: var(--ink);
+}
 .br-none {
   display: grid;
   justify-items: start;

@@ -1,8 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import type { Insets } from '../map/camera';
-import type { MapBubble } from '../map/MapExplorer';
+import type { Insets, Quad } from '../map/camera';
+import type { MapBubble, MapFocus } from '../map/MapExplorer';
 import { BottomTabs, TopNav } from '../components/Chrome';
 import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
@@ -17,7 +17,7 @@ import { HeaderDates, TripDatesPanel, cutsPlans } from '../components/planner/He
 import type { TripDatesValue } from '../components/planner/TripSettings';
 import { Trays } from '../components/planner/Trays';
 import { WetPlan } from '../components/planner/WetPlan';
-import { browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
+import { browseList, browsePool, markersFor, type BrowseFilterId } from '../lib/browse';
 import { summarizeDay } from '../lib/daySummary';
 import { readDayView, writeDayView, type DayView, type PlanTab } from '../lib/dayView';
 import { isRainProof } from '../lib/factors';
@@ -50,7 +50,7 @@ import {
   type Trip,
 } from '../lib/trips';
 import { attractionsIn, covers, coveringPlace, dayPlace, placeLabel, placeView, sameRef } from '../lib/tripPlaces';
-import { attractionHome, countFor, nodeOf, parseRefKey, pathTo, placeAnchor, refKey, sameTree } from '../lib/placeTree';
+import { attractionHome, countFor, nodeOf, parseRefKey, pathTo, pinsFor, placeAnchor, refKey, sameTree } from '../lib/placeTree';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { undoRemovePlace, undoRemoveStop, undoRemoveWet, undoReplace, undoSetDays, undoUnsave } from '../lib/tripUndo';
@@ -220,9 +220,20 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // Keyed on the viewed place itself, so an unrelated edit doesn't hand the map a new target and reframe it.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const view = useMemo(() => (viewed ? placeView(viewed) : null), [viewKey]);
-  // Pins only at the attraction level; above it, a count bubble per child place.
+  // Pins only at the attraction level (a neighbourhood pins all of Tokyo, see pinsFor); above it, a
+  // count bubble per child place.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pins = useMemo(() => (viewed && node?.attractionLevel ? attractionsIn(viewed) : []), [viewKey]);
+  const pins = useMemo(() => (viewed ? pinsFor(viewed) : []), [viewKey]);
+  // A neighbourhood frames its own box rather than the pins (which are all of Tokyo).
+  const focus = useMemo<MapFocus | null>(() => (view?.frame ? { kind: 'frame', key: viewKey, bounds: view.frame } : null), [view, viewKey]);
+  // What the map's free area shows, for the in-view Browse list. A new viewed place forgets it
+  // until the map reports again.
+  const [quad, setQuad] = useState<Quad | null>(null);
+  const [quadFor, setQuadFor] = useState(viewKey);
+  if (quadFor !== viewKey) {
+    setQuadFor(viewKey);
+    setQuad(null);
+  }
   const setViewedRef = useRef(setViewed);
   setViewedRef.current = setViewed;
   const bubbles = useMemo<MapBubble[] | undefined>(
@@ -258,6 +269,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // level), and its chips, kept here so they survive a visit to the other sub-tabs.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pool = useMemo(() => browsePool(viewed, trip.places), [viewKey, placesKey]);
+  // At the attraction level, only what's on screen once the map has reported its view.
+  const browsing = useMemo(() => browseList(pool, quad, !!node?.attractionLevel), [pool, quad, node]);
   const [browseFilters, setBrowseFilters] = useState<BrowseFilterId[]>([]);
 
   // A new day leaves replace mode (the sub-tab stays). A new viewed place closes the card, unless
@@ -776,11 +789,13 @@ function PlannerPage({ trip }: { trip: Trip }) {
         content: !side && analysisContent,
       }}
       wetPlan={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} onBrowse={() => pickTab('browse')} />}
+      browseCount={browsing.inView}
       browse={
         <Browse
           trip={trip}
           day={day}
-          pool={pool}
+          pool={browsing.list}
+          inViewCount={browsing.inView}
           placeName={scope.name === 'this trip' ? 'This trip' : viewedName}
           filters={browseFilters}
           onFilters={setBrowseFilters}
@@ -927,6 +942,8 @@ function PlannerPage({ trip }: { trip: Trip }) {
               markers="dot"
               dots={dots}
               bubbles={bubbles}
+              focus={focus}
+              onViewQuad={setQuad}
               pickedClearOf={cardRef}
               cardClearOf={narrow ? undefined : panelRef}
               offscreenPill={false}

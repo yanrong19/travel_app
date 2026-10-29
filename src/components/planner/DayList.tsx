@@ -80,6 +80,8 @@ interface Props {
   wetPlan?: ReactNode;
   /** The Browse sub-tab's content. */
   browse?: ReactNode;
+  /** How many attractions Browse has in view, once it follows the map: the tab reads "Browse · n". */
+  browseCount?: number | null;
   /** Shown last on either sub-tab (the trip's Saved tray). */
   tray?: ReactNode;
   /** Stops to flag for rain (on a likely-wet day, the summary's rain-sensitive stops), worded from their rain rating. */
@@ -127,6 +129,7 @@ export function DayList({
   note,
   wetPlan,
   browse,
+  browseCount = null,
   tray,
   rainFlags = [],
   hint,
@@ -239,7 +242,7 @@ export function DayList({
                 className="dl-subtab"
                 onClick={() => onTab(t.id)}
               >
-                {t.label}
+                {t.id === 'browse' && typeof browseCount === 'number' ? `${t.label} · ${browseCount}` : t.label}
               </button>
             ))}
           </div>
