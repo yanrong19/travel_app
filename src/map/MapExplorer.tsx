@@ -176,6 +176,8 @@ const NO_PAD: Pad = { top: 0, right: 0, bottom: 0, left: 0 };
 type Tilt = 'flat' | 'wide' | 'close';
 const TILT: Record<Tilt, [pitch: number, bearing: number]> = { flat: [0, 0], wide: [48, -12], close: [55, -18] };
 const tiltOf = (kind: Tilt, tilted: boolean): [number, number] => (tilted ? TILT[kind] : TILT.flat);
+/** Which tilt a framing at this level takes: a framed box or a ward close, Tokyo-wide wide, anything else flat. */
+const tiltKind = (framed: boolean, level: string): Tilt => (framed || level === 'area' ? 'close' : level === 'region' ? 'wide' : 'flat');
 
 export function MapExplorer(props: Props) {
   const {
@@ -839,7 +841,7 @@ export function MapExplorer(props: Props) {
       // while it is still flying there: leaving then frames afresh rather than going back half-way.
       const c = map.getCenter();
       const lv = levelRef.current;
-      const tilt: Tilt = wasFocus?.kind === 'frame' || lv === 'area' ? 'close' : lv === 'region' ? 'wide' : 'flat';
+      const tilt = tiltKind(wasFocus?.kind === 'frame', lv);
       spotReturn.current =
         first || map.isMoving()
           ? null
@@ -937,7 +939,8 @@ export function MapExplorer(props: Props) {
     let bearing = 0;
     let maxZoom = 16;
     if (f?.kind === 'frame') {
-      bounds = f.bounds;
+      // A neighbourhood pins all of Tokyo: "Fit all" takes every pin in, not just the neighbourhood.
+      bounds = all && pins.length ? boundsOf(pins.map((a) => a.lonlat)) : f.bounds;
       [pitch, bearing] = tiltOf('close', tilt);
     } else if (t.level === 'country' && t.country) {
       if (t.country.id === JAPAN_ID) {
@@ -1110,8 +1113,9 @@ export function MapExplorer(props: Props) {
     if (levelRef.current !== 'region' && levelRef.current !== 'area') return;
     // A spot stays flat and north-up.
     if (focusRef.current?.kind === 'spot') return;
-    const tilt = mode === '3d';
-    map.easeTo({ pitch: tilt ? 52 : 0, bearing: tilt ? -15 : 0, duration: prefersReducedMotion() ? 0 : 900 });
+    // The same tilt a framing here takes, so switching and framing agree.
+    const [pitch, bearing] = tiltOf(tiltKind(focusRef.current?.kind === 'frame', levelRef.current), mode === '3d');
+    map.easeTo({ pitch, bearing, duration: prefersReducedMotion() ? 0 : 900 });
   }, [mode, ready]);
   const refit = () => flyToTarget(900, true);
 

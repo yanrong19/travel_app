@@ -8255,6 +8255,21 @@ button.lvl-crumb:hover {
     transform: none;
   }
 }
+/* Short laptop windows (1366 × 768, 1280 × 720): a column of controls under the card would reach up
+   into it, so in the strip's bottom corner they lie down as a row, 48px tall. The card stops short
+   of the row and scrolls inside should it ever be taller than the room left. */
+@media (min-width: 1264px) and (max-height: 799px) {
+  .planner.is-analysis .map-controls,
+  .planner.is-analysis .map-controls .map-mode {
+    grid-auto-flow: column;
+  }
+  .planner.is-analysis .pin-card {
+    max-height: calc(100vh - 284px - 40px - 48px - 12px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+}
 
 /* The credit sits beside the day panel, not under its edge. */
 @media (min-width: 761px) {
