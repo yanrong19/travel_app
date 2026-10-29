@@ -76,21 +76,24 @@ describe('filters', () => {
 
   test('parts of the day count only when rated good', () => {
     const evening = ATTRACTIONS.filter((x) => matchesAll(x, ['evening'])).map((x) => x.id);
-    expect(evening.sort()).toEqual(['golden-gai', 'shibuya-sky', 'teamlab-planets', 'tokyo-skytree']);
+    expect(evening.sort()).toEqual([
+      'golden-gai', 'miyashita-park', 'nonbei-yokocho', 'omoide-yokocho', 'shibuya-crossing', 'shibuya-sky',
+      'sumida-park', 'teamlab-planets', 'tocho-observatory', 'tokyo-skytree',
+    ]);
   });
 
   test('several chips combine with AND', () => {
     const hits = ATTRACTIONS.filter((x) => matchesAll(x, ['rain', 'evening'])).map((x) => x.id);
-    expect(hits.sort()).toEqual(['golden-gai', 'teamlab-planets', 'tokyo-skytree']);
+    expect(hits.sort()).toEqual(['golden-gai', 'nonbei-yokocho', 'omoide-yokocho', 'teamlab-planets', 'tocho-observatory', 'tokyo-skytree']);
     expect(matchesAll(a('senso-ji'), [])).toBe(true);
   });
 
   test('each chip counts what the list would show with it on, alongside the chips already on', () => {
     const none = filterCounts(ATTRACTIONS, []);
-    expect(none.evening).toBe(4);
+    expect(none.evening).toBe(10);
     expect(none.free).toBe(ATTRACTIONS.filter((x) => x.cost.entry === 0).length);
     const withRain = filterCounts(ATTRACTIONS, ['rain']);
-    expect(withRain.evening).toBe(3);
+    expect(withRain.evening).toBe(6);
     // An active chip shows the list's own count.
     expect(withRain.rain).toBe(ATTRACTIONS.filter((x) => matchesAll(x, ['rain'])).length);
   });
@@ -125,8 +128,11 @@ describe('rows', () => {
 
   test('filters narrow the rows', () => {
     const f: BrowseFilterId[] = ['evening'];
-    expect(ids(browseRows(ATTRACTIONS, trip(), 0, f, null))).toEqual(['golden-gai', 'teamlab-planets', 'tokyo-skytree', 'shibuya-sky']);
-    expect(browseRows(ATTRACTIONS, trip(), 0, ['evening', 'easy', 'local', 'free', 'morning'], null)).toEqual([]);
+    expect(ids(browseRows(ATTRACTIONS, trip(), 0, f, null))).toEqual([
+      'golden-gai', 'miyashita-park', 'nonbei-yokocho', 'omoide-yokocho', 'shibuya-crossing', 'sumida-park',
+      'teamlab-planets', 'tocho-observatory', 'tokyo-skytree', 'shibuya-sky',
+    ]);
+    expect(browseRows(ATTRACTIONS, trip(), 0, ['evening', 'easy', 'local', 'free', 'morning', 'rain'], null)).toEqual([]);
   });
 });
 
@@ -148,7 +154,9 @@ describe('row actions', () => {
 describe('which attractions', () => {
   test("at the attraction level, the viewed place's own", () => {
     const taito = browsePool({ level: 'area', id: '13106' }, [{ level: 'prefecture', id: '13' }]);
-    expect(taito.map((x) => x.id).sort()).toEqual(['senso-ji', 'tokyo-national-museum', 'yanaka-ginza']);
+    expect(taito.map((x) => x.id).sort()).toEqual([
+      'hanayashiki', 'kappabashi', 'senso-ji', 'sumida-park', 'tokyo-national-museum', 'yanaka-ginza',
+    ]);
     expect(browsePool({ level: 'prefecture', id: '13' }, [{ level: 'prefecture', id: '13' }])).toHaveLength(ATTRACTIONS.length);
   });
 

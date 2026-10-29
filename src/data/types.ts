@@ -9,6 +9,8 @@ export interface Attraction {
   id: string;
   name: string;
   ja: string;
+  /** Its neighbourhood id, from data/neighbourhoods. */
+  neighbourhood: string;
   /** Municipality code from the Tokyo map, e.g. "13106" for Taitō. */
   area: string;
   lonlat: [number, number];

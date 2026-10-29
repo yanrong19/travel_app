@@ -55,4 +55,4 @@ test('median of an even list is the lower middle value', () => {
 test('summarize([]) is safe', () => {
   expect(summarize([])).toEqual({ months: Array(12).fill(false), effort: 'Easy', crowds: 'Quiet', cost: 'Free', count: 0 });
 });
-test('Tokyo summary is stable', () => expect(summarize(ATTRACTIONS).count).toBe(16));
+test('Tokyo summary is stable', () => expect(summarize(ATTRACTIONS).count).toBe(30));

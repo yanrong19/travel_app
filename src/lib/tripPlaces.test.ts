@@ -12,7 +12,7 @@ const TOKYO: PlaceRef = { level: 'prefecture', id: '13' };
 const TAITO: PlaceRef = { level: 'area', id: '13106' };
 
 test('attractionsIn returns all of Tokyo for Japan, Kantō and prefecture 13', () => {
-  for (const ref of [JAPAN, KANTO, TOKYO]) expect(attractionsIn(ref)).toHaveLength(16);
+  for (const ref of [JAPAN, KANTO, TOKYO]) expect(attractionsIn(ref)).toHaveLength(30);
 });
 
 test('attractionsIn returns [] for places without data', () => {

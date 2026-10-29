@@ -72,13 +72,13 @@ test('pathTo a ward runs root first: Japan, Kantō, Tokyo, the ward', () => {
 });
 
 test('countFor counts the checked attractions inside a place', () => {
-  expect(countFor(JAPAN)).toBe(16);
-  expect(countFor(KANTO)).toBe(16);
-  expect(countFor(TOKYO)).toBe(16);
+  expect(countFor(JAPAN)).toBe(30);
+  expect(countFor(KANTO)).toBe(30);
+  expect(countFor(TOKYO)).toBe(30);
   expect(countFor(KANSAI)).toBe(0);
   expect(countFor(ITALY)).toBe(0);
   expect(countFor(TAITO)).toBeGreaterThan(0);
-  expect(countFor(TAITO)).toBeLessThan(16);
+  expect(countFor(TAITO)).toBeLessThan(30);
 });
 
 test('attractionLevelFor finds the attraction-level place under a root', () => {

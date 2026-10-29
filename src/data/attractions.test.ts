@@ -47,3 +47,23 @@ test('time-of-day ratings follow the data at the ends', () => {
   expect(by['teamlab-planets'].evening).toBe('good');
   expect(by['golden-gai'].morning).toBe('poor');
 });
+
+test('attraction ids are unique', () => {
+  expect(new Set(ATTRACTIONS.map((a) => a.id)).size).toBe(ATTRACTIONS.length);
+});
+
+test('the new attractions are fully shaped: 18 crowd hours per curve, 7 days of hours, 12 months', () => {
+  const NEW = [
+    'shibuya-crossing', 'miyashita-park', 'nonbei-yokocho', 'takeshita-street', 'yoyogi-park', 'cat-street',
+    'ota-memorial-museum', 'nezu-museum', 'shinjuku-gyoen', 'omoide-yokocho', 'tocho-observatory',
+    'kappabashi', 'sumida-park', 'hanayashiki',
+  ];
+  for (const id of NEW) {
+    const a = ATTRACTIONS.find((x) => x.id === id);
+    expect(a, id).toBeDefined();
+    expect(a!.vibe.crowds.weekday, id).toHaveLength(18);
+    expect(a!.vibe.crowds.weekend, id).toHaveLength(18);
+    expect(a!.logistics.hours, id).toHaveLength(7);
+    expect(a!.conditions.months, id).toHaveLength(12);
+  }
+});
