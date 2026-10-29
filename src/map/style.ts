@@ -126,6 +126,24 @@ function mapLook(l: Raw): Map<string, Assign> {
   return out;
 }
 
+// The flat palette fades in between these zooms, so the globe and the whole-country view look as they always have
+// and the flat colours show from regional zoom in.
+const BLEND_FROM = 5;
+const BLEND_TO = 6;
+
+// What a paint property is when a style leaves it out.
+const PAINT_DEFAULT: Record<string, number> = { 'fill-opacity': 1, 'text-halo-width': 0, 'line-opacity': 1, 'text-opacity': 1 };
+
+/** The flat value, eased in from `fromValue` over BLEND_FROM..BLEND_TO when both are plain colours or plain numbers. */
+function blend(a: Assign, fromValue: unknown): unknown {
+  if (a.kind !== 'paint') return a.value;
+  const from = fromValue === undefined ? PAINT_DEFAULT[a.prop] : fromValue;
+  const plainColour = a.prop.endsWith('-color') && typeof from === 'string' && typeof a.value === 'string';
+  const plainNumber = typeof from === 'number' && typeof a.value === 'number';
+  if (!plainColour && !plainNumber) return a.value;
+  return ['interpolate', ['linear'], ['zoom'], BLEND_FROM, from, BLEND_TO, a.value];
+}
+
 /** Reads the downloaded style once, before anything is changed, and works out what each mode sets on each layer. */
 function plan(map: MapLibreMap): Plan {
   const style = map.getStyle() as StyleSpecification;
@@ -148,7 +166,10 @@ function plan(map: MapLibreMap): Plan {
         const o = other.get(k)!;
         return { kind: o.kind, prop: o.prop, value: original(o) };
       });
-    rows.push({ id: l.id, map: side(m, t), three: side(t, m) });
+    const three = side(t, m);
+    // Only the flat look is blended: 3D keeps its plain values, so it stays exactly as it was.
+    const map = side(m, t).map((a, i) => ({ ...a, value: blend(a, three[i].value) }));
+    rows.push({ id: l.id, map, three });
   }
   return { vector, firstSymbol, relief: !!style.sources.ne2_shaded, rows };
 }

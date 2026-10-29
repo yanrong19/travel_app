@@ -21,7 +21,8 @@ export function readMapMode(store?: Pick<Storage, 'getItem'>): MapMode {
 }
 
 export function writeMapMode(mode: MapMode, store?: Pick<Storage, 'setItem'>): void {
-  shared = mode;
+  // The in-memory mode is the app's own: an injected store (a test's) leaves it alone.
+  if (!store) shared = mode;
   try {
     (store ?? window.localStorage).setItem(KEY, mode);
   } catch {

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { AttributionControl, Map as MapLibreMap, type LngLatBoundsLike, type MapGeoJSONFeature } from 'maplibre-gl';
 import { C, STYLE_URL, applyMode, restyle } from './style';
-import { useMapMode } from '../lib/mapMode';
+import { useMapMode, type MapMode } from '../lib/mapMode';
 import { geoBounds } from 'd3-geo';
 import type { Attraction } from '../data/types';
 import { ATTRACTIONS } from '../data/attractions';
@@ -298,7 +298,7 @@ export function MapExplorer(props: Props) {
     map.on('style.load', () => {
       clearTimeout(failTimer);
       restyle(map, undefined, modeRef.current);
-      addOurLayers(map);
+      addOurLayers(map, modeRef.current);
       map.setProjection({ type: 'globe' });
       setReady(true);
       handlers.current.onReady?.();
@@ -1022,6 +1022,7 @@ export function MapExplorer(props: Props) {
     const map = mapRef.current;
     if (!map || !ready) return;
     applyMode(map, mode);
+    if (map.getLayer('fl-area-fill')) map.setPaintProperty('fl-area-fill', 'fill-opacity', areaFillOpacity(mode) as never);
     const first = appliedMode.current === null;
     const changed = appliedMode.current !== mode;
     appliedMode.current = mode;
@@ -1266,8 +1267,27 @@ export function MapExplorer(props: Props) {
 
 export default MapExplorer;
 
+/**
+ * The ward tint. In 3D it is as it always was. In Map mode it fades to a quarter from zoom 11.5 to 13.5, so streets,
+ * parks and water keep their own colours (zoom may only drive a top-level interpolate, so the cases sit inside its stops).
+ */
+function areaFillOpacity(mode: MapMode) {
+  const hover = ['boolean', ['feature-state', 'hover'], false];
+  const base = [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    0.16,
+    hover,
+    ['case', ['>', ['get', 'count'], 0], 0.18, 0.05],
+    ['>', ['get', 'count'], 0],
+    0.08,
+    0,
+  ];
+  return mode === '3d' ? base : ['interpolate', ['linear'], ['zoom'], 11.5, base, 13.5, ['*', base, 0.25]];
+}
+
 /** Countries, prefectures and Tokyo's wards, drawn over the base map so they can be hovered and clicked. */
-function addOurLayers(map: MapLibreMap) {
+function addOurLayers(map: MapLibreMap, mode: MapMode) {
   const firstSymbol = map.getStyle().layers.find((l) => l.type === 'symbol')?.id;
   map.addSource('fl-world', { type: 'geojson', data: collection(WORLD, (_, i) => i + 1) });
   map.addSource('fl-prefs', { type: 'geojson', data: collection(PREFECTURES, (f) => Number(f.id)) });
@@ -1366,16 +1386,7 @@ function addOurLayers(map: MapLibreMap) {
       source: 'fl-areas',
       paint: {
         'fill-color': C.cedar,
-        'fill-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false],
-          0.16,
-          hover,
-          ['case', ['>', ['get', 'count'], 0], 0.18, 0.05],
-          ['>', ['get', 'count'], 0],
-          0.08,
-          0,
-        ] as never,
+        'fill-opacity': areaFillOpacity(mode) as never,
       },
     },
     map.getLayer('fl-buildings') ? 'fl-buildings' : firstSymbol,

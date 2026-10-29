@@ -43,12 +43,19 @@ function fakeMap() {
   return m;
 }
 
+// Map mode fades its colours in with zoom: the last stop is the flat value, the first is how the globe looks.
+const high = (v: unknown) => (Array.isArray(v) && v[0] === 'interpolate' ? v[v.length - 1] : v);
+const low = (v: unknown) => (Array.isArray(v) && v[0] === 'interpolate' ? v[4] : v);
+
 test('map mode paints the flat palette and hides 3D buildings', () => {
   const m = fakeMap();
   restyle(m as never, undefined, 'map');
-  expect(m.paint.background['background-color']).toBe('#f5f5f3');
-  expect(m.paint.water['fill-color']).toBe('#9fd3ef');
-  expect(m.paint.highway_motorway_inner['line-color']).toBe('#fde59a');
+  expect(high(m.paint.background['background-color'])).toBe('#f5f5f3');
+  // Below the blend the globe keeps today's colours.
+  expect(low(m.paint.background['background-color'])).toBe('#eef2f4');
+  expect(low(m.paint.water['fill-color'])).toBe('#b9d5e3');
+  expect(high(m.paint.water['fill-color'])).toBe('#9fd3ef');
+  expect(high(m.paint.highway_motorway_inner['line-color'])).toBe('#fde59a');
   expect(m.layout['fl-buildings'].visibility).toBe('none');
   expect(m.layout['highway-name-minor'].visibility).toBe('visible');
 });
