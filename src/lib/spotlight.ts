@@ -34,3 +34,38 @@ export const spotZoom = (width: number): number => (width >= 761 ? 16 : 15.5);
 /** Entering a spot adds a history entry (so Back leaves it); moving between spots or leaving replaces it. */
 export const spotHistory = (wasSpot: string | null, nextSpot: string | null): 'push' | 'replace' =>
   wasSpot === null && nextSpot !== null ? 'push' : 'replace';
+
+/** The spot's zoom never steps out further than this to fit its neighbours. */
+export const SPOT_ZOOM_MIN = 14.8;
+/** How far inside the free area's edge a neighbour has to sit. */
+export const SPOT_MARGIN = 40;
+
+const mercX = (lon: number) => (lon + 180) / 360;
+const mercY = (lat: number) => (1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2;
+
+/**
+ * The spot's zoom: `start`, stepped out until every `near` point, with `center` in the middle of a
+ * `free` area w × h px, sits at least `margin` px inside it, but no further out than `floor`. Flat
+ * and north-up Web Mercator with 512 px tiles, as the spot's camera is.
+ */
+export function spotFitZoom(
+  center: [number, number],
+  near: [number, number][],
+  free: { w: number; h: number },
+  start: number,
+  floor = SPOT_ZOOM_MIN,
+  margin = SPOT_MARGIN,
+): number {
+  const hw = free.w / 2 - margin;
+  const hh = free.h / 2 - margin;
+  let z = start;
+  for (const p of near) {
+    const dx = Math.abs(mercX(p[0]) - mercX(center[0])) * 512;
+    const dy = Math.abs(mercY(p[1]) - mercY(center[1])) * 512;
+    if ((dx && hw <= 0) || (dy && hh <= 0)) return floor;
+    if (dx) z = Math.min(z, Math.log2(hw / dx));
+    if (dy) z = Math.min(z, Math.log2(hh / dy));
+  }
+  // Rounded down, so the tightest neighbour is never a hair outside the margin.
+  return Math.max(floor, Math.floor(z * 100) / 100);
+}

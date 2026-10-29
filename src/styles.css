@@ -6579,6 +6579,9 @@ button.area-card {
 }
 .lvl-crumbs {
   flex: none;
+  /* Never wider than its room: the crumbs above the current one ellipsise first (below). */
+  max-width: 100%;
+  overflow: hidden;
   height: 36px;
   padding: 0 4px;
   border-radius: 999px;
@@ -6599,10 +6602,18 @@ button.area-card {
 .lvl-crumbs li {
   display: flex;
   align-items: center;
+  min-width: 0;
+}
+/* The current crumb (the place, or the spotlit attraction) always shows in full. */
+.lvl-crumbs li.is-here {
+  flex: none;
 }
 .lvl-crumb {
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 28px;
   height: 28px;
   padding: 0 9px;
   border: 0;
@@ -6622,6 +6633,7 @@ button.lvl-crumb:hover {
   font-weight: 700;
 }
 .lvl-sep {
+  flex: none;
   color: var(--muted);
   font-size: 15px;
 }
@@ -6648,6 +6660,8 @@ button.lvl-crumb:hover {
     position: absolute;
     top: 180px;
     left: calc(var(--search-left) + var(--search-w) + 12px);
+    /* Up to 12px short of the day panel (its 420px, from the same right edge as .plan-levels). */
+    max-width: calc(100vw - var(--search-left) - var(--search-w) - 24px - max(24px, calc((100vw - 1240px) / 2)) - 420px);
   }
   .planner .pincard {
     top: 240px;
@@ -8147,6 +8161,7 @@ button.lvl-crumb:hover {
   }
   .planner.is-analysis .plan-levels > .lvl-crumbs {
     position: static;
+    max-width: 100%;
   }
   /* MapLibre's own credit, kept left of both panels (the day panel's 420px and the analysis's 372px). */
   .planner.is-analysis .maplibregl-ctrl-bottom-right {
@@ -8510,7 +8525,12 @@ button.lvl-crumb:hover {
   .lvl-crumbs::-webkit-scrollbar {
     display: none;
   }
+  /* Phone: the row scrolls sideways (to the current crumb) rather than shortening the names. */
+  .lvl-crumbs li {
+    flex: none;
+  }
   .lvl-crumb {
+    line-height: 24px;
     height: 24px;
     padding: 0 8px;
     font-size: 13px;
@@ -8552,6 +8572,8 @@ button.lvl-crumb:hover {
     position: relative;
     z-index: 10;
     margin-top: calc(var(--vh, 100svh) - var(--plan-peek) - var(--sheet-clear));
+    /* A spot lowers the peek to the handle and its end raises it again: the sheet slides. */
+    transition: margin-top 0.35s var(--ease-out, ease-out);
     /* Always tall enough to come fully up, even with little in it. */
     min-height: calc(var(--vh, 100svh) - var(--sheet-top));
     padding: 12px 16px calc(var(--sheet-clear) + 24px);

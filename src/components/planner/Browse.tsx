@@ -35,6 +35,8 @@ interface Props {
   quietEmpty?: boolean;
   /** At the attraction level, once the map has reported its view: how many are on screen (the pool is just those). */
   inViewCount?: number | null;
+  /** The map is on one attraction (the spotlight): the in-view list holds still, so no "move the map" hint. */
+  spotlit?: boolean;
 }
 
 const BEST: Record<string, string> = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening' };
@@ -50,7 +52,7 @@ const markerOfRow = (r: BrowseRow, day: number): Marker =>
  * ones come first. Hovering or focusing a row lights its dot on the map; the row opens the card; its
  * buttons add, move or remove it, or save it to the trip.
  */
-export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, wet = false, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty, inViewCount = null }: Props) {
+export function Browse({ trip, day, pool, placeName, filters, onFilters, replacing, wet = false, hotId, onHover, onOpen, onAdd, onRemove, onSave, quietEmpty, inViewCount = null, spotlit = false }: Props) {
   const id = useId();
   // After an action the order holds (the row changes in place), until the day, the chips, the place or
   // the wet-weather toggle change; leaving the sub-tab unmounts the list, which lists afresh too.
@@ -96,7 +98,8 @@ export function Browse({ trip, day, pool, placeName, filters, onFilters, replaci
         <h2 id={`${id}-h`}>{placeName}</h2>
         {following ? (
           <p className="num" aria-live="polite">
-            <span className="br-count">{filters.length ? `${rows.length} of ${inViewCount} in view` : `${inViewCount} in view`}</span> · move the map to update
+            <span className="br-count">{filters.length ? `${rows.length} of ${inViewCount} in view` : `${inViewCount} in view`}</span>
+            {!spotlit && ' · move the map to update'}
           </p>
         ) : (
           <p className="num" aria-live="polite">

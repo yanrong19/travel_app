@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets, Quad } from '../map/camera';
@@ -70,9 +70,12 @@ const noop = () => {};
 const INSETS_ANALYSIS: Insets = withAnalysis(PLAN_INSETS);
 /** Phone: the docked pin card's gap above the peek (styles.css `.planner .pincard`) and its usual height. */
 const CARD_DOCK_GAP = 30;
+/** Phone: the card's height until it has been measured. */
 const CARD_PHONE_H = 250;
 /** Phone: the least map height a spot keeps above the card. */
 const SPOT_STRIP_MIN = 96;
+/** Phone: while a spot is open the day sheet shows just its handle above the tab bar. */
+const SPOT_PEEK_PHONE = 24;
 /** Whether the analysis was open beside the day panel, for the rest of the session. */
 const ANALYSIS_KEY = 'fitline.planner.analysis';
 const readAnalysisOpen = () => {
@@ -699,14 +702,39 @@ function PlannerPage({ trip }: { trip: Trip }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const safeTop = useSafeTop(narrow);
   const phoneFrame = useMemo(() => phoneInsets(safeTop), [safeTop]);
-  // Phone: the card docks above the peek (styles.css), so a spot centres in the strip above the card,
-  // not behind it; a short screen keeps at least SPOT_STRIP_MIN of map for it.
+  // Phone, while a spot is open: the day sheet drops to just its handle (it still drags up), the card
+  // docks just above it (styles.css reads --plan-peek), and the spot centres in the map above the
+  // card, measured, so the neighbours have room. A short screen keeps at least SPOT_STRIP_MIN of map.
+  const spotPhone = narrow && !!selected;
+  const peek = spotPhone ? SPOT_PEEK_PHONE : PEEK_PHONE;
+  const [cardH, setCardH] = useState(CARD_PHONE_H);
+  const cardShown = picked?.id ?? null;
+  useLayoutEffect(() => {
+    const el = cardRef.current;
+    if (!narrow || !el) return;
+    const measure = () => {
+      if (el.offsetHeight) setCardH(el.offsetHeight);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [narrow, cardShown]);
+  const [vh, setVh] = useState(() => window.innerHeight);
+  useEffect(() => {
+    if (!narrow) return;
+    const onResize = () => setVh(window.innerHeight);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [narrow]);
   const spotFrame = useMemo(() => {
-    const clearCard = SHEET_CLEAR + PEEK_PHONE + CARD_DOCK_GAP + CARD_PHONE_H + 12;
-    const room = window.innerHeight - phoneFrame.top - SPOT_STRIP_MIN;
-    return { ...phoneFrame, bottom: Math.max(phoneFrame.bottom, Math.min(clearCard, room)) };
-  }, [phoneFrame]);
-  const insets = narrow ? (selected ? spotFrame : phoneFrame) : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
+    const base = phoneInsets(safeTop, SPOT_PEEK_PHONE);
+    const clearCard = SHEET_CLEAR + SPOT_PEEK_PHONE + CARD_DOCK_GAP + cardH + 12;
+    const room = vh - base.top - SPOT_STRIP_MIN;
+    return { ...base, bottom: Math.max(base.bottom, Math.min(clearCard, room)) };
+  }, [safeTop, cardH, vh]);
+  const insets = narrow ? (spotPhone ? spotFrame : phoneFrame) : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
   const { open: drawerOpen } = useSaved();
   const { scrollToTop, scrollToGuides, atGuides } = useGuideScroll({
     enabled: narrow,
@@ -714,8 +742,19 @@ function PlannerPage({ trip }: { trip: Trip }) {
     barH: sheetBarH(safeTop),
     levelKey: trip.id,
     paused: drawerOpen || !!sheet || (narrow && datesOpen) || !!confirm || searching,
-    peek: PEEK_PHONE,
+    peek,
   });
+  // The sheet goes back where it was once the spot closes: fully up if it was up when the spot
+  // opened (a Browse row with the list up), else to its peek (which the peek's return does itself).
+  const sheetWasUp = useRef(false);
+  const wasSpot = useRef(!!selected);
+  useEffect(() => {
+    const was = wasSpot.current;
+    wasSpot.current = !!selected;
+    if (!was || selected) return;
+    if (narrow && sheetWasUp.current) scrollToGuides();
+    sheetWasUp.current = false;
+  }, [selected, narrow, scrollToGuides]);
   // On phone the map's credit moves out of the map, above the sheet, so the sheet never hides it.
   const [attribHost, setAttribHost] = useState<HTMLDivElement | null>(null);
   // ---- the spotlight ----
@@ -744,7 +783,10 @@ function PlannerPage({ trip }: { trip: Trip }) {
       { replace: !push, preventScrollReset: true },
     );
     if (push) spotPushed.current = true;
-    if (narrow) scrollToTop();
+    if (narrow) {
+      if (!selected) sheetWasUp.current = atGuides;
+      scrollToTop();
+    }
   };
   // A spot from a reload or a link whose home isn't the viewed place views its home; one with no home
   // in any trip place is dropped. Both in place: they put the URL right, they aren't steps.
@@ -828,27 +870,43 @@ function PlannerPage({ trip }: { trip: Trip }) {
     />
   );
 
+  // Phone: the crumb row scrolls sideways; whenever the level or the spot changes, it ends on the
+  // current crumb.
+  const crumbsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = crumbsRef.current;
+    if (narrow && nav) nav.scrollLeft = nav.scrollWidth;
+  }, [narrow, viewKey, selected]);
   // The map level: a breadcrumb up the viewed place's tree. The map's bubbles drill in. While a spot
   // is open its attraction is the last crumb, and every crumb above it (the viewed place too) leaves
   // the spotlight, then views that place.
   const path = viewed ? pathTo(viewed) : [];
   const spotName = selected ? (attractionById(selected)?.name ?? null) : null;
-  const crumbs: { key: string; name: string; go?: () => void }[] = path.map((r) => ({
+  type Crumb = { key: string; name: string; title?: string; label?: string; go?: () => void };
+  let crumbs: Crumb[] = path.map((r) => ({
     key: refKey(r),
     name: placeLabel(r).name,
     go: () => (spotName ? leaveSpot(r) : setViewed(r)),
   }));
+  // Laptop: the attraction's crumb makes the row too long for the room beside the search, so the
+  // levels above the city fold into one "…" crumb (it goes to the last of them); the city, the
+  // viewed place and the attraction stay. What still doesn't fit ellipsises, never the current crumb.
+  if (spotName && !narrow && crumbs.length > 3) {
+    const folded = crumbs.slice(0, -2);
+    const last = folded[folded.length - 1];
+    crumbs = [{ key: 'fold', name: '…', title: folded.map((c) => c.name).join(' › '), label: last.name, go: last.go }, ...crumbs.slice(-2)];
+  }
   if (spotName) crumbs.push({ key: `spot:${selected}`, name: spotName });
   else if (crumbs.length) crumbs[crumbs.length - 1].go = undefined;
   const levels = viewed && (
     <div className="plan-levels" inert={searching}>
-      <nav className="lvl-crumbs" aria-label="Map level">
+      <nav ref={crumbsRef} className="lvl-crumbs" aria-label="Map level">
         <ol>
           {crumbs.map((c) => (
-            <li key={c.key}>
+            <li key={c.key} className={c.go ? undefined : 'is-here'}>
               {c.go ? (
                 <>
-                  <button type="button" className="lvl-crumb" onClick={c.go}>
+                  <button type="button" className="lvl-crumb" onClick={c.go} title={c.title ?? c.name} aria-label={c.label}>
                     {c.name}
                   </button>
                   <span className="lvl-sep" aria-hidden="true">
@@ -917,6 +975,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
           day={day}
           pool={browsing.list}
           inViewCount={browsing.inView}
+          spotlit={!!selected}
           // A neighbourhood's pins are all of its city, so while the list follows the map its heading
           // says what it lists: what's in view, not the neighbourhood.
           placeName={
@@ -957,7 +1016,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       style={
         {
           '--sheet-clear': `${SHEET_CLEAR}px`,
-          '--plan-peek': `${PEEK_PHONE}px`,
+          '--plan-peek': `${peek}px`,
           '--sheet-top': `${safeTop}px`,
           '--plan-head': `${headBottom(safeTop)}px`,
         } as CSSProperties

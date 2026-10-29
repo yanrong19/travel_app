@@ -18,7 +18,7 @@ import { Icon } from '../components/Icon';
 import { GlobeCard, type CardSubject } from '../components/GlobeCard';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
 import { fitPadding, viewQuad, type Bounds, type Insets, type Quad } from './camera';
-import { spotZoom } from '../lib/spotlight';
+import { spotFitZoom, spotZoom } from '../lib/spotlight';
 
 /** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
 const DWELL_MS = 5000;
@@ -866,7 +866,9 @@ export function MapExplorer(props: Props) {
         return;
       }
     }
-    if (onlyInsets && panOnInsets && !stillFramed(map)) {
+    // A spot is centred in the free area by definition: a new free area (the phone's card measured)
+    // re-centres it, below, rather than panning by half the change.
+    if (onlyInsets && panOnInsets && focus?.kind !== 'spot' && !stillFramed(map)) {
       // The free area's centre moves by half the change; the view follows it, gently.
       const dx = (insets.right - was.right - (insets.left - was.left)) / 2;
       const dy = (insets.bottom - was.bottom - (insets.top - was.top)) / 2;
@@ -927,8 +929,13 @@ export function MapExplorer(props: Props) {
     }
     const f = focus;
     if (f?.kind === 'spot') {
-      // Flat and north-up, the spot centred in the free area.
-      go({ center: f.center, zoom: spotZoom(wrap.current!.clientWidth), pitch: 0, bearing: 0, padding: { ...insets } });
+      // Flat and north-up, the spot centred in the free area, close in but stepped out (to a floor)
+      // until its neighbours are in view too.
+      const W = wrap.current!.clientWidth;
+      const H = wrap.current!.clientHeight;
+      const near = f.near.map((id) => pins.find((a) => a.id === id)?.lonlat).filter((ll): ll is [number, number] => !!ll);
+      const free = { w: W - insets.left - insets.right, h: H - insets.top - insets.bottom };
+      go({ center: f.center, zoom: spotFitZoom(f.center, near, free, spotZoom(W)), pitch: 0, bearing: 0, padding: { ...insets } });
       return;
     }
     let bounds: LngLatBoundsLike | null = null;
