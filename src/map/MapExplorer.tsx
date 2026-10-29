@@ -19,6 +19,7 @@ import { GlobeCard, type CardSubject } from '../components/GlobeCard';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
 import { fitPadding, viewQuad, type Bounds, type Insets, type Quad } from './camera';
 import { spotFitZoom, spotZoom } from '../lib/spotlight';
+import { coreCluster, layoutBubbleBoxes, type Band, type Box as BubbleBox } from './bubbles';
 
 /** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
 const DWELL_MS = 5000;
@@ -57,20 +58,8 @@ function collection(list: Place[], idOf: (f: Place, i: number) => number, extra?
   };
 }
 
-const median = (xs: number[]) => {
-  const s = [...xs].sort((a, b) => a - b);
-  return s[Math.floor(s.length / 2)];
-};
-
 /** The main cluster: pins far from the rest (a mountain an hour out of town) are left for the "outside the view" pill. */
-function corePins(pins: Attraction[]) {
-  if (pins.length < 6) return pins;
-  const cx = median(pins.map((a) => a.lonlat[0]));
-  const cy = median(pins.map((a) => a.lonlat[1]));
-  const d = pins.map((a) => Math.hypot(a.lonlat[0] - cx, a.lonlat[1] - cy));
-  const limit = Math.max(median(d) * 2.6, 0.05);
-  return pins.filter((_, i) => d[i] <= limit);
-}
+const corePins = (pins: Attraction[]) => coreCluster(pins, (a) => a.lonlat);
 
 function boundsOf(points: [number, number][]): LngLatBoundsLike {
   const xs = points.map((p) => p[0]);
@@ -450,18 +439,20 @@ export function MapExplorer(props: Props) {
       if (node.classList.contains('mbubble')) bubbleEls.push({ el: node, sx: p.x, sy: p.y });
     });
     layoutTickers(tickers);
-    if (dotEls.length) {
-      // Labels stay left of a panel over the map's right side (its own edge, or the right inset).
+    // Labels stay left of a panel over the map's right side (its own edge, or the right inset).
+    const freeRight = () => {
       const panel = clearOfRef.current?.current?.getBoundingClientRect();
+      const left0 = wrap.current?.getBoundingClientRect().left ?? 0;
+      return panel && panel.width ? panel.left - left0 - 8 : W - insetsRef.current.right;
+    };
+    // The zoom controls sit over the map (on the right on phones): labels keep off them.
+    const controls = () => {
       const box = wrap.current?.getBoundingClientRect();
-      const left0 = box?.left ?? 0;
-      const free = panel && panel.width ? panel.left - left0 - 8 : W - insetsRef.current.right;
-      // The zoom controls sit over the map (on the right on phones): labels keep off them.
       const ctl = wrap.current?.querySelector('.map-controls')?.getBoundingClientRect();
-      const avoid = ctl && ctl.width && box ? [{ x0: ctl.left - box.left - 4, x1: ctl.right - box.left + 4, y0: ctl.top - box.top - 4, y1: ctl.bottom - box.top + 4 }] : [];
-      layoutDots(dotEls, map.getZoom(), free, H, avoid);
-    }
-    if (bubbleEls.length) layoutBubbles(bubbleEls, insetsRef.current.top, H - insetsRef.current.bottom);
+      return ctl && ctl.width && box ? [{ x0: ctl.left - box.left - 4, x1: ctl.right - box.left + 4, y0: ctl.top - box.top - 4, y1: ctl.bottom - box.top + 4 }] : [];
+    };
+    if (dotEls.length) layoutDots(dotEls, map.getZoom(), freeRight(), H, controls());
+    if (bubbleEls.length) layoutBubbles(bubbleEls, { top: insetsRef.current.top, bottom: H - insetsRef.current.bottom, left: 0, right: freeRight() }, controls());
     const off = offDots + [...tickers, ...dotEls].filter((t) => t.sx < 0 || t.sx > W || t.sy < 0 || t.sy > H).length;
     if (offscreen.current) {
       offscreen.current.dataset.on = off ? '1' : '';
@@ -808,8 +799,11 @@ export function MapExplorer(props: Props) {
   // ---- Camera: fly whenever the place, the visible pins or the free area changes ----
   const fitList = fitPins && target.level === 'region' ? pins : undefined;
   const fitKey = fitList ? fitList.map((a) => a.id).sort().join(',') : '';
+  // A city's count bubbles (Tokyo's neighbourhoods) frame it on their main cluster, see flyToTarget.
+  const frameBubbles = target.level === 'region' && bubbles?.length ? bubbles : null;
+  const frameBubbleKey = frameBubbles ? frameBubbles.map((b) => b.id).join(',') : '';
   const insetKey = `${insets.top},${insets.right},${insets.bottom},${insets.left}`;
-  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}:${focus?.key ?? ''}|${insetKey}`;
+  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${frameBubbleKey}:${focusKey}:${focus?.key ?? ''}|${insetKey}`;
   const lastKey = useRef('');
   const lastFocus = useRef<MapFocus | null>(null);
   // The camera from just before a run of spots (with the key, insets, mode and kind of tilt it had), to come back to on leaving them.
@@ -962,6 +956,12 @@ export function MapExplorer(props: Props) {
         ];
         maxZoom = 6;
       }
+    } else if (t.level === 'region' && frameBubbles) {
+      // Count bubbles: their main cluster, leaving far ones (Takao, an hour west) at or past the edge,
+      // so the city's middle gets the room its labels need. "Fit all" takes them all in.
+      bounds = boundsOf((all ? frameBubbles : coreCluster(frameBubbles, (b) => b.ll)).map((b) => b.ll));
+      [pitch, bearing] = tiltOf('wide', tilt);
+      maxZoom = 15;
     } else if (t.level === 'region') {
       const list = fitList && fitList.length ? (all ? fitList : corePins(fitList)) : null;
       bounds = list
@@ -1303,7 +1303,12 @@ export function MapExplorer(props: Props) {
           >
             <span className="mbubble-pill" aria-hidden="true">
               <span className="mbubble-name">{b.label}</span>
-              <span className="mbubble-count num">· {b.count || 'coming soon'}</span>
+              <span className="mbubble-count num">
+                <span className="mbubble-sep">· </span>
+                {b.count || 'coming soon'}
+              </span>
+              {/* "+N": bubbles folded into this one where there was no room to draw them (layoutBubbles). */}
+              <span className="mbubble-more num" />
             </span>
           </button>
         ))}
@@ -1624,46 +1629,52 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
 }
 
 /**
- * Count bubbles centre on their place, places with checked attractions first. One that would
- * overlap a bubble placed before it drops its count ("Saitama"), then moves just above or below
- * its place, and only then folds to a dot; its full label shows again on hover or focus. A move
- * never takes a bubble out of the free band between the top and bottom insets (the search and
- * level row above, the credit or the phone sheet below).
+ * Count bubbles centre on their place, places with checked attractions first (see layoutBubbleBoxes):
+ * one that would overlap another moves just above or below its place, then drops its count
+ * ("Saitama"), and only then shrinks to a small circle showing its count, nudged off any pill; its full
+ * label shows again on hover or focus. One with nowhere clear to go is folded into the bubble it
+ * would cover, which shows "+N" (it stays in the tab order and shows on focus). Bubbles keep off the
+ * map controls, and a move never takes one out of the free band (the search and level row above,
+ * the credit or the phone sheet below, a panel on the right).
  */
-function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[], top: number, bottom: number) {
+function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[], band: Band, avoid: BubbleBox[]) {
   for (const b of list) {
     if (b.el.dataset.w) continue;
     const pill = b.el.querySelector<HTMLElement>('.mbubble-pill');
     if (!pill) continue;
+    const was = ['is-short', 'is-compact'].filter((c) => b.el.classList.contains(c));
     b.el.classList.add('is-measuring');
-    b.el.classList.remove('is-short');
+    b.el.classList.remove('is-short', 'is-compact');
     b.el.dataset.w = String(pill.offsetWidth);
     b.el.dataset.h = String(pill.offsetHeight);
     b.el.classList.add('is-short');
     b.el.dataset.ws = String(pill.offsetWidth);
-    b.el.classList.remove('is-measuring', 'is-short');
+    b.el.classList.replace('is-short', 'is-compact');
+    b.el.dataset.wc = String(pill.offsetWidth);
+    b.el.dataset.hc = String(pill.offsetHeight);
+    b.el.classList.remove('is-measuring', 'is-compact');
+    b.el.classList.add(...was);
   }
-  type Box = { x0: number; x1: number; y0: number; y1: number };
-  const placed: Box[] = [];
-  const hits = (r: Box) => placed.some((p) => !(r.x1 < p.x0 || r.x0 > p.x1 || r.y1 < p.y0 || r.y0 > p.y1));
-  for (const b of [...list].sort((x, y) => Number(x.el.dataset.prio) - Number(y.el.dataset.prio))) {
-    const h = Number(b.el.dataset.h);
-    const box = (w: number, dy: number): Box => ({ x0: b.sx - w / 2 - 4, x1: b.sx + w / 2 + 4, y0: b.sy + dy - h / 2 - 3, y1: b.sy + dy + h / 2 + 3 });
-    const tries: { short: boolean; dy: number }[] = [
-      { short: false, dy: 0 },
-      { short: true, dy: 0 },
-      { short: true, dy: -(h + 6) },
-      { short: true, dy: h + 6 },
-    ];
-    const fit = tries.find((t) => {
-      const r = box(Number(t.short ? b.el.dataset.ws : b.el.dataset.w), t.dy);
-      return !hits(r) && (t.dy === 0 || (r.y0 >= top && r.y1 <= bottom));
-    });
-    b.el.classList.toggle('is-compact', !fit);
-    b.el.classList.toggle('is-short', !!fit?.short);
-    b.el.style.setProperty('--dy', `${fit?.dy ?? 0}px`);
-    placed.push(fit ? box(Number(fit.short ? b.el.dataset.ws : b.el.dataset.w), fit.dy) : { x0: b.sx - 9, x1: b.sx + 9, y0: b.sy - 9, y1: b.sy + 9 });
-  }
+  const n = (el: HTMLElement, k: string) => Number(el.dataset[k]);
+  const out = layoutBubbleBoxes(
+    list.map((b) => ({ sx: b.sx, sy: b.sy, w: n(b.el, 'w'), h: n(b.el, 'h'), ws: n(b.el, 'ws'), wc: n(b.el, 'wc'), hc: n(b.el, 'hc'), prio: n(b.el, 'prio') })),
+    band,
+    avoid,
+  );
+  const more = list.map(() => 0);
+  out.forEach((o) => {
+    if (o.mode === 'folded') more[o.into]++;
+  });
+  list.forEach((b, i) => {
+    const o = out[i];
+    b.el.classList.toggle('is-short', o.mode === 'short');
+    b.el.classList.toggle('is-compact', o.mode === 'compact');
+    b.el.classList.toggle('is-folded', o.mode === 'folded');
+    b.el.style.setProperty('--dx', `${o.mode === 'folded' ? 0 : o.dx}px`);
+    b.el.style.setProperty('--dy', `${o.mode === 'folded' ? 0 : o.dy}px`);
+    const badge = b.el.querySelector<HTMLElement>('.mbubble-more');
+    if (badge) badge.textContent = more[i] ? `+${more[i]}` : '';
+  });
 }
 
 export type { Level };

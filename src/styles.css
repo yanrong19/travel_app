@@ -3637,7 +3637,9 @@ button.mgroup-row:focus-visible {
 
 /* ---------- Count bubbles: the trip planner above the attraction level ---------- */
 /* One per child place, centred on it: "Kantō · 16" in cedar, "Kansai · coming soon" in white.
-   A bubble that would overlap one placed before it folds to a dot and opens on hover or focus. */
+   A bubble with no room for its label shrinks to a small circle with its count (nudged off any
+   pill, --dx/--dy) and opens on hover or focus; one with no room at all is folded into its
+   neighbour, which shows "+N" (layoutBubbles in MapExplorer). */
 
 .mbubble {
   width: 0;
@@ -3676,7 +3678,7 @@ button.mgroup-row:focus-visible {
   font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 10px 22px -10px rgba(16, 25, 27, 0.55);
-  transform: translate(-50%, calc(-50% + var(--dy, 0px)));
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px)));
   transition:
     transform 0.3s var(--ease-out),
     height 0.3s var(--ease-out),
@@ -3688,7 +3690,7 @@ button.mgroup-row:focus-visible {
 @keyframes mbubble-in {
   from {
     opacity: 0;
-    transform: translate(-50%, calc(-50% + var(--dy, 0px))) scale(0.6);
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(0.6);
   }
 }
 .mbubble-count {
@@ -3706,7 +3708,7 @@ button.mgroup-row:focus-visible {
 }
 .mbubble:hover .mbubble-pill,
 .mbubble:focus-visible .mbubble-pill {
-  transform: translate(-50%, calc(-50% + var(--dy, 0px))) scale(1.06);
+  transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(1.06);
 }
 .mbubble.is-short:not(:hover):not(:focus-visible) .mbubble-count {
   display: none;
@@ -3715,18 +3717,71 @@ button.mgroup-row:focus-visible {
   outline: 2px solid var(--cedar);
   outline-offset: 2px;
 }
-.mbubble.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill {
-  height: 14px;
-  padding: 0 5px;
+/* Compact: a circle with the count ("4"); a place with nothing checked yet is a plain dot. Measured
+   in this shape too (is-measuring), whatever the pointer is doing. */
+.mbubble.is-compact:not(:hover):not(:focus-visible) .mbubble-pill,
+.mbubble.is-measuring.is-compact .mbubble-pill {
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
   gap: 0;
-  background: var(--muted);
+  font-size: 12px;
+  line-height: 14px;
 }
-.mbubble.is-live.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill {
+.mbubble.is-live.is-compact:not(:hover):not(:focus-visible) .mbubble-pill,
+.mbubble.is-measuring.is-live.is-compact .mbubble-pill {
   background: var(--cedar);
   border-color: #fff;
 }
-.mbubble.is-compact:not(.is-measuring):not(:hover):not(:focus-visible) .mbubble-pill > span {
+.mbubble.is-compact:not(:hover):not(:focus-visible) :is(.mbubble-name, .mbubble-sep),
+.mbubble.is-measuring.is-compact :is(.mbubble-name, .mbubble-sep) {
   display: none;
+}
+.mbubble.is-live.is-compact:not(:hover):not(:focus-visible) .mbubble-count,
+.mbubble.is-measuring.is-live.is-compact .mbubble-count {
+  color: #fff;
+}
+.mbubble:not(.is-live).is-compact:not(:hover):not(:focus-visible) .mbubble-pill,
+.mbubble.is-measuring:not(.is-live).is-compact .mbubble-pill {
+  min-width: 14px;
+  height: 14px;
+  padding: 0;
+  background: var(--muted);
+}
+.mbubble:not(.is-live).is-compact:not(:hover):not(:focus-visible) .mbubble-count,
+.mbubble.is-measuring:not(.is-live).is-compact .mbubble-count {
+  display: none;
+}
+/* Folded: not drawn (its neighbour's "+N" stands for it) until it has keyboard focus. */
+.mbubble.is-folded:not(:focus-visible) .mbubble-pill {
+  visibility: hidden;
+}
+.mbubble-more {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--cedar);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: 0 4px 10px -4px rgba(16, 25, 27, 0.5);
+}
+.mbubble-more:empty {
+  display: none;
+}
+/* On a circle, beside its count rather than over it. */
+.mbubble.is-compact:not(:hover):not(:focus-visible) .mbubble-more {
+  top: -10px;
+  right: auto;
+  left: calc(100% - 6px);
 }
 .mbubble.is-measuring .mbubble-pill {
   transition: none;
@@ -6656,6 +6711,13 @@ button.lvl-crumb:hover {
 /* Laptop hover preview: shown while the pointer is on a dot, gone when it leaves; a click keeps it. */
 .planner .pincard.is-preview {
   pointer-events: none;
+}
+/* Laptop: the card docks right of the map controls' column (its left edge, its 48px and a 12px gap),
+   so it never covers the zoom buttons or the Map/3D toggle. */
+@media (min-width: 761px) {
+  .planner .pincard {
+    left: calc(max(20px, calc((100vw - 1240px) / 2)) + 60px);
+  }
 }
 /* Wide laptops: the breadcrumb sits on the search's line, beside it, so it adds no row and the card
    stays at 240, clear of the tickers west of Tokyo (Mount Takao, the Ghibli Museum). */
