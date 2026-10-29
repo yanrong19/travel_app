@@ -315,6 +315,13 @@ test('loadTrips keeps good trips and drops malformed ones with a notice', () => 
   expect(r.notice).toEqual(expect.any(String));
 });
 
+test('loadTrips drops a trip with a neighbourhood place: neighbourhoods are map-only', () => {
+  const bad = { ...make(), places: [{ level: 'neighbourhood', id: 'JP-N-TOKYO-HARAJUKU' }] };
+  const r = loadTrips(JSON.stringify({ version: 1, trips: [bad] }));
+  expect(r.trips).toEqual([]);
+  expect(r.notice).toEqual(expect.any(String));
+});
+
 test('setDays to the current count is a no-op', () => {
   const t = make({ days: 3 });
   expect(setDays(t, 3, 99)).toBe(t);

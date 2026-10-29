@@ -1,7 +1,7 @@
 // Trip model and the pure operations on it. Nothing here touches React or storage.
 // Every operation returns a new Trip (inputs are never mutated) with updatedAt set from `now`.
 
-export type PlaceRef = { level: 'country' | 'region' | 'prefecture' | 'area'; id: string };
+export type PlaceRef = { level: 'country' | 'region' | 'prefecture' | 'area' | 'neighbourhood'; id: string };
 
 export interface DayPlan {
   stops: string[];
@@ -38,6 +38,7 @@ export const DAY_END = '19:00';
 export const PACE_HOURS = { relaxed: 8, normal: 10, packed: 12 } as const;
 type Pace = keyof typeof PACE_HOURS;
 
+// Neighbourhoods are map-only: a trip never holds one, so a stored trip place at that level is invalid.
 const LEVELS: PlaceRef['level'][] = ['country', 'region', 'prefecture', 'area'];
 
 // ---------- clock times ----------

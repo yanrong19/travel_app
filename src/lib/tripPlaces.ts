@@ -2,6 +2,7 @@
 // which attractions it covers, and Japan, Kantō and Tokyo all cover every Tokyo attraction.
 import { ATTRACTIONS } from '../data/attractions';
 import { DESTINATIONS, destinationByWorldId } from '../data/destinations';
+import { neighbourhoodById } from '../data/neighbourhoods';
 import { REGIONS, prefName } from '../data/regions';
 import {
   AREA_COUNTS,
@@ -16,6 +17,7 @@ import {
   type MapTarget,
 } from '../data/places';
 import type { Attraction } from '../data/types';
+import type { Bounds } from '../map/camera';
 import type { Trip, PlaceRef } from './trips';
 
 const KANTO_ID = 'kanto';
@@ -46,6 +48,10 @@ export function placeLabel(ref: PlaceRef): { name: string; local?: string; kind:
       const a = areaById(ref.id);
       return { name: a?.properties.name ?? ref.id, local: a?.properties.ja, kind: 'Tokyo ward' };
     }
+    case 'neighbourhood': {
+      const n = neighbourhoodById(ref.id);
+      return { name: n?.name ?? ref.id, local: n?.ja, kind: 'Tokyo neighbourhood' };
+    }
   }
 }
 
@@ -53,6 +59,7 @@ export function placeLabel(ref: PlaceRef): { name: string; local?: string; kind:
 export function attractionsIn(ref: PlaceRef): Attraction[] {
   if (isTokyoWide(ref)) return ATTRACTIONS;
   if (ref.level === 'area') return ATTRACTIONS.filter((a) => a.area === ref.id);
+  if (ref.level === 'neighbourhood') return ATTRACTIONS.filter((a) => a.neighbourhood === ref.id);
   return [];
 }
 
@@ -66,12 +73,45 @@ export function placeCover(ref: PlaceRef): string | null {
     case 'prefecture':
       return Number(ref.id) === Number(TOKYO_PREF_ID) ? 'shibuya-sky' : null;
     case 'area':
+    case 'neighbourhood':
       return attractionsIn(ref)[0]?.id ?? null;
   }
 }
 
-/** Where the map should look for a place: a target, plus prefectures to highlight on the country map. */
-export function placeView(ref: PlaceRef): { target: MapTarget; focusPrefs: number[] | null } {
+const M_PER_DEG = 111320;
+const FRAME_PAD_M = 150;
+const FRAME_MIN_REACH_M = 600;
+
+/**
+ * The map frame for a neighbourhood: its attractions' bounding box plus 150 m each side, grown to
+ * reach at least 600 m from the neighbourhood's centre every way. Not `radiusM`: the radii are loose
+ * membership bounds (up to 3 km), far wider than the walkable patch a person wants to see.
+ */
+function neighbourhoodFrame(id: string): Bounds | undefined {
+  const n = neighbourhoodById(id);
+  if (!n) return undefined;
+  const [cx, cy] = n.center;
+  const mLon = M_PER_DEG * Math.cos((cy * Math.PI) / 180);
+  let w = cx - FRAME_MIN_REACH_M / mLon;
+  let e = cx + FRAME_MIN_REACH_M / mLon;
+  let s = cy - FRAME_MIN_REACH_M / M_PER_DEG;
+  let nn = cy + FRAME_MIN_REACH_M / M_PER_DEG;
+  for (const a of ATTRACTIONS) {
+    if (a.neighbourhood !== id) continue;
+    const [x, y] = a.lonlat;
+    w = Math.min(w, x - FRAME_PAD_M / mLon);
+    e = Math.max(e, x + FRAME_PAD_M / mLon);
+    s = Math.min(s, y - FRAME_PAD_M / M_PER_DEG);
+    nn = Math.max(nn, y + FRAME_PAD_M / M_PER_DEG);
+  }
+  return [[w, s], [e, nn]];
+}
+
+/**
+ * Where the map should look for a place: a target, plus prefectures to highlight on the country map.
+ * A neighbourhood also carries the `frame` to fit inside the Tokyo target.
+ */
+export function placeView(ref: PlaceRef): { target: MapTarget; focusPrefs: number[] | null; frame?: Bounds } {
   const japan = slug(WORLD.find((f) => f.id === JAPAN_ID)?.properties.name ?? 'Japan');
   switch (ref.level) {
     case 'country': {
@@ -87,6 +127,8 @@ export function placeView(ref: PlaceRef): { target: MapTarget; focusPrefs: numbe
       const a = areaById(ref.id);
       return { target: targetFromParams(japan, 'tokyo', a ? slug(a.properties.name) : undefined), focusPrefs: null };
     }
+    case 'neighbourhood':
+      return { target: targetFromParams(japan, 'tokyo'), focusPrefs: null, frame: neighbourhoodFrame(ref.id) };
   }
 }
 

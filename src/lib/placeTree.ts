@@ -1,11 +1,13 @@
 // The level tree behind the planner map: each place has children, and one level on each branch is
 // the "attraction level", where the map shows pins. Above it the map shows a count bubble per child.
 //
-// Japan → its 8 regions → their prefectures, with Tokyo (and every other prefecture) as the
-// attraction level; Tokyo's wards stay a filter inside it. Any other country is the attraction level
-// itself. This is hard-coded from our data for now: later the knowledge base supplies the tree per
-// country (Singapore at country level, Japan at prefecture or city level). Swap `TREE` for a source
-// that implements `PlaceTree`; nothing outside this file reads the hard-coded shape.
+// Japan → its 8 regions → their prefectures. Every other prefecture is the attraction level; Tokyo
+// is not: it has its neighbourhoods as children, and each of those is an attraction level (its map
+// pins all of Tokyo and spotlights the neighbourhood). Tokyo's wards stay a filter inside it. Any
+// other country is the attraction level itself. This is hard-coded from our data for now: later the
+// knowledge base supplies the tree per country (Singapore at country level, Japan at prefecture or
+// city level). Swap `TREE` for a source that implements `PlaceTree`; nothing outside this file reads
+// the hard-coded shape.
 //
 // The tree is more than `PlaceTree`'s three answers. A knowledge-base tree must also supply, for
 // every place it names: whether it exists (`isKnownPlace`, which validates `&view=` in the URL),
@@ -13,8 +15,10 @@
 // id per place (the `prefecture` normaliser here, as zero-padded map ids like '08'). Today those
 // read our geo data in `src/data`.
 import { geoCentroid } from 'd3-geo';
+import { NEIGHBOURHOODS, neighbourhoodById } from '../data/neighbourhoods';
 import { REGIONS, mainLand, regionOfPref } from '../data/regions';
 import { JAPAN_ID, PREFECTURES, TOKYO_AREAS, TOKYO_PREF_ID, WORLD, areaById } from '../data/places';
+import type { Attraction } from '../data/types';
 import { attractionsIn, covers, placeLabel, sameRef } from './tripPlaces';
 import type { PlaceRef } from './trips';
 
@@ -41,12 +45,16 @@ const prefecture = (code: number | string): PlaceRef => ({
   level: 'prefecture',
   id: PREFECTURES.find((p) => Number(p.id) === Number(code))?.id ?? String(code),
 });
+const neighbourhood = (id: string): PlaceRef => ({ level: 'neighbourhood', id });
+
+const isTokyo = (ref: PlaceRef) => ref.level === 'prefecture' && Number(ref.id) === Number(TOKYO_PREF_ID);
 
 /** The hard-coded tree: Japan by region and prefecture; every other country flat. */
 const HARD_CODED: PlaceTree = {
   children(ref) {
     if (ref.level === 'country' && ref.id === JAPAN_ID) return REGIONS.map((r) => region(r.id));
     if (ref.level === 'region') return (REGIONS.find((r) => r.id === ref.id)?.prefectures ?? []).map(prefecture);
+    if (isTokyo(ref)) return NEIGHBOURHOODS.map((n) => neighbourhood(n.id)).filter((r) => attractionsIn(r).length > 0);
     return [];
   },
   parent(ref) {
@@ -60,11 +68,12 @@ const HARD_CODED: PlaceTree = {
         return r ? region(r.id) : JAPAN;
       }
       case 'area':
+      case 'neighbourhood':
         return prefecture(TOKYO_PREF_ID);
     }
   },
   attractionLevel(ref) {
-    return !(ref.level === 'country' && ref.id === JAPAN_ID) && ref.level !== 'region';
+    return !(ref.level === 'country' && ref.id === JAPAN_ID) && ref.level !== 'region' && !isTokyo(ref);
   },
 };
 
@@ -86,6 +95,18 @@ export function pathTo(ref: PlaceRef): PlaceRef[] {
 /** How many checked attractions a place holds. */
 export const countFor = (ref: PlaceRef): number => attractionsIn(ref).length;
 
+/**
+ * The attractions the map pins at an attraction level: a neighbourhood pins every attraction of its
+ * parent (all of Tokyo, with its own highlighted); another attraction level its own; above it, none.
+ */
+export function pinsFor(ref: PlaceRef): Attraction[] {
+  if (ref.level === 'neighbourhood') {
+    const parent = parentOf(ref);
+    return parent ? attractionsIn(parent) : attractionsIn(ref);
+  }
+  return TREE.attractionLevel(ref) ? attractionsIn(ref) : [];
+}
+
 /** The attraction-level place under `root` that holds the attraction, or null when none does. */
 export function attractionLevelFor(root: PlaceRef, attractionId: string): PlaceRef | null {
   const node = nodeOf(root);
@@ -106,11 +127,13 @@ export function attractionLevelFor(root: PlaceRef, attractionId: string): PlaceR
 export function attractionHome(attractionId: string, places: PlaceRef[], current: PlaceRef | null, viewed: PlaceRef | null): PlaceRef | null {
   if (viewed && TREE.attractionLevel(viewed) && covers(viewed, attractionId)) return viewed;
   const order = current ? [current, ...places.filter((p) => !sameRef(p, current))] : places;
-  const homes = order
-    .filter((p) => covers(p, attractionId))
-    .map((p) => attractionLevelFor(p, attractionId))
-    .filter((r): r is PlaceRef => r !== null);
-  if (homes.length) return homes.reduce((best, r) => (pathTo(r).length > pathTo(best).length ? r : best));
+  // The most specific covering trip place wins (a ward over Japan), the first in order on a tie.
+  const covering = order.filter((p) => covers(p, attractionId));
+  if (covering.length) {
+    const best = covering.reduce((b, p) => (pathTo(p).length > pathTo(b).length ? p : b));
+    const home = attractionLevelFor(best, attractionId);
+    if (home) return home;
+  }
   for (const p of order) {
     const hit = attractionLevelFor(pathTo(p)[0], attractionId);
     if (hit) return hit;
@@ -132,13 +155,15 @@ export function isKnownPlace(ref: PlaceRef): boolean {
       return PREFECTURES.some((p) => Number(p.id) === Number(ref.id));
     case 'area':
       return TOKYO_AREAS.some((a) => a.id === ref.id);
+    case 'neighbourhood':
+      return neighbourhoodById(ref.id) !== undefined;
   }
 }
 
 /** A place as one URL value: `region:kanto`. */
 export const refKey = (ref: PlaceRef) => `${ref.level}:${ref.id}`;
 
-const LEVELS = ['country', 'region', 'prefecture', 'area'] as const;
+const LEVELS = ['country', 'region', 'prefecture', 'area', 'neighbourhood'] as const;
 export function parseRefKey(v: string | null): PlaceRef | null {
   if (!v) return null;
   const at = v.indexOf(':');
@@ -171,5 +196,7 @@ export function placeAnchor(ref: PlaceRef): [number, number] {
       const c = WORLD.find((f) => f.id === ref.id);
       return c ? (geoCentroid(mainLand(c)) as [number, number]) : fallback;
     }
+    case 'neighbourhood':
+      return neighbourhoodById(ref.id)?.center ?? fallback;
   }
 }

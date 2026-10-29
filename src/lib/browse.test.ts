@@ -157,7 +157,12 @@ describe('which attractions', () => {
     expect(taito.map((x) => x.id).sort()).toEqual([
       'hanayashiki', 'kappabashi', 'senso-ji', 'sumida-park', 'tokyo-national-museum', 'yanaka-ginza',
     ]);
+    // Tokyo itself is above the attraction level now: it lists what the trip's places cover.
     expect(browsePool({ level: 'prefecture', id: '13' }, [{ level: 'prefecture', id: '13' }])).toHaveLength(ATTRACTIONS.length);
+  });
+
+  test('a neighbourhood lists all of Tokyo, since its map pins every attraction', () => {
+    expect(browsePool({ level: 'neighbourhood', id: 'JP-N-TOKYO-HARAJUKU' }, [{ level: 'prefecture', id: '13' }])).toHaveLength(30);
   });
 
   test("above it, everything the trip's places cover, once each", () => {

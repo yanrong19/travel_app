@@ -23,6 +23,7 @@ const SECTION: Record<PlaceRef['level'], string> = {
   region: 'Regions of Japan',
   prefecture: 'Prefectures',
   area: 'Tokyo wards',
+  neighbourhood: 'Tokyo neighbourhoods', // map-only: never offered here
 };
 const LEVEL_ORDER: PlaceRef['level'][] = ['country', 'region', 'prefecture', 'area'];
 

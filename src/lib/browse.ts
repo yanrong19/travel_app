@@ -3,7 +3,7 @@
 import { attractionById } from '../data/attractions';
 import type { Attraction } from '../data/types';
 import { FILTERS, isRainProof, readings } from './factors';
-import { nodeOf } from './placeTree';
+import { nodeOf, pinsFor } from './placeTree';
 import { bestSlot, type TimeSlot } from './timeOfDay';
 import { attractionsIn } from './tripPlaces';
 import { dayOf, type PlaceRef, type Trip } from './trips';
@@ -137,12 +137,12 @@ export function browseRows(list: Attraction[], trip: Trip, day: number, on: Brow
 // ---------- which attractions ----------
 
 /**
- * What Browse lists: the viewed place's attractions at the attraction level; above it, every
+ * What Browse lists: what the map pins at the attraction level (see pinsFor); above it, every
  * attraction the trip's places cover, once each. Places without data have none.
  */
 export function browsePool(viewed: PlaceRef | null, places: PlaceRef[]): Attraction[] {
   if (!viewed) return [];
-  if (nodeOf(viewed).attractionLevel) return attractionsIn(viewed);
+  if (nodeOf(viewed).attractionLevel) return pinsFor(viewed);
   return [...new Map(places.flatMap(attractionsIn).map((a) => [a.id, a])).values()];
 }
 
