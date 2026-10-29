@@ -1297,6 +1297,7 @@ export function MapExplorer(props: Props) {
             data-ll={b.ll.join(',')}
             // Places with checked attractions keep their labels first when bubbles crowd.
             data-prio={(b.count ? 0.5 : 1) + i / 100}
+            data-label={b.label}
             style={{ ['--i' as string]: i }}
             onClick={b.onPick}
             aria-label={`${b.label}: ${b.count ? `${plural(b.count, 'checked attraction')}` : 'coming soon'}. Show`}
@@ -1661,9 +1662,9 @@ function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[], band
     band,
     avoid,
   );
-  const more = list.map(() => 0);
-  out.forEach((o) => {
-    if (o.mode === 'folded') more[o.into]++;
+  const more: string[][] = list.map(() => []);
+  out.forEach((o, i) => {
+    if (o.mode === 'folded') more[o.into].push(list[i].el.dataset.label ?? '');
   });
   list.forEach((b, i) => {
     const o = out[i];
@@ -1672,8 +1673,13 @@ function layoutBubbles(list: { el: HTMLElement; sx: number; sy: number }[], band
     b.el.classList.toggle('is-folded', o.mode === 'folded');
     b.el.style.setProperty('--dx', `${o.mode === 'folded' ? 0 : o.dx}px`);
     b.el.style.setProperty('--dy', `${o.mode === 'folded' ? 0 : o.dy}px`);
+    // Runs on every camera frame: the badge is written only when it changes.
     const badge = b.el.querySelector<HTMLElement>('.mbubble-more');
-    if (badge) badge.textContent = more[i] ? `+${more[i]}` : '';
+    const names = more[i];
+    const text = names.length ? `+${names.length}` : '';
+    const title = names.length ? `${plural(names.length, 'more place')} here (${names.join(', ')}): zoom in to see ${names.length === 1 ? 'it' : 'them'}` : '';
+    if (badge && badge.textContent !== text) badge.textContent = text;
+    if (badge && badge.title !== title) badge.title = title;
   });
 }
 

@@ -58,3 +58,17 @@ export const ANALYSIS_SIDE_MIN = 1264;
 
 /** The map's insets with the analysis open beside the day panel: the right inset grows by its width. */
 export const withAnalysis = (i: Insets): Insets => ({ ...i, right: i.right + ANALYSIS_W + ANALYSIS_GAP });
+
+/** Laptop, analysis open beside the day panel: the pin card's top (styles.css `.planner.is-analysis .pincard`). */
+export const ANALYSIS_CARD_TOP = 284;
+/** The gap between that card's bottom and the map a spot centres in. */
+export const ANALYSIS_CARD_GAP = 16;
+/**
+ * The map's insets for a spot with the analysis open beside the day panel: the free strip left of the
+ * panels is no wider than the pin card, so the spot centres in the map below the card. A short window
+ * keeps at least `min` px of map (the card then overlaps its top, as little as it can).
+ */
+export function belowCard(i: Insets, cardH: number, vh: number, min = 160): Insets {
+  const top = ANALYSIS_CARD_TOP + cardH + ANALYSIS_CARD_GAP;
+  return { ...i, top: Math.max(i.top, Math.min(top, vh - i.bottom - min)) };
+}

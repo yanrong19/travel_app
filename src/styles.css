@@ -3777,11 +3777,16 @@ button.mgroup-row:focus-visible {
 .mbubble-more:empty {
   display: none;
 }
-/* On a circle, beside its count rather than over it. */
+/* On a circle: a smaller outlined chip up and to the right, apart from the count ("1", then "+2"). */
 .mbubble.is-compact:not(:hover):not(:focus-visible) .mbubble-more {
-  top: -10px;
+  top: -12px;
   right: auto;
-  left: calc(100% - 6px);
+  left: calc(100% - 1px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 1.5px solid var(--cedar);
+  font-size: 10px;
 }
 .mbubble.is-measuring .mbubble-pill {
   transition: none;
@@ -8236,9 +8241,18 @@ button.lvl-crumb:hover {
   .planner.is-analysis .maplibregl-ctrl-bottom-right {
     right: calc(max(24px, calc((100vw - 1240px) / 2)) + 790px);
   }
+  /* The card takes the whole strip left of the panels at its usual width (12px short of the analysis),
+     with a spot centring below it (planSheet's belowCard reads the 284). The map controls drop to the
+     strip's bottom corner, clear of the card. */
   .planner.is-analysis .pincard {
     top: 284px;
-    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 828px);
+    left: max(32px, calc((100vw - 1240px) / 2));
+    right: calc(max(24px, calc((100vw - 1240px) / 2)) + 804px);
+  }
+  .planner.is-analysis .map-controls {
+    top: auto;
+    bottom: 40px;
+    transform: none;
   }
 }
 

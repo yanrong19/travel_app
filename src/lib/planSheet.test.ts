@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { ANALYSIS_GAP, ANALYSIS_W, HEAD_PHONE, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, sheetTopAt, withAnalysis } from './planSheet';
+import { ANALYSIS_CARD_GAP, ANALYSIS_CARD_TOP, ANALYSIS_GAP, ANALYSIS_W, HEAD_PHONE, belowCard, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, sheetTopAt, withAnalysis } from './planSheet';
 import { guideProgress, settleTarget } from './useGuideScroll';
 
 test('the sheet rests at the peek above the tab bar and comes up to its top', () => {
@@ -58,4 +58,15 @@ test('the analysis beside the day panel widens only the map’s right inset, by 
   expect([i.top, i.bottom, i.left]).toEqual([PLAN_INSETS.top, PLAN_INSETS.bottom, PLAN_INSETS.left]);
   // A pure copy: the laptop insets themselves don't change.
   expect(PLAN_INSETS.right).toBe(476);
+});
+test('with the analysis open, a spot centres below the pin card', () => {
+  const i = withAnalysis(PLAN_INSETS);
+  expect(belowCard(i, 228, 800)).toEqual({ ...i, top: ANALYSIS_CARD_TOP + 228 + ANALYSIS_CARD_GAP });
+});
+test('below the card, a short window still keeps some map', () => {
+  const i = withAnalysis(PLAN_INSETS);
+  const b = belowCard(i, 300, 640, 160);
+  expect(640 - b.top - b.bottom).toBe(160);
+  // Never above the usual top inset.
+  expect(belowCard(i, 0, 400).top).toBe(i.top);
 });

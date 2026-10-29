@@ -25,7 +25,7 @@ import { isRainProof } from '../lib/factors';
 import { getRainChance, isLikelyWet } from '../lib/forecast';
 import { plural } from '../lib/format';
 import { planningState, readPlannerOpen, readPlanSearch, SEARCH_STATE, searchStep } from '../lib/planning';
-import { ANALYSIS_SIDE_MIN, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, headBottom, phoneInsets, sheetBarH, withAnalysis } from '../lib/planSheet';
+import { ANALYSIS_SIDE_MIN, PEEK_PHONE, PLAN_INSETS, SHEET_CLEAR, belowCard, headBottom, phoneInsets, sheetBarH, withAnalysis } from '../lib/planSheet';
 import { EASE_OUT, useReducedMotion } from '../lib/motion';
 import { useGo } from '../lib/transition';
 import {
@@ -732,11 +732,14 @@ function PlannerPage({ trip }: { trip: Trip }) {
     const t = window.setTimeout(() => setSliding(false), SHEET_SLIDE_MS);
     return () => window.clearTimeout(t);
   }, [sliding, spotPhone]);
+  // The card's height, measured: on phone, and on laptop with the analysis beside the day panel,
+  // where a spot centres below the card (belowCard).
   const [cardH, setCardH] = useState(CARD_PHONE_H);
   const cardShown = picked?.id ?? null;
+  const measureCard = narrow || (side && analysisOpen);
   useLayoutEffect(() => {
     const el = cardRef.current;
-    if (!narrow || !el) return;
+    if (!measureCard || !el) return;
     const measure = () => {
       if (el.offsetHeight) setCardH(el.offsetHeight);
     };
@@ -744,22 +747,25 @@ function PlannerPage({ trip }: { trip: Trip }) {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [narrow, cardShown]);
+  }, [measureCard, cardShown]);
   const [vh, setVh] = useState(() => window.innerHeight);
   useEffect(() => {
-    if (!narrow) return;
+    if (!measureCard) return;
     const onResize = () => setVh(window.innerHeight);
     onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [narrow]);
+  }, [measureCard]);
   const spotFrame = useMemo(() => {
     const base = phoneInsets(safeTop, SPOT_PEEK_PHONE);
     const clearCard = SHEET_CLEAR + SPOT_PEEK_PHONE + CARD_DOCK_GAP + cardH + 12;
     const room = vh - base.top - SPOT_STRIP_MIN;
     return { ...base, bottom: Math.max(base.bottom, Math.min(clearCard, room)) };
   }, [safeTop, cardH, vh]);
-  const insets = narrow ? (spotPhone ? spotFrame : phoneFrame) : side && analysisOpen ? INSETS_ANALYSIS : PLAN_INSETS;
+  // Laptop with the analysis open: the free strip is no wider than the card, so a spot centres below it.
+  const spotAnalysis = useMemo(() => belowCard(INSETS_ANALYSIS, cardH, vh), [cardH, vh]);
+  const laptopInsets = side && analysisOpen ? (selected ? spotAnalysis : INSETS_ANALYSIS) : PLAN_INSETS;
+  const insets = narrow ? (spotPhone ? spotFrame : phoneFrame) : laptopInsets;
   const { open: drawerOpen } = useSaved();
   const { scrollToTop, scrollToGuides, atGuides } = useGuideScroll({
     enabled: narrow,
