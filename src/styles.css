@@ -3456,6 +3456,69 @@ h2:focus {
 .mdot.is-picked .mdot-value {
   color: rgba(255, 255, 255, 0.75);
 }
+/* The spotlight: one attraction as a cedar name pill whose tail points at its spot, its neighbours
+   always labelled (layoutDots), and every other dot small, grey and unlabelled but still a target.
+   Today's numbered stops keep their circle and number when far. */
+.mdot.is-spot {
+  z-index: 7;
+}
+.mdot.is-near {
+  z-index: 4;
+}
+.mdot.is-spot .mdot-mark {
+  visibility: hidden;
+}
+.mdot.is-spot .mdot-label {
+  left: 0;
+  right: auto;
+  top: auto;
+  bottom: 6px;
+  padding: 6px 12px;
+  background: var(--cedar);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(16, 25, 27, 0.25);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+.mdot.is-spot .mdot-label::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--cedar);
+}
+.mdot.is-spot .mdot-value {
+  display: none;
+}
+.mdot.is-spot:hover .mdot-label,
+.mdot.is-spot.is-hot .mdot-label {
+  background: var(--cedar-hover);
+}
+.mdot.is-spot:hover .mdot-label::after,
+.mdot.is-spot.is-hot .mdot-label::after {
+  border-top-color: var(--cedar-hover);
+}
+.mdot.is-spot:focus-visible .mdot-label {
+  outline: 2px solid var(--cedar);
+  outline-offset: 3px;
+}
+.mdot.is-far .mdot-label {
+  visibility: hidden;
+}
+.mdot.is-far:not(.is-today) {
+  --r: 4px;
+}
+.mdot.is-far:not(.is-today) .mdot-mark {
+  background: var(--muted);
+  box-shadow:
+    0 0 0 1.5px #fff,
+    0 1px 3px rgba(16, 25, 27, 0.3);
+  opacity: 0.7;
+}
 /* Today's stops whose circles would overlap merge into one pill ("1–3") at their centroid. It lists
    their names on hover or focus, and a click zooms in until they separate. */
 .mdot.is-grouped {

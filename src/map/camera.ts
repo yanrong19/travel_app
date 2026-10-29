@@ -140,3 +140,15 @@ export function toScreen(p: [number, number], v: View, W: number, H: number): [n
   const k = W / v.w;
   return [(p[0] - v.x) * k + W / 2, (p[1] - v.y) * k + H / 2];
 }
+
+/** Four lon/lat corners of what the map shows, clockwise from top-left. */
+export type Quad = [number, number][];
+
+/** The free rectangle the insets leave on a W × H map, its corners unprojected to lon/lat. */
+export function viewQuad(W: number, H: number, insets: Insets, unproject: (p: [number, number]) => [number, number]): Quad {
+  const l = insets.left;
+  const t = insets.top;
+  const r = W - insets.right;
+  const b = H - insets.bottom;
+  return [unproject([l, t]), unproject([r, t]), unproject([r, b]), unproject([l, b])];
+}

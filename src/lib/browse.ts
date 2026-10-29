@@ -2,6 +2,7 @@
 // chips, the sort, each row's action, and each marker's kind and accessible name. Pure.
 import { attractionById } from '../data/attractions';
 import type { Attraction } from '../data/types';
+import type { Quad } from '../map/camera';
 import { FILTERS, isRainProof, readings } from './factors';
 import { nodeOf, pinsFor } from './placeTree';
 import { bestSlot, type TimeSlot } from './timeOfDay';
@@ -144,6 +145,23 @@ export function browsePool(viewed: PlaceRef | null, places: PlaceRef[]): Attract
   if (!viewed) return [];
   if (nodeOf(viewed).attractionLevel) return pinsFor(viewed);
   return [...new Map(places.flatMap(attractionsIn).map((a) => [a.id, a])).values()];
+}
+
+/** Even-odd ray cast: is the [lon, lat] point inside the polygon? */
+function inside(p: [number, number], poly: Quad): boolean {
+  let hit = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+/** The attractions the map is showing: inside the view quad (see viewQuad). No quad yet keeps them all. */
+export function inView(list: Attraction[], quad: Quad | null): Attraction[] {
+  if (!quad) return list;
+  return list.filter((a) => inside(a.lonlat, quad));
 }
 
 /**

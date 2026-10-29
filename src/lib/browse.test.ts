@@ -6,6 +6,7 @@ import {
   browseRows,
   filterCounts,
   freezeOrder,
+  inView,
   markerName,
   markerOf,
   markersFor,
@@ -15,6 +16,7 @@ import {
 } from './browse';
 import { isRainProof } from './factors';
 import type { Trip } from './trips';
+import type { Quad } from '../map/camera';
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
   version: 1,
@@ -221,4 +223,13 @@ describe('wet-weather toggle', () => {
     // Toggle off: nothing is greyed.
     expect(browseRows(ATTRACTIONS, trip(), 0, [], null).some((r) => r.off)).toBe(false);
   });
+});
+
+test('inView keeps attractions inside the quad; null quad keeps all', () => {
+  // South edge 35.65: Shibuya Sky sits at 35.6585.
+  const quad: Quad = [[139.69, 35.68], [139.71, 35.68], [139.71, 35.65], [139.69, 35.65]];
+  const ids = inView(ATTRACTIONS, quad).map((a) => a.id);
+  expect(ids).toContain('shibuya-sky');
+  expect(ids).not.toContain('senso-ji');
+  expect(inView(ATTRACTIONS, null)).toHaveLength(ATTRACTIONS.length);
 });

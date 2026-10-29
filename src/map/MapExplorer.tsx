@@ -17,7 +17,8 @@ import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
 import { GlobeCard, type CardSubject } from '../components/GlobeCard';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
-import { fitPadding, type Insets } from './camera';
+import { fitPadding, viewQuad, type Bounds, type Insets, type Quad } from './camera';
+import { spotZoom } from '../lib/spotlight';
 
 /** The world tour: how long each destination stays lit, and how long after a drag it picks up again. */
 const DWELL_MS = 5000;
@@ -151,7 +152,20 @@ interface Props {
   markers?: 'ticker' | 'dot';
   /** Dot mode: each planned attraction's marker (today's numbered stops, other days'); the rest are unplanned. */
   dots?: Record<string, Marker>;
+  /** What the camera looks at instead of the target's own framing: a box to frame, or one attraction spotlit. */
+  focus?: MapFocus | null;
+  /** The free area's corners in lon/lat, on every camera rest and once when the map is ready (see viewQuad). */
+  onViewQuad?: (q: Quad) => void;
 }
+
+/**
+ * A focus overrides the target's framing. `frame` frames its bounds; `spot` centres one attraction in
+ * the free area at street zoom, labels its neighbours (`near`) and greys the rest. `key` names the
+ * focus for the camera: a new key flies, the same key stays put.
+ */
+export type MapFocus =
+  | { kind: 'frame'; key: string; bounds: Bounds }
+  | { kind: 'spot'; key: string; id: string; center: [number, number]; near: string[] };
 
 /** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
 export interface MapBubble {
@@ -195,7 +209,12 @@ export function MapExplorer(props: Props) {
     offscreenPill = true,
     markers = 'ticker',
     dots,
+    focus = null,
   } = props;
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+  const spot = focus?.kind === 'spot' ? focus : null;
+  const spotKey = spot ? `${spot.id}:${spot.near.join(',')}` : '';
   const tourRef = useRef(tour);
   tourRef.current = tour;
   const cardBottomRef = useRef(cardBottom);
@@ -649,7 +668,7 @@ export function MapExplorer(props: Props) {
   // Re-place after React adds, removes or re-ranks overlay items.
   useLayoutEffect(() => {
     place();
-  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers, stopGroups, hotGroup, pickGroup]);
+  }, [pins, target.level, target.area?.id, hoverId, selectedId, lens, ready, cardBottom, toneKey, bubbleKey, dotKey, markers, stopGroups, hotGroup, pickGroup, spotKey]);
 
   // A pill split from the keyboard: once its first stop is no longer merged, focus moves to it.
   useEffect(() => {
@@ -668,7 +687,8 @@ export function MapExplorer(props: Props) {
       const a = pins.find((p) => p.id === selectedId);
       const cardEl = pickedClearOf.current;
       const box = wrap.current?.getBoundingClientRect();
-      if (done || !a || !cardEl || !box) return;
+      // A spotlit attraction is already centred in the free area, clear of the panels.
+      if (done || !a || !cardEl || !box || focusRef.current?.kind === 'spot') return;
       done = true;
       const c = cardEl.getBoundingClientRect();
       const p = map.project(a.lonlat);
@@ -784,8 +804,11 @@ export function MapExplorer(props: Props) {
   const fitList = fitPins && target.level === 'region' ? pins : undefined;
   const fitKey = fitList ? fitList.map((a) => a.id).sort().join(',') : '';
   const insetKey = `${insets.top},${insets.right},${insets.bottom},${insets.left}`;
-  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}|${insetKey}`;
+  const camKey = `${target.level}:${target.country?.id}:${target.area?.id}:${fitKey}:${focusKey}:${focus?.key ?? ''}|${insetKey}`;
   const lastKey = useRef('');
+  const lastFocus = useRef<MapFocus | null>(null);
+  // The camera from just before a run of spots, and the key it was under, to come back to on leaving them.
+  const spotReturn = useRef<{ key: string; cam: Cam } | null>(null);
   const lastInsets = useRef(insets);
   // Where the camera came to rest after the last framing, to tell whether the user has moved it since.
   const framedAt = useRef<{ center: [number, number]; zoom: number } | null>(null);
@@ -805,10 +828,29 @@ export function MapExplorer(props: Props) {
     const map = mapRef.current;
     if (!map || !ready || camKey === lastKey.current) return;
     const first = lastKey.current === '';
-    const onlyInsets = !first && lastKey.current.split('|')[0] === camKey.split('|')[0];
+    const wasKey = lastKey.current.split('|')[0];
+    const onlyInsets = !first && wasKey === camKey.split('|')[0];
     lastKey.current = camKey;
     const was = lastInsets.current;
     lastInsets.current = insets;
+    const wasFocus = lastFocus.current;
+    lastFocus.current = focus;
+    if (focus?.kind === 'spot' && wasFocus?.kind !== 'spot') {
+      // Entering a spot: remember where the camera was, under the key it was at.
+      const c = map.getCenter();
+      spotReturn.current = first ? null : { key: wasKey, cam: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), padding: { ...NO_PAD, ...map.getPadding() } } };
+    } else if (focus?.kind !== 'spot' && wasFocus?.kind === 'spot') {
+      // Leaving the spots back to the key they started from: fly back to that camera, not a fresh framing.
+      const back = spotReturn.current;
+      spotReturn.current = null;
+      if (back && back.key === camKey.split('|')[0]) {
+        cancelAnimationFrame(spin.current);
+        ++flightId.current;
+        if (prefersReducedMotion()) map.jumpTo(back.cam);
+        else map.flyTo({ ...back.cam, duration: 1200, essential: true, curve: 1.5 });
+        return;
+      }
+    }
     if (onlyInsets && panOnInsets && !stillFramed(map)) {
       // The free area's centre moves by half the change; the view follows it, gently.
       const dx = (insets.right - was.right - (insets.left - was.left)) / 2;
@@ -859,11 +901,21 @@ export function MapExplorer(props: Props) {
       });
       return;
     }
+    const f = focus;
+    if (f?.kind === 'spot') {
+      // Flat and north-up, the spot centred in the free area.
+      go({ center: f.center, zoom: spotZoom(wrap.current!.clientWidth), pitch: 0, bearing: 0, padding: { ...insets } });
+      return;
+    }
     let bounds: LngLatBoundsLike | null = null;
     let pitch = 0;
     let bearing = 0;
     let maxZoom = 16;
-    if (t.level === 'country' && t.country) {
+    if (f?.kind === 'frame') {
+      bounds = f.bounds;
+      pitch = tilt ? 55 : 0;
+      bearing = tilt ? -18 : 0;
+    } else if (t.level === 'country' && t.country) {
       if (t.country.id === JAPAN_ID) {
         bounds = (focusPrefs?.length && (regionBounds(focusPrefs) as LngLatBoundsLike | null)) || JAPAN_BOUNDS;
         maxZoom = focusPrefs?.length ? 7.5 : 6;
@@ -1028,10 +1080,29 @@ export function MapExplorer(props: Props) {
     appliedMode.current = mode;
     if (first || !changed) return;
     if (levelRef.current !== 'region' && levelRef.current !== 'area') return;
+    // A spot stays flat and north-up.
+    if (focusRef.current?.kind === 'spot') return;
     const tilt = mode === '3d';
     map.easeTo({ pitch: tilt ? 52 : 0, bearing: tilt ? -15 : 0, duration: prefersReducedMotion() ? 0 : 900 });
   }, [mode, ready]);
   const refit = () => flyToTarget(900, true);
+
+  // ---- What the free area shows, in lon/lat, for lists that follow the map ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const emit = () => {
+      const report = handlers.current.onViewQuad;
+      if (!report) return;
+      const box = map.getContainer();
+      report(viewQuad(box.clientWidth, box.clientHeight, insetsRef.current, (p) => map.unproject(p).toArray() as [number, number]));
+    };
+    emit();
+    map.on('moveend', emit);
+    return () => {
+      map.off('moveend', emit);
+    };
+  }, [ready]);
 
   const level = target.level;
   const showPins = level === 'region' || level === 'area';
@@ -1062,13 +1133,16 @@ export function MapExplorer(props: Props) {
             const m = markerOf(dots, a.id);
             const grouped = m.kind === 'today' && stopGroups.some((g) => g.ids.includes(a.id));
             const raised = selectedId === a.id || hoverId === a.id;
-            // Raised first, then today's stops in route order, then other days', then the rest.
-            const prio = raised ? 0 : m.kind === 'today' ? 0.2 + m.n / 1000 : m.kind === 'other' ? 0.5 + i / 10000 : 1 + i / 100;
+            // With a spot: the spot itself as a name pill, its neighbours always labelled, the rest small and grey.
+            const near = spot ? spot.near.indexOf(a.id) : -1;
+            const lit = !spot ? '' : a.id === spot.id ? 'is-spot' : near >= 0 ? 'is-near' : 'is-far';
+            // Raised first, then the spot's neighbours nearest first, today's stops in route order, other days', the rest.
+            const prio = raised ? 0 : near >= 0 ? 0.1 + near / 1000 : m.kind === 'today' ? 0.2 + m.n / 1000 : m.kind === 'other' ? 0.5 + i / 10000 : 1 + i / 100;
             return (
               <button
                 key={a.id}
                 type="button"
-                className={`mdot is-${m.kind} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''} ${grouped ? 'is-grouped' : ''}`}
+                className={`mdot is-${m.kind} ${lit} ${hoverId === a.id ? 'is-hot' : ''} ${selectedId === a.id ? 'is-picked' : ''} ${grouped ? 'is-grouped' : ''}`}
                 data-id={a.id}
                 data-ll={a.lonlat.join(',')}
                 data-prio={prio}
@@ -1448,7 +1522,9 @@ const DOT_LABEL_ZOOM = { today: 10, rest: 12.5 } as const;
  * Dot mode. Dots never fold or hide; only their labels come and go. The hovered, focused or picked
  * one always has its label; then, highest priority first (today's stops in route order, then the
  * rest), a label shows to the right of its dot, or failing that to the left, when the zoom allows
- * it and it would overlap no dot and no label placed before it.
+ * it and it would overlap no dot and no label placed before it. With a spot, its name pill sits
+ * above its point and is placed first, its neighbours (`is-near`) always have their label, and the
+ * rest (`is-far`) never do.
  */
 type Box = { x0: number; x1: number; y0: number; y1: number };
 
@@ -1456,9 +1532,12 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
   // A merged pill's half-width stands in for a dot's radius (it sets --r for its label's offset).
   const radius = (el: HTMLElement) => (el.dataset.mw ? Number(el.dataset.mw) / 2 : el.classList.contains('is-today') ? 11 : 6);
   for (const t of list) {
-    if (t.el.dataset.w) continue;
+    // The spot's pill is a bigger label than a dot's: measure again when a dot becomes or stops being the spot.
+    const shape = t.el.classList.contains('is-spot') ? 'spot' : '';
+    if (t.el.dataset.w && (t.el.dataset.shape ?? '') === shape) continue;
     const label = t.el.querySelector<HTMLElement>('.mdot-label');
     if (!label) continue;
+    t.el.dataset.shape = shape;
     t.el.dataset.w = String(label.offsetWidth);
     t.el.dataset.h = String(label.offsetHeight);
     const pill = t.el.querySelector<HTMLElement>('.mgroup-mark');
@@ -1474,8 +1553,14 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
     return { x0: t.sx - r, x1: t.sx + r, y0: t.sy - v, y1: t.sy + v };
   });
   const overlap = (b: Box, p: Box) => !(b.x1 < p.x0 || b.x0 > p.x1 || b.y1 < p.y0 || b.y0 > p.y1);
-  // The map's controls count as placed from the start.
+  // The map's controls count as placed from the start, and so does the spot's pill, centred above its point.
   const placed: Box[] = [...avoid];
+  for (const t of list) {
+    if (!t.el.classList.contains('is-spot')) continue;
+    const w = Number(t.el.dataset.w);
+    const h = Number(t.el.dataset.h);
+    placed.push({ x0: t.sx - w / 2 - 2, x1: t.sx + w / 2 + 2, y0: t.sy - h - 8, y1: t.sy + 2 });
+  }
   const hits = (b: Box, self: number) => placed.some((p) => overlap(b, p)) || dotsAt.some((p, i) => i !== self && overlap(b, p));
   const order = list.map((t, i) => ({ t, i })).sort((a, b) => Number(a.t.el.dataset.prio) - Number(b.t.el.dataset.prio));
   for (const { t, i } of order) {
@@ -1484,8 +1569,13 @@ function layoutDots(list: { el: HTMLElement; sx: number; sy: number }[], zoom: n
     const gap = radius(t.el) + 6;
     const toRight: Box = { x0: t.sx + gap - 2, x1: t.sx + gap + w + 2, y0: t.sy - h / 2 - 2, y1: t.sy + h / 2 + 2 };
     const toLeft: Box = { x0: t.sx - gap - w - 2, x1: t.sx - gap + 2, y0: toRight.y0, y1: toRight.y1 };
-    const raised = t.el.dataset.prio === '0';
+    const raised = t.el.dataset.prio === '0' || t.el.classList.contains('is-near');
     const tier = t.el.dataset.tier === 'today' ? 'today' : 'rest';
+    // The spot's pill is placed above; far dots go unlabelled.
+    if (t.el.classList.contains('is-spot') || t.el.classList.contains('is-far')) {
+      t.el.classList.remove('is-labelled', 'is-left');
+      continue;
+    }
     // A pill lists its stops only when raised (and on hover or focus, in CSS).
     if (t.el.dataset.tier === 'group' && !raised) {
       t.el.classList.remove('is-labelled', 'is-left');

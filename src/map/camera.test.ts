@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { fitPadding } from './camera';
+import { fitPadding, viewQuad } from './camera';
 
 const pad = { top: 206, right: 546, bottom: 342, left: 110 };
 
@@ -23,4 +23,8 @@ test('a narrow screen shrinks the sides the same way', () => {
   expect(q.left + q.right).toBeCloseTo(700 - 80, 5);
   expect(p.left + p.right).toBeCloseTo(600 - 80, 5);
   expect(p.top).toBe(206);
+});
+test('viewQuad unprojects the free rectangle corners clockwise from top-left', () => {
+  const q = viewQuad(1000, 600, { top: 50, right: 400, bottom: 0, left: 0 }, ([x, y]) => [x, -y]);
+  expect(q).toEqual([[0, -50], [600, -50], [600, -600], [0, -600]]);
 });
