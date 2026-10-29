@@ -2,9 +2,11 @@
 // the "attraction level", where the map shows pins. Above it the map shows a count bubble per child.
 //
 // Japan → its 8 regions → their prefectures. Every other prefecture is the attraction level; Tokyo
-// is not: it has its neighbourhoods as children, and each of those is an attraction level (its map
-// pins all of Tokyo and spotlights the neighbourhood). Tokyo's wards stay a filter inside it. Any
-// other country is the attraction level itself. This is hard-coded from our data for now: later the
+// is not: its children are its neighbourhoods, and each of those is the attraction level (its map
+// pins all of Tokyo and spotlights the neighbourhood). Neighbourhoods are map-only: they are never
+// trip places. Tokyo's wards (TOKYO_AREAS) stay trip places, outside Tokyo's children: each is an
+// attraction level of its own with Tokyo as its parent. Any other country is the attraction level
+// itself. This is hard-coded from our data for now: later the
 // knowledge base supplies the tree per country (Singapore at country level, Japan at prefecture or
 // city level). Swap `TREE` for a source that implements `PlaceTree`; nothing outside this file reads
 // the hard-coded shape.

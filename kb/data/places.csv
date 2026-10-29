@@ -746,7 +746,7 @@ JP-N-TOKYO-ASAKUSA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Asakusa,浅草,asakusa,,
 JP-N-TOKYO-GINZA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Ginza & Tsukiji,銀座,ginza-tsukiji,,,,Q746052,4859036,35.67136,139.76562,14,Japan › Kantō › Tokyo › Tokyo › Ginza & Tsukiji,,Curated,draft
 JP-N-TOKYO-HARAJUKU,JP-P-TOKYO,JP,4,Neighbourhood,travel,Harajuku & Omotesandō,原宿,harajuku-omotesando,,,,Q746573,,35.67017,139.70269,14,Japan › Kantō › Tokyo › Tokyo › Harajuku & Omotesandō,,Curated,draft
 JP-N-TOKYO-KIYOSUMI,JP-P-TOKYO,JP,4,Neighbourhood,travel,Kiyosumi,清澄,kiyosumi,,,,Q11561314,16951961,35.68142,139.79653,14,Japan › Kantō › Tokyo › Tokyo › Kiyosumi,,Curated,draft
-JP-N-TOKYO-MITAKA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Mitaka & Kichijōji,吉祥寺,mitaka-kichijoji,,,,Q287771,,35.70306,139.57972,14,Japan › Kantō › Tokyo › Tokyo › Mitaka & Kichijōji,Wikidata item is Kichijōji (Musashino),Curated,draft
+JP-N-TOKYO-MITAKA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Mitaka & Kichijōji,吉祥寺,mitaka-kichijoji,,,,Q287771,,35.70306,139.57972,14,Japan › Kantō › Tokyo › Tokyo › Mitaka & Kichijōji,Wikidata item is Kichijōji (Musashino) because Mitaka has no separate neighbourhood item.,Curated,draft
 JP-N-TOKYO-NAKANO,JP-P-TOKYO,JP,4,Neighbourhood,travel,Nakano,中野区,nakano,,,,Q234087,1543056,35.70728,139.66375,14,Japan › Kantō › Tokyo › Tokyo › Nakano,"Wikidata item is the whole Nakano ward, the closest match.",Curated,draft
 JP-N-TOKYO-ODAIBA,JP-P-TOKYO,JP,4,Neighbourhood,travel,Odaiba & Toyosu,お台場,odaiba-toyosu,,,,Q211861,3782450,35.63000,139.77500,14,Japan › Kantō › Tokyo › Tokyo › Odaiba & Toyosu,,Curated,draft
 JP-N-TOKYO-OSHIAGE,JP-P-TOKYO,JP,4,Neighbourhood,travel,Oshiage,押上,oshiage,,,,Q11497641,17354015,35.71044,139.81386,14,Japan › Kantō › Tokyo › Tokyo › Oshiage,,Curated,draft

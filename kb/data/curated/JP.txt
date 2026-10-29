@@ -73,7 +73,7 @@ N Kiyosumi | Neighbourhood | id=JP-N-TOKYO-KIYOSUMI; q=Kiyosumi
 N Shimokitazawa | Neighbourhood | id=JP-N-TOKYO-SHIMOKITAZAWA; q=Shimokitazawa
 N Nakano | Neighbourhood | id=JP-N-TOKYO-NAKANO; q=Nakano, Tokyo; note=Wikidata item is the whole Nakano ward, the closest match.
 N Setagaya | Neighbourhood | id=JP-N-TOKYO-SETAGAYA; q=Setagaya; note=Wikidata item is the whole Setagaya ward, the closest match.
-N Mitaka & Kichijōji | Neighbourhood | id=JP-N-TOKYO-MITAKA; q=Kichijōji; note=Wikidata item is Kichijōji (Musashino); Mitaka has no separate neighbourhood item.
+N Mitaka & Kichijōji | Neighbourhood | id=JP-N-TOKYO-MITAKA; q=Kichijōji; note=Wikidata item is Kichijōji (Musashino) because Mitaka has no separate neighbourhood item.
 N Takao | Neighbourhood | id=JP-N-TOKYO-TAKAO; q=Mount Takao; note=Wikidata item is Mount Takao itself, the closest match for the Takao area.
 = JP-14
 P Yokohama | City | trip=Tokyo
