@@ -98,7 +98,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 360 },
         { label: 'Omikuji fortune', yen: 100, optional: true },
         { label: 'Snacks on Nakamise', yen: 800, optional: true },
       ],
@@ -146,7 +145,7 @@ export const ATTRACTIONS: Attraction[] = [
     },
     cost: {
       entry: 3800,
-      extras: [{ label: 'Return metro and Yurikamome', yen: 700 }],
+      extras: [],
       cash: 'cards', freeNote: 'Not covered by city passes.',
     },
   },
@@ -190,7 +189,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 400 },
         { label: 'Inner garden', yen: 500, optional: true },
       ],
       cash: 'mostly-cash', freeNote: 'The shrine grounds are free. The inner garden is ¥500.',
@@ -240,7 +238,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 2500,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 400 },
         { label: 'Rooftop locker', yen: 100 },
       ],
       cash: 'cards',
@@ -286,7 +283,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 360 },
         { label: 'Street snacks', yen: 2500 },
         { label: 'Sushi breakfast', yen: 3500, optional: true },
       ],
@@ -335,7 +331,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return train from Shinjuku', yen: 800 },
         { label: 'Cable car round trip', yen: 950, optional: true },
         { label: 'Soba lunch', yen: 1200, optional: true },
       ],
@@ -382,7 +377,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 360 },
         { label: 'Snacks and coffee', yen: 1500 },
       ],
       cash: 'cash-only', cashNote: 'Most of the small shops take cash only.',
@@ -433,7 +427,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 1000,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 340 },
         { label: 'Special exhibition', yen: 2100, optional: true },
       ],
       cash: 'cards',
@@ -483,7 +476,6 @@ export const ATTRACTIONS: Attraction[] = [
       extras: [
         { label: 'Cover charge at one bar', yen: 1000 },
         { label: 'Two drinks', yen: 1800 },
-        { label: 'Taxi back after the last train', yen: 3500, optional: true },
       ],
       cash: 'mostly-cash',
     },
@@ -531,7 +523,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 1000,
       extras: [
-        { label: 'Return JR from Shinjuku', yen: 460 },
         { label: 'Lunch at the Straw Hat Café', yen: 1500, optional: true },
       ],
       cash: 'cards',
@@ -577,7 +568,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return train from Shibuya', yen: 500 },
         { label: 'Matcha at the teahouse', yen: 600, optional: true },
       ],
       cash: 'cash-only',
@@ -625,7 +615,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 5000,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 340 },
         { label: 'Bento', yen: 1500, optional: true },
       ],
       cash: 'cards',
@@ -670,7 +659,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return train from Shibuya', yen: 400 },
         { label: 'Coffee', yen: 600 },
         { label: 'Vintage finds', yen: 5000, optional: true },
       ],
@@ -717,7 +705,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 400 },
         { label: 'Gacha and snacks', yen: 1500, optional: true },
       ],
       cash: 'mostly-cash',
@@ -761,7 +748,7 @@ export const ATTRACTIONS: Attraction[] = [
     },
     cost: {
       entry: 150,
-      extras: [{ label: 'Return metro from Tokyo Station', yen: 360 }],
+      extras: [],
       cash: 'mostly-cash',
       freeNote: 'Free on Greenery Day (4 May) and Tokyo Citizens’ Day (1 October).',
     },
@@ -809,7 +796,7 @@ export const ATTRACTIONS: Attraction[] = [
     },
     cost: {
       entry: 3100,
-      extras: [{ label: 'Return metro from Tokyo Station', yen: 360 }],
+      extras: [],
       cash: 'cards',
     },
   },
@@ -857,7 +844,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 420 },
         { label: 'Coffee with a view over the crossing', yen: 700, optional: true },
       ],
       cash: 'cards',
@@ -904,7 +890,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 420 },
         { label: 'Coffee or a drink on the roof', yen: 800, optional: true },
       ],
       cash: 'cards',
@@ -955,7 +940,6 @@ export const ATTRACTIONS: Attraction[] = [
       extras: [
         { label: 'Cover charge at one bar', yen: 700 },
         { label: 'Two drinks', yen: 1600 },
-        { label: 'Taxi back after the last train', yen: 3000, optional: true },
       ],
       cash: 'mostly-cash', cashNote: 'Most bars take cash only.',
     },
@@ -1001,7 +985,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 420 },
         { label: 'A crêpe', yen: 700 },
         { label: 'Souvenirs and accessories', yen: 2000, optional: true },
       ],
@@ -1049,7 +1032,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 400 },
         { label: 'Picnic from a konbini', yen: 800, optional: true },
       ],
       cash: 'cards',
@@ -1097,7 +1079,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 400 },
         { label: 'Coffee', yen: 650 },
         { label: 'Streetwear', yen: 8000, optional: true },
       ],
@@ -1145,7 +1126,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 1000,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 400 },
         { label: 'Postcards and prints', yen: 800, optional: true },
       ],
       cash: 'cards',
@@ -1194,7 +1174,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 1300,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 400 },
         { label: 'Café in the garden', yen: 1200, optional: true },
       ],
       cash: 'cards',
@@ -1241,7 +1220,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 500,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 400 },
         { label: 'Tea at the tea house', yen: 700, optional: true },
       ],
       cash: 'mostly-cash', cashNote: 'Ticket machines take cash and cards.',
@@ -1289,7 +1267,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 420 },
         { label: 'Skewers and a beer', yen: 2200 },
       ],
       cash: 'mostly-cash', cashNote: 'Most small bars take cash only.',
@@ -1340,7 +1317,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return JR from Tokyo Station', yen: 420 },
         { label: 'Drink at the deck café', yen: 600, optional: true },
       ],
       cash: 'cards',
@@ -1388,7 +1364,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 360 },
         { label: 'A kitchen knife', yen: 8000, optional: true },
         { label: 'A plastic food sample', yen: 1500, optional: true },
       ],
@@ -1439,7 +1414,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 0,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 360 },
         { label: 'Bento and drinks', yen: 900, optional: true },
       ],
       cash: 'cards',
@@ -1486,7 +1460,6 @@ export const ATTRACTIONS: Attraction[] = [
     cost: {
       entry: 1200,
       extras: [
-        { label: 'Return metro from Tokyo Station', yen: 360 },
         { label: 'Ride coupons', yen: 1500, optional: true },
       ],
       cash: 'cards', cashNote: 'Ride coupon machines also take cash.',

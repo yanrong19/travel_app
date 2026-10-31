@@ -168,8 +168,8 @@ test('no who’s-going flag: a stop poor for families is not flagged for it', ()
 
 test('cost range runs from mustPay to withExtras; cash-only flagged', () => {
   const s = summarizeDay([takao, teamlab], opts());
-  // Takao: train 800 (+ cable car 950, soba 1200 optional). teamLab: 3,800 + 700 transport.
-  expect(s.cost).toEqual({ min: 5300, max: 7450, cashOnly: false, cash: 'mostly-cash' });
+  // Takao: free to enter (+ cable car 950, soba 1200 optional). teamLab: 3,800.
+  expect(s.cost).toEqual({ min: 3800, max: 5950, cashOnly: false, cash: 'mostly-cash' });
   expect(s.flags.some((f) => f.factor === 'cost')).toBe(false);
   const cash = summarizeDay([yanaka], opts({ start: '10:00' }));
   expect(cash.cost.cashOnly).toBe(true);

@@ -66,8 +66,8 @@ describe('markers', () => {
 
   test('accessible names say the day, the stop number and the cost', () => {
     const m = markersFor(trip(), 0);
-    expect(markerName(a('senso-ji'), m['senso-ji'])).toBe('Sensō-ji, Day 1 stop 1, ¥360');
-    expect(markerName(a('meiji-jingu'), m['meiji-jingu'])).toBe('Meiji Jingu, on Day 2, ¥400');
+    expect(markerName(a('senso-ji'), m['senso-ji'])).toBe('Sensō-ji, Day 1 stop 1, Free');
+    expect(markerName(a('meiji-jingu'), m['meiji-jingu'])).toBe('Meiji Jingu, on Day 2, Free');
     expect(markerName(a('golden-gai'), markerOf(m, 'golden-gai'))).toBe('Golden Gai, not planned, ¥2,800');
   });
 });
@@ -119,7 +119,7 @@ describe('rows', () => {
     const senso = rows.find((r) => r.a.id === 'senso-ji')!;
     expect(senso.on).toBe(0);
     expect(senso.n).toBe(1);
-    expect(senso.facts).toEqual({ cost: '¥360', effort: 'Stroll', rainProof: false, best: 'morning' });
+    expect(senso.facts).toEqual({ cost: 'Free', effort: 'Stroll', rainProof: false, best: 'morning' });
     const meiji = rows.find((r) => r.a.id === 'meiji-jingu')!;
     expect(meiji.on).toBe(1);
     expect(meiji.n).toBeNull();

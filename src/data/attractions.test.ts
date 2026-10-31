@@ -67,3 +67,14 @@ test('the new attractions are fully shaped: 18 crowd hours per curve, 7 days of 
     expect(a!.conditions.months, id).toHaveLength(12);
   }
 });
+
+test('no cost extra is transport', () => {
+  for (const a of ATTRACTIONS) {
+    for (const e of a.cost.extras) {
+      expect(e.label, a.id).not.toMatch(/^(return |taxi )/i);
+      expect(e.label, a.id).not.toMatch(/yurikamome/i);
+    }
+  }
+  const takao = ATTRACTIONS.find((a) => a.id === 'mount-takao')!;
+  expect(takao.cost.extras.some((e) => e.label === 'Cable car round trip')).toBe(true);
+});
