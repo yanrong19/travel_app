@@ -120,8 +120,9 @@ function Detail({ a }: { a: A }) {
     : { win: dayWindow(DAY_START, DAY_END, null), weekday: todayIndex, dated: false, stop: null };
   const best = bestWindow(a, fit.win, fit.weekday);
   // The planned stop falls outside the opening hours, or in the busy part of the day: said on the
-  // Logistics tile and row (closed first: being shut matters more than a crowd).
-  const shut = fit.stop ? stopShut(a, fit.weekday, fit.stop) : null;
+  // Logistics tile and row (closed first: being shut matters more than a crowd). Only on a day with a
+  // date: an undated day's weekday is unknown, so it can't be "closed that day" (the planner skips it too).
+  const shut = fit.stop && fit.dated ? stopShut(a, fit.weekday, fit.stop) : null;
   const crowded = !shut && fit.stop && busyStop(a, fit.weekday, fit.stop) ? fit.stop : null;
   const tryBest = crowded && best.kind === 'best' && (best.to <= crowded.start || best.from >= crowded.end) ? ` Try ${hhmm(best.from)}–${hhmm(best.to)}.` : '';
   const warning =
