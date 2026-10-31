@@ -13,6 +13,7 @@ import { Icon } from '../components/Icon';
 import { AddToTrip } from '../components/planner/AddToTrip';
 import { TripBar } from '../components/planner/TripBar';
 import { Footer, HeartButton, TopNav } from '../components/Chrome';
+import { dayWindow } from '../lib/bestTime';
 import { flags } from '../lib/factors';
 import { duration } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
@@ -22,8 +23,10 @@ import { MORPH_NAME, useGo } from '../lib/transition';
 import { useSaved } from '../lib/saved';
 import { useTrips } from '../lib/tripsStore';
 import { useMedia } from '../lib/useMedia';
-import type { PlaceRef } from '../lib/trips';
-import { Conditions } from './sections/Conditions';
+import { schedule } from '../lib/schedule';
+import { DAY_END, DAY_START, dateOf, type PlaceRef, type Trip } from '../lib/trips';
+import { stopsOf } from '../components/planner/DayList';
+import { Conditions, type StopTime } from './sections/Conditions';
 import { Effort } from './sections/Effort';
 import { Vibe } from './sections/Vibe';
 import { Logistics } from './sections/Logistics';
@@ -110,6 +113,7 @@ function Detail({ a }: { a: A }) {
   const todayIndex = (day + 6) % 7;
   const weekend = day === 0 || day === 6;
   const on = (line: string) => fl.filter((f) => f.line === line);
+  const fit = inPlan ? planFit(a, inPlan.trip, barDay, todayIndex) : { win: dayWindow(DAY_START, DAY_END, null), weekday: todayIndex, stop: null };
   const saved = trip.has(a.id);
   const credit = creditFor(a.id);
   const others = useMemo(() => {
@@ -204,11 +208,14 @@ function Detail({ a }: { a: A }) {
           </section>
 
           <section className="d-factors" aria-labelledby="factors-title">
-            <h2 id="factors-title" className="d-factors-title">
-              Before you go
-            </h2>
+            <div className="d-factors-head">
+              <h2 id="factors-title" className="d-factors-title">
+                Before you go
+              </h2>
+              <p className="d-factors-for num">For {fit.win.label}</p>
+            </div>
             <div className="frows">
-              <Conditions a={a} flags={on('conditions')} />
+              <Conditions a={a} flags={on('conditions')} win={fit.win} weekday={fit.weekday} stop={fit.stop} />
               <Effort a={a} flags={on('effort')} />
               <Vibe a={a} flags={on('vibe')} weekend={weekend} />
               <Logistics a={a} flags={on('logistics')} todayIndex={todayIndex} />
@@ -264,6 +271,20 @@ function Detail({ a }: { a: A }) {
       )}
     </div>
   );
+}
+
+/**
+ * The day the best time has to fit in planning: the trip day's own start and end, its date's weekday
+ * (today's when the trip has no dates), and this attraction's scheduled time when it is a stop that day.
+ */
+function planFit(a: A, trip: Trip, day: number, todayIndex: number) {
+  const plan = trip.days[day];
+  const date = dateOf(trip, day);
+  const weekday = date ? (date.getDay() + 6) % 7 : todayIndex;
+  if (!plan) return { win: dayWindow(DAY_START, DAY_END, day), weekday, stop: null };
+  const timed = plan.stops.includes(a.id) ? schedule(stopsOf(plan.stops), plan.start).find((s) => s.a.id === a.id) : undefined;
+  const stop: StopTime | null = timed ? { start: timed.start, end: timed.end } : null;
+  return { win: dayWindow(plan.start, plan.end, day), weekday, stop };
 }
 
 /** A still map of the attraction with its ticker, and how to get there under it. */

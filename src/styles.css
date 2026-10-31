@@ -1408,11 +1408,24 @@ h2:focus {
   color: var(--muted);
 }
 .d-factors-title {
-  margin-bottom: 14px;
   font-size: 22px;
   line-height: 28px;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+/* "Before you go", and the day the best times are fitted to. */
+.d-factors-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 16px;
+  margin-bottom: 14px;
+}
+.d-factors-for {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 /* Factor rows: the line's station on its rail, a headline and its visual; a click opens the details in place. */
@@ -1543,6 +1556,96 @@ h2:focus {
   grid-area: vis;
   display: block;
   margin-top: 16px;
+}
+/* One sentence under the headline, on its own line. */
+.frow-sub {
+  flex-basis: 100%;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Conditions: the user's day, an hourly bar for how busy it gets, the best block as a band. */
+.dfit-chart {
+  position: relative;
+  display: block;
+  height: 48px;
+}
+.dfit-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 6px;
+  background: var(--soft);
+  box-shadow: inset 0 3px 0 var(--hue);
+}
+.dfit-bar {
+  position: absolute;
+  bottom: 0;
+  display: block;
+}
+.dfit-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0 2px;
+  border-radius: 3px 3px 1px 1px;
+  background: var(--track);
+}
+.dfit-bar.is-best::before {
+  background: var(--hue);
+}
+.dfit-bar.is-closed {
+  height: 100%;
+}
+.dfit-bar.is-closed::before,
+.dfit-key.is-closed::before {
+  background: repeating-linear-gradient(135deg, var(--line) 0 2px, transparent 2px 6px);
+}
+.dfit-stop {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  border: 2px dashed var(--line-ink);
+  border-radius: 8px;
+}
+.dfit-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 12px;
+}
+.dfit-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--line-ink);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+}
+.dfit-chip strong {
+  font-weight: 700;
+}
+.dfit-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.dfit-key::before {
+  content: '';
+  width: 14px;
+  height: 10px;
+  border-radius: 3px;
+}
+.dfit-key.is-stop::before {
+  box-sizing: border-box;
+  border: 2px dashed var(--line-ink);
 }
 
 /* Headline visuals: one track in the line's tint, a band or marker in its colour. */

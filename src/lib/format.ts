@@ -23,6 +23,12 @@ export function clock(h: number) {
   return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
+/** Minutes from midnight → "09:30"; past midnight wraps (1500 → "01:00"). */
+export function hhmm(min: number) {
+  const m = Math.round(min);
+  return `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+}
+
 /** "17:45" → 17.75; "02:00" after midnight stays 2. */
 export const hourOf = (t: string) => {
   const [h, m] = t.split(':').map(Number);
