@@ -14,9 +14,9 @@ import { AddToTrip } from '../components/planner/AddToTrip';
 import { TripBar } from '../components/planner/TripBar';
 import { Footer, HeartButton, TopNav } from '../components/Chrome';
 import type { LineId } from '../data/lines';
-import { bestWindow, busyStop, dayWindow } from '../lib/bestTime';
+import { bestWindow, busyStop, dayWindow, openSpans, stopShut, type StopShut } from '../lib/bestTime';
 import { flags, readings } from '../lib/factors';
-import { duration, hhmm } from '../lib/format';
+import { DAYS_LONG, duration, hhmm } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
 import { photo, photoSet, creditFor } from '../lib/photos';
 import { onwardState, plannerReturn, planningDay, readPlanning } from '../lib/planning';
@@ -119,10 +119,27 @@ function Detail({ a }: { a: A }) {
     ? planFit(a, inPlan.trip, barDay, todayIndex)
     : { win: dayWindow(DAY_START, DAY_END, null), weekday: todayIndex, dated: false, stop: null };
   const best = bestWindow(a, fit.win, fit.weekday);
-  // The planned stop falls in the busy part of the day: said on Logistics, with the best block to try.
-  const crowded = fit.stop && busyStop(a, fit.weekday, fit.stop) ? fit.stop : null;
+  // The planned stop falls outside the opening hours, or in the busy part of the day: said on the
+  // Logistics tile and row (closed first: being shut matters more than a crowd).
+  const shut = fit.stop ? stopShut(a, fit.weekday, fit.stop) : null;
+  const crowded = !shut && fit.stop && busyStop(a, fit.weekday, fit.stop) ? fit.stop : null;
   const tryBest = crowded && best.kind === 'best' && (best.to <= crowded.start || best.from >= crowded.end) ? ` Try ${hhmm(best.from)}–${hhmm(best.to)}.` : '';
-  const warning = crowded ? `Your stop at ${hhmm(crowded.start)} is in the busiest part of the day.${tryBest}` : null;
+  const warning =
+    shut && fit.stop
+      ? shutWarning(a, fit.weekday, fit.stop, shut)
+      : crowded
+        ? `Your stop at ${hhmm(crowded.start)} is in the busiest part of the day.${tryBest}`
+        : null;
+  const logisticsVerdict =
+    shut && fit.stop
+      ? shut.kind === 'day'
+        ? 'Closed that day'
+        : shut.kind === 'start'
+          ? `Closed at ${hhmm(fit.stop.start)}`
+          : `Shuts at ${hhmm(shut.at)}`
+      : crowded
+        ? `Busy at ${hhmm(crowded.start)}`
+        : hm(visitSpan(a).typical);
   const tripMonths = inPlan ? monthsOf(inPlan.trip) : null;
   const read = readings(a);
   const summary: SummaryItem[] = [
@@ -130,7 +147,7 @@ function Detail({ a }: { a: A }) {
     { line: 'effort', verdict: read.effort, warn: on('effort').length > 0 },
     { line: 'vibe', verdict: read.vibe, warn: on('vibe').length > 0 },
     // Time at the attraction, as the Logistics row says, not readings' door-to-door time.
-    { line: 'logistics', verdict: crowded ? `Busy at ${hhmm(crowded.start)}` : hm(visitSpan(a).typical), warn: on('logistics').length > 0 || !!crowded },
+    { line: 'logistics', verdict: logisticsVerdict, warn: on('logistics').length > 0 || !!crowded || !!shut },
     { line: 'cost', verdict: read.cost, warn: on('cost').length > 0 },
   ];
   // Rows with something to check start open; a row that gains a warning (another trip day) opens too.
@@ -348,6 +365,16 @@ function planFit(a: A, trip: Trip, day: number, todayIndex: number) {
   const timed = plan.stops.includes(a.id) ? schedule(stopsOf(plan.stops), plan.start).find((s) => s.a.id === a.id) : undefined;
   const stop: StopTime | null = timed ? { start: timed.start, end: timed.end } : null;
   return { win: dayWindow(plan.start, plan.end, day), weekday, dated, stop };
+}
+
+/** What the Logistics row says when the planned stop falls outside the opening hours. */
+function shutWarning(a: A, weekday: number, stop: StopTime, shut: StopShut): string {
+  if (shut.kind === 'day') return `Closed on ${DAYS_LONG[weekday]}, the day of your stop.`;
+  const hours = openSpans(a, weekday)
+    .map(([o, c]) => `${hhmm(o)}–${hhmm(c)}`)
+    .join(', ');
+  const span = `${hhmm(stop.start)}–${hhmm(stop.end)}`;
+  return shut.kind === 'start' ? `Your stop ${span} starts while it’s closed. Open ${hours}.` : `Your stop ${span} runs past its ${hhmm(shut.at)} close.`;
 }
 
 /** The months a dated trip runs through (0 = January), or null when it has no dates. */

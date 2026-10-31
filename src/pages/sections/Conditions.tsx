@@ -2,7 +2,7 @@ import type { Attraction, Rating } from '../../data/types';
 import { Icon, type IconName } from '../../components/Icon';
 import { MONTHS, hhmm } from '../../lib/format';
 import { isRainProof, unflagged, type Flag } from '../../lib/factors';
-import { closedIn, hourCrowd, momentOver, momentsIn, openSpans, type BestWindow, type DayWindow, type Moment } from '../../lib/bestTime';
+import { bestSays, closedIn, hourCrowd, momentsIn, type BestWindow, type DayWindow, type Moment } from '../../lib/bestTime';
 import { FactorRow, Meter, RATING_WORD, RatingMark, Tile, Tiles } from './parts';
 
 const WEATHER: { key: keyof Attraction['conditions']['weather']; label: string; icon: IconName }[] = [
@@ -37,19 +37,6 @@ interface Props {
   monthsWord: string;
 }
 
-/** The headline and the sentence under it. */
-function says(a: Attraction, win: DayWindow, weekday: number, best: BestWindow): [string, string] {
-  if (best.kind === 'best') {
-    const moment = best.why === 'moment' ? momentOver(a, best.from, best.to) : null;
-    return [`Best ${hhmm(best.from)}–${hhmm(best.to)}`, moment ? `${moment.label}, inside your day.` : 'Quietest part of your day.'];
-  }
-  if (best.opensAt === null) return ['Closed during your day', 'Closed that day'];
-  if (best.opensAt >= win.end) return ['Closed during your day', `Opens ${hhmm(best.opensAt)}`];
-  // Open earlier that day and shut before the window starts.
-  const shuts = Math.max(...openSpans(a, weekday).map(([, c]) => c).filter((c) => c <= win.start));
-  return ['Closed during your day', Number.isFinite(shuts) ? `Shuts at ${hhmm(shuts)}, before your day starts` : `Opens ${hhmm(best.opensAt)}`];
-}
-
 /** What the timeline shows beyond the headline: the planned stop and when the place is shut. */
 function timelineNote(a: Attraction, win: DayWindow, weekday: number, stop: StopTime | null) {
   const out: string[] = [];
@@ -63,8 +50,8 @@ function timelineNote(a: Attraction, win: DayWindow, weekday: number, stop: Stop
 
 export function Conditions({ a, flags, win, weekday, stop, best, months, monthsWord }: Props) {
   const c = a.conditions;
-  const [headline, sentence] = says(a, win, weekday, best);
-  const moments = momentsIn(a, win);
+  const [headline, sentence] = bestSays(a, win, weekday, best);
+  const moments = momentsIn(a, win, weekday);
 
   return (
     <FactorRow
@@ -195,8 +182,8 @@ function DayFit({ a, win, weekday, best, stop, moments }: { a: Attraction; win: 
             <span key={m.label} className="dfit-chip">
               <strong className="num">
                 {hhmm(m.from)}–{hhmm(m.to)}
-              </strong>{' '}
-              {m.label.charAt(0).toLowerCase() + m.label.slice(1)}
+              </strong>
+              {` · ${m.label}`}
             </span>
           ))}
           {showStop && <span className="dfit-key is-stop">Your stop</span>}

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { attractionById } from '../data/attractions';
 import type { Attraction } from '../data/types';
-import { bestWindow, busyStop, closedIn, crowdAt, dayWindow, hourCrowd, isOpenAt, momentsIn, openSpans, type DayWindow } from './bestTime';
+import { bestSays, bestWindow, busyStop, closedIn, crowdAt, dayWindow, hourCrowd, isOpenAt, momentOver, momentsIn, openSpans, stopShut, type DayWindow } from './bestTime';
 
 const at = (h: number, m = 0) => h * 60 + m;
 const win = (from: number, to: number): DayWindow => ({ start: from, end: to, label: 'test' });
@@ -66,7 +66,7 @@ test('Sensō-ji on a weekday: the quiet morning, or the lit grounds when the day
   // 09:00–19:00: the quiet, lit-up evening wins; moments are clipped to the day.
   const day = win(at(9), at(19));
   expect(bestWindow(sensoji, day, MON)).toMatchObject({ kind: 'best', from: at(17, 30), to: at(18, 45), why: 'moment' });
-  expect(momentsIn(sensoji, day)).toEqual([{ from: at(18), to: at(19), label: 'Lit up after dark' }]);
+  expect(momentsIn(sensoji, day, MON)).toEqual([{ from: at(18), to: at(19), label: 'Lit up after dark' }]);
 });
 
 test('a window before opening is closed, with the opening time', () => {
@@ -116,11 +116,11 @@ test('ties go to the earliest start', () => {
 });
 
 test('momentsIn keeps moments that overlap, clipped; drops the rest', () => {
-  expect(momentsIn(sensoji, win(at(5), at(23)))).toEqual([
+  expect(momentsIn(sensoji, win(at(5), at(23)), MON)).toEqual([
     { from: at(6), to: at(8), label: 'Quiet at opening' },
     { from: at(18), to: at(21), label: 'Lit up after dark' },
   ]);
-  expect(momentsIn(sensoji, win(at(9), at(17)))).toEqual([]);
+  expect(momentsIn(sensoji, win(at(9), at(17)), MON)).toEqual([]);
 });
 
 test('hourCrowd: an hour is open if any part of it is; open with no curve value counts 50, as the score does', () => {
@@ -154,4 +154,43 @@ test('busyStop: a stop whose mean crowd is 70 or more', () => {
   expect(busyStop(sensoji, SAT, { start: at(11), end: at(12) })).toBe(true);
   // A stop while it is shut has no crowd to speak of: 50, not busy.
   expect(busyStop(ghibli, 1, { start: at(12), end: at(13) })).toBe(false);
+});
+
+test('moments only show while the place is open that day: the museum’s late opening', () => {
+  const tnm = get('tokyo-national-museum'); // 09:30–17:00, to 20:00 on Fridays and Saturdays, shut Mondays
+  const WED = 2;
+  const FRI = 4;
+  const day = win(at(9), at(19));
+  // Wednesday: shut at 17:00, so no late-opening moment, and the best block can't be drawn to one.
+  expect(momentsIn(tnm, day, WED)).toEqual([{ from: at(9, 30), to: at(11), label: 'Calmest after opening' }]);
+  const wed = bestWindow(tnm, day, WED);
+  expect(wed.kind).toBe('best');
+  if (wed.kind !== 'best') return;
+  expect(wed.to).toBeLessThanOrEqual(at(17));
+  expect(momentOver(tnm, day, WED, wed.from, wed.to)?.label).not.toBe('Late opening');
+  expect(bestSays(tnm, day, WED, wed)[1]).not.toMatch(/late/i);
+  // Friday: open to 20:00, so the late opening shows, clipped to the day.
+  expect(momentsIn(tnm, day, FRI)).toContainEqual({ from: at(17), to: at(19), label: 'Late opening' });
+  // Monday: shut all day, no moments at all.
+  expect(momentsIn(tnm, day, MON)).toEqual([]);
+  // Sensō-ji's grounds stay open to 23:00: its evening moment is still there.
+  expect(momentsIn(sensoji, day, MON)).toContainEqual({ from: at(18), to: at(19), label: 'Lit up after dark' });
+});
+
+test('bestSays: the best block and why, or why it is closed during the day', () => {
+  const says = (a: Attraction, w: DayWindow, weekday: number) => bestSays(a, w, weekday, bestWindow(a, w, weekday));
+  expect(says(sensoji, win(at(9), at(17)), MON)).toEqual(['Best 09:00–10:15', 'Quietest part of your day.']);
+  expect(says(sensoji, win(at(9), at(19)), MON)).toEqual(['Best 17:30–18:45', 'Lit up after dark, inside your day.']);
+  expect(says(ghibli, win(at(9), at(19)), 1)).toEqual(['Closed during your day', 'Closed that day']);
+  expect(says(gai, win(at(9), at(19)), MON)).toEqual(['Closed during your day', 'Opens 19:00']);
+  expect(says(ghibli, win(at(18, 30), at(21)), MON)).toEqual(['Closed during your day', 'Shuts at 18:00, before your day starts']);
+});
+
+test('stopShut: shut all day, shut at the start, or shutting before the end', () => {
+  const tnm = get('tokyo-national-museum');
+  expect(stopShut(tnm, MON, { start: at(10), end: at(12) })).toEqual({ kind: 'day' });
+  expect(stopShut(tnm, 2, { start: at(8, 30), end: at(11) })).toEqual({ kind: 'start' });
+  expect(stopShut(tnm, 2, { start: at(16), end: at(18) })).toEqual({ kind: 'end', at: at(17) });
+  expect(stopShut(tnm, 4, { start: at(16), end: at(18) })).toBeNull(); // Friday, open to 20:00
+  expect(stopShut(gai, 1, { start: at(1), end: at(1, 45) })).toBeNull(); // Monday night's bars
 });

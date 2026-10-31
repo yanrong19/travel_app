@@ -79,23 +79,39 @@ const moments = (a: Attraction): Moment[] => a.conditions.bestTimes.map((b) => (
 
 const overlap = (f1: number, t1: number, f2: number, t2: number) => Math.max(0, Math.min(t1, t2) - Math.max(f1, f2));
 
-/** The curated best time a block overlaps most, or null when it overlaps none. */
-export function momentOver(a: Attraction, from: number, to: number): Moment | null {
+/**
+ * The curated best times that fall inside the window while the place is open on `weekday`, each
+ * clipped to the window and to its longest open stretch there. A moment with no open time in the
+ * window is dropped, so a late opening only shows on the days the hours run late.
+ */
+export function momentsIn(a: Attraction, win: DayWindow, weekday: number): Moment[] {
+  const spans = openSpans(a, weekday);
+  const out: Moment[] = [];
+  for (const m of moments(a)) {
+    let best: Moment | null = null;
+    for (const [o, c] of spans) {
+      const from = Math.max(m.from, o, win.start);
+      const to = Math.min(m.to, c, win.end);
+      if (to > from && (!best || to - from > best.to - best.from)) best = { ...m, from, to };
+    }
+    if (best) out.push(best);
+  }
+  return out;
+}
+
+/** Of `list`, the moment a block overlaps most, or null when it overlaps none. */
+function overMost(list: Moment[], from: number, to: number): Moment | null {
   let best: Moment | null = null;
   let most = 0;
-  for (const m of moments(a)) {
+  for (const m of list) {
     const o = overlap(from, to, m.from, m.to);
     if (o > most) [best, most] = [m, o];
   }
   return best;
 }
 
-/** The curated best times clipped to the window; those wholly outside it are dropped. */
-export function momentsIn(a: Attraction, win: DayWindow): Moment[] {
-  return moments(a)
-    .map((m) => ({ ...m, from: Math.max(m.from, win.start), to: Math.min(m.to, win.end) }))
-    .filter((m) => m.to > m.from);
-}
+/** The curated best time (clipped for that day, as momentsIn does) a block overlaps most, or null when it overlaps none. */
+export const momentOver = (a: Attraction, win: DayWindow, weekday: number, from: number, to: number) => overMost(momentsIn(a, win, weekday), from, to);
 
 /**
  * How busy the hour [from, to) is when any part of it is open: the hour's crowd value, or the same 50
@@ -141,7 +157,7 @@ function meanCrowd(a: Attraction, weekday: number, from: number, to: number): nu
 /**
  * The best block of a visit's length inside the window on `weekday`: the lowest of mean crowd + a
  * penalty for starting in a part of the day rated ok (+10) or poor (+40) − 15 per hour inside a
- * curated best time, over starts every 30 min that let the visit end by the window's end and the
+ * curated best time open that day (momentsIn), over starts every 30 min that let the visit end by the window's end and the
  * close. Ties go to the earliest. The visit (the middle of `visitMin`) is cut to the longest open
  * stretch when that is shorter. No open time in the window → closed, with that day's opening time.
  */
@@ -154,14 +170,43 @@ export function bestWindow(a: Attraction, win: DayWindow, weekday: number): Best
   const [lo, hi] = a.logistics.visitMin;
   const visit = Math.min(Math.round((lo + hi) / 2), Math.max(...parts.map(([f, t]) => t - f)));
   const slots = a.conditions.timeOfDay;
+  const curated = momentsIn(a, win, weekday);
   let best = { from: parts[0][0], score: Infinity };
   for (const [f, t] of parts) {
     for (let s = f; s + visit <= t; s += STEP) {
-      const inMoments = moments(a).reduce((sum, m) => sum + overlap(s, s + visit, m.from, m.to), 0);
+      const inMoments = curated.reduce((sum, m) => sum + overlap(s, s + visit, m.from, m.to), 0);
       const score = meanCrowd(a, weekday, s, s + visit) + SLOT_PENALTY[slots[slotAt(s)]] - (MOMENT_BONUS * inMoments) / 60;
       if (score < best.score - 1e-9) best = { from: s, score };
     }
   }
   const to = best.from + visit;
-  return { kind: 'best', from: best.from, to, why: momentOver(a, best.from, to) ? 'moment' : 'quiet' };
+  return { kind: 'best', from: best.from, to, why: overMost(curated, best.from, to) ? 'moment' : 'quiet' };
+}
+
+/**
+ * The Conditions headline and the sentence under it: the best block and why, or why the place is
+ * closed during the day (shut all day, opens after it ends, or shuts before it starts).
+ */
+export function bestSays(a: Attraction, win: DayWindow, weekday: number, best: BestWindow): [string, string] {
+  if (best.kind === 'best') {
+    const moment = best.why === 'moment' ? momentOver(a, win, weekday, best.from, best.to) : null;
+    return [`Best ${hhmm(best.from)}–${hhmm(best.to)}`, moment ? `${moment.label}, inside your day.` : 'Quietest part of your day.'];
+  }
+  if (best.opensAt === null) return ['Closed during your day', 'Closed that day'];
+  if (best.opensAt >= win.end) return ['Closed during your day', `Opens ${hhmm(best.opensAt)}`];
+  // Open earlier that day and shut before the window starts.
+  const shuts = Math.max(...openSpans(a, weekday).map(([, c]) => c).filter((c) => c <= win.start));
+  return ['Closed during your day', Number.isFinite(shuts) ? `Shuts at ${hhmm(shuts)}, before your day starts` : `Opens ${hhmm(best.opensAt)}`];
+}
+
+/** How a planned stop misses the opening hours: shut all day, shut when it starts, or shutting (`at`) before it ends. */
+export type StopShut = { kind: 'day' } | { kind: 'start' } | { kind: 'end'; at: number };
+
+/** How a planned stop on `weekday` falls outside the opening hours, or null when it is open the whole time. */
+export function stopShut(a: Attraction, weekday: number, stop: { start: number; end: number }): StopShut | null {
+  const spans = openSpans(a, weekday);
+  if (!spans.length) return { kind: 'day' };
+  const span = spans.find(([o, c]) => stop.start >= o && stop.start < c);
+  if (!span) return { kind: 'start' };
+  return stop.end > span[1] ? { kind: 'end', at: span[1] } : null;
 }

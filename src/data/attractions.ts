@@ -399,10 +399,10 @@ export const ATTRACTIONS: Attraction[] = [
       monthsNote: 'Ueno’s cherry season adds crowds in late March and April.',
       bestTimes: [
         { from: 9.5, to: 11, label: 'Calmest after opening' },
-        { from: 17, to: 20, label: 'Friday late opening' },
+        { from: 17, to: 20, label: 'Late opening' },
       ],
       visibility: 'none',
-      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Calmest just after the 09:30 opening. Evenings only on Fridays, when it stays open to 20:00.' },
+      timeOfDay: { morning: 'good', afternoon: 'ok', evening: 'poor', note: 'Calmest just after the 09:30 opening. Evenings only on Fridays and Saturdays, when it stays open to 20:00.' },
     },
     effort: {
       level: 2, walkKm: 3, steps: 60, climbM: 0, onFeetMin: 150, shade: 95,
@@ -418,7 +418,7 @@ export const ATTRACTIONS: Attraction[] = [
     },
     logistics: {
       visitMin: [120, 180], queueMin: [0, 10], travelMin: 15,
-      hours: [null, ['09:30', '17:00'], ['09:30', '17:00'], ['09:30', '17:00'], ['09:30', '17:00'], ['09:30', '20:00'], ['09:30', '17:00']],
+      hours: [null, ['09:30', '17:00'], ['09:30', '17:00'], ['09:30', '17:00'], ['09:30', '20:00'], ['09:30', '20:00'], ['09:30', '17:00']],
       lastEntryMin: 30,
       booking: 'none', bookingNote: 'Special exhibitions sell timed tickets.',
       timing: 'flexible', station: 'Ueno', walkMin: 10, lockers: true,

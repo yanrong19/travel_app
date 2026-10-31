@@ -30,7 +30,7 @@ interface Props {
   weekday: number;
   /** That weekday stands for today (outside planning, or a trip without dates). */
   today: boolean;
-  /** Said instead of the hours when the planned stop falls in the busy part of the day. */
+  /** Said instead of the hours when the planned stop falls outside them or in the busy part of the day. */
   warning: string | null;
 }
 
