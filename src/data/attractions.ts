@@ -21,7 +21,7 @@ function crowd(open: number, close: number, peakAt: number, peak: number, spread
 }
 const busier = (c: (number | null)[], k: number) => c.map((v) => (v == null ? null : Math.min(100, Math.round(v * k))));
 
-const sensojiWk = crowd(6, 21, 13, 72, 3, 15);
+const sensojiWk = crowd(6, 23, 13, 72, 3, 15);
 const teamlabWk = crowd(9, 22, 14, 78, 3, 30);
 const meijiWk = crowd(5, 17, 11, 52, 3, 10);
 const skyWk = crowd(10, 22.5, 17.5, 88, 2, 30);
@@ -89,8 +89,8 @@ export const ATTRACTIONS: Attraction[] = [
     },
     logistics: {
       visitMin: [60, 90], queueMin: [0, 15], travelMin: 25,
-      hours: week('06:00', '17:00'),
-      hoursNote: 'The main hall keeps these hours. The grounds never close.',
+      hours: week('06:00', '23:00'),
+      hoursNote: 'Main hall 06:00–17:00 (06:30 from October to March); the grounds stay open and are lit until 23:00.',
       booking: 'none', timing: 'flexible',
       station: 'Asakusa', walkMin: 5, lockers: true,
       holidayNote: 'On 1–3 January the queue just to reach the hall can pass an hour.',

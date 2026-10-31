@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { attractionById } from '../data/attractions';
 import type { Attraction } from '../data/types';
-import { bestWindow, crowdAt, dayWindow, isOpenAt, momentsIn, openSpans, type DayWindow } from './bestTime';
+import { bestWindow, busyStop, closedIn, crowdAt, dayWindow, hourCrowd, isOpenAt, momentsIn, openSpans, type DayWindow } from './bestTime';
 
 const at = (h: number, m = 0) => h * 60 + m;
 const win = (from: number, to: number): DayWindow => ({ start: from, end: to, label: 'test' });
@@ -33,7 +33,7 @@ test('dayWindow labels a planning day and a default day', () => {
 });
 
 test('openSpans: same-day hours, past midnight, 24 hours, closed', () => {
-  expect(openSpans(sensoji, MON)).toEqual([[at(6), at(17)]]);
+  expect(openSpans(sensoji, MON)).toEqual([[at(6), at(23)]]);
   expect(openSpans(ghibli, 1)).toEqual([]);
   expect(openSpans(crossing, MON)).toEqual([[0, at(24)]]);
   // Golden Gai: tonight's 19:00–02:00, plus last night's run past midnight into this morning.
@@ -46,23 +46,26 @@ test('openSpans: same-day hours, past midnight, 24 hours, closed', () => {
 test('crowdAt reads the weekday or weekend curve, null when closed or off the curve', () => {
   expect(crowdAt(sensoji, MON, at(9, 30))).toBe(sensoji.vibe.crowds.weekday[3]);
   expect(crowdAt(sensoji, SAT, at(9, 30))).toBe(sensoji.vibe.crowds.weekend[3]);
-  expect(crowdAt(sensoji, MON, at(18))).toBeNull(); // the hall has shut
+  expect(crowdAt(sensoji, MON, at(18))).toBe(sensoji.vibe.crowds.weekday[12]); // the lit grounds
+  expect(crowdAt(sensoji, MON, at(23))).toBeNull(); // the grounds have shut
   expect(crowdAt(ghibli, 1, at(12))).toBeNull(); // Tuesday
   expect(crowdAt(crossing, MON, at(5))).toBeNull(); // before the curve's 06:00
   expect(crowdAt(gai, MON, at(23, 30))).toBe(gai.vibe.crowds.weekday[17]);
 });
 
 test('isOpenAt: closing minute is shut; past midnight counts', () => {
-  expect(isOpenAt(sensoji, MON, at(16, 59))).toBe(true);
-  expect(isOpenAt(sensoji, MON, at(17))).toBe(false);
+  expect(isOpenAt(sensoji, MON, at(22, 59))).toBe(true);
+  expect(isOpenAt(sensoji, MON, at(23))).toBe(false);
   expect(isOpenAt(gai, 1, at(1, 30))).toBe(true); // Monday night's bars, early Tuesday
   expect(isOpenAt(gai, 1, at(12))).toBe(false);
 });
 
-test('Sensō-ji on a weekday 09:00–19:00: best from 09:00; moments clipped to the day', () => {
+test('Sensō-ji on a weekday: the quiet morning, or the lit grounds when the day runs past 18:00', () => {
+  // 09:00–17:00: the morning, before the early-afternoon crush.
+  expect(bestWindow(sensoji, win(at(9), at(17)), MON)).toMatchObject({ kind: 'best', from: at(9), to: at(9) + 75, why: 'quiet' });
+  // 09:00–19:00: the quiet, lit-up evening wins; moments are clipped to the day.
   const day = win(at(9), at(19));
-  const b = bestWindow(sensoji, day, MON);
-  expect(b).toMatchObject({ kind: 'best', from: at(9), to: at(9) + 75, why: 'quiet' });
+  expect(bestWindow(sensoji, day, MON)).toMatchObject({ kind: 'best', from: at(17, 30), to: at(18, 45), why: 'moment' });
   expect(momentsIn(sensoji, day)).toEqual([{ from: at(18), to: at(19), label: 'Lit up after dark' }]);
 });
 
@@ -118,4 +121,37 @@ test('momentsIn keeps moments that overlap, clipped; drops the rest', () => {
     { from: at(18), to: at(21), label: 'Lit up after dark' },
   ]);
   expect(momentsIn(sensoji, win(at(9), at(17)))).toEqual([]);
+});
+
+test('hourCrowd: an hour is open if any part of it is; open with no curve value counts 50, as the score does', () => {
+  const ota = get('ota-memorial-museum'); // opens 10:30, shut Mondays
+  expect(hourCrowd(ota, 1, at(10), at(11))).toBe(ota.vibe.crowds.weekday[4]);
+  expect(hourCrowd(ota, MON, at(10), at(11))).toBeNull();
+  expect(hourCrowd(ghibli, MON, at(9), at(10))).toBeNull(); // opens 10:00
+  expect(hourCrowd(ghibli, 1, at(12), at(13))).toBeNull(); // Tuesday
+  const gap = structuredClone(crossing);
+  gap.vibe.crowds.weekday[3] = null;
+  expect(hourCrowd(gap, MON, at(9), at(10))).toBe(50);
+  expect(hourCrowd(crossing, MON, at(5), at(6))).toBe(50); // before the curve's 06:00
+  // A clipped first hour (window starts 09:30) still reads the hour's value.
+  expect(hourCrowd(sensoji, MON, at(9, 30), at(10))).toBe(sensoji.vibe.crowds.weekday[3]);
+});
+
+test('closedIn: the parts of the window the place is shut, in minutes', () => {
+  const day = win(at(9), at(19));
+  expect(closedIn(ghibli, MON, day)).toEqual([
+    [at(9), at(10)],
+    [at(18), at(19)],
+  ]);
+  expect(closedIn(ghibli, 1, day)).toEqual([[at(9), at(19)]]);
+  expect(closedIn(crossing, MON, day)).toEqual([]);
+  expect(closedIn(gai, MON, win(at(18), at(23, 59)))).toEqual([[at(18), at(19)]]);
+});
+
+test('busyStop: a stop whose mean crowd is 70 or more', () => {
+  expect(busyStop(sensoji, MON, { start: at(12, 13), end: at(13, 28) })).toBe(true);
+  expect(busyStop(sensoji, MON, { start: at(9), end: at(10, 15) })).toBe(false);
+  expect(busyStop(sensoji, SAT, { start: at(11), end: at(12) })).toBe(true);
+  // A stop while it is shut has no crowd to speak of: 50, not busy.
+  expect(busyStop(ghibli, 1, { start: at(12), end: at(13) })).toBe(false);
 });

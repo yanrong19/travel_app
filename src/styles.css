@@ -1428,6 +1428,75 @@ h2:focus {
   color: var(--muted);
 }
 
+/* The five factors at a glance: a label and a word each; one needing a look is tinted. */
+.fsum {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.fsum li {
+  display: flex;
+}
+.fsum-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px 12px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: inset 3px 0 0 var(--hue);
+  text-align: left;
+  transition: box-shadow 0.2s var(--ease-out);
+}
+.fsum-tile:hover {
+  box-shadow:
+    inset 3px 0 0 var(--hue),
+    var(--float);
+}
+.fsum-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.fsum-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.fsum-verdict svg {
+  flex: none;
+}
+.fsum-tile.is-warn {
+  background: var(--warn-bg);
+  box-shadow:
+    inset 3px 0 0 var(--hue),
+    inset 0 0 0 1px var(--warn-line);
+}
+.fsum-tile.is-warn .fsum-verdict {
+  color: var(--warn-ink);
+}
+@media (max-width: 760px) {
+  /* Three, then two wider: two full rows. */
+  .fsum {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .fsum li {
+    grid-column: span 2;
+  }
+  .fsum li:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+}
+
 /* Factor rows: the line's station on its rail, a headline and its visual; a click opens the details in place. */
 .frows {
   display: grid;
@@ -1436,6 +1505,7 @@ h2:focus {
 .frow {
   --rail-x: 35px;
   position: relative;
+  scroll-margin-top: 20px;
   border-radius: var(--r-lg);
   background: var(--surface);
   transition: box-shadow 0.25s var(--ease-out);
@@ -1564,6 +1634,11 @@ h2:focus {
   line-height: 21px;
   font-weight: 500;
   color: var(--muted);
+}
+/* A warning about the user's own plan. */
+.frow-sub.is-warn {
+  font-weight: 600;
+  color: var(--warn-ink);
 }
 
 /* Conditions: the user's day, an hourly bar for how busy it gets, the best block as a band. */
@@ -1843,6 +1918,12 @@ h2:focus {
   position: relative;
   padding-left: 22px;
 }
+.frow-check-note {
+  display: block;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--muted);
+}
 .frow-check li::before {
   content: '';
   position: absolute;
@@ -1891,6 +1972,14 @@ h2:focus {
   line-height: 25px;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+/* The short note that explains a tile, under it. */
+.ftile-note {
+  max-width: 64ch;
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--muted);
 }
 .ftile-unit {
   font-size: 13px;
@@ -1995,17 +2084,6 @@ h2:focus {
   .ftile-suits {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-.fnotes {
-  display: grid;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 14px;
-  line-height: 21px;
-  color: var(--muted);
-}
-.fnotes li {
-  max-width: 64ch;
 }
 @media (prefers-reduced-motion: reduce) {
   .frow-panel,
@@ -2218,6 +2296,10 @@ h2:focus {
 .months li.is-now {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+/* Months outside the trip (or other than this one) step back, still labelled. */
+.months li.is-other {
+  opacity: 0.6;
 }
 .months-name {
   font-size: 12px;
@@ -9137,6 +9219,9 @@ button.lvl-crumb:hover {
   font-weight: 600;
 }
 
+.detail.is-planning .frow {
+  scroll-margin-top: 92px;
+}
 /* Laptop: the sticky photo starts under the bar. */
 @media (min-width: 1101px) {
   .detail.is-planning .d-hero {
@@ -9192,6 +9277,9 @@ button.lvl-crumb:hover {
   }
   .detail.is-planning .d-top {
     top: 132px;
+  }
+  .detail.is-planning .frow {
+    scroll-margin-top: 136px;
   }
 }
 

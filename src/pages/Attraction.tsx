@@ -13,9 +13,10 @@ import { Icon } from '../components/Icon';
 import { AddToTrip } from '../components/planner/AddToTrip';
 import { TripBar } from '../components/planner/TripBar';
 import { Footer, HeartButton, TopNav } from '../components/Chrome';
-import { dayWindow } from '../lib/bestTime';
-import { flags } from '../lib/factors';
-import { duration } from '../lib/format';
+import type { LineId } from '../data/lines';
+import { bestWindow, busyStop, dayWindow } from '../lib/bestTime';
+import { flags, readings } from '../lib/factors';
+import { duration, hhmm } from '../lib/format';
 import { useReducedMotion } from '../lib/motion';
 import { photo, photoSet, creditFor } from '../lib/photos';
 import { onwardState, plannerReturn, planningDay, readPlanning } from '../lib/planning';
@@ -29,8 +30,10 @@ import { stopsOf } from '../components/planner/DayList';
 import { Conditions, type StopTime } from './sections/Conditions';
 import { Effort } from './sections/Effort';
 import { Vibe } from './sections/Vibe';
-import { Logistics } from './sections/Logistics';
+import { Logistics, visitSpan } from './sections/Logistics';
 import { Cost } from './sections/Cost';
+import { OpenRows, hm } from './sections/parts';
+import { Summary, type SummaryItem } from './sections/Summary';
 
 // MapLibre is heavy: the map card loads it after the page shell, as Explore does.
 const AttractionMap = lazy(() => import('../components/AttractionMap'));
@@ -109,11 +112,58 @@ function Detail({ a }: { a: A }) {
   const area = areaById(a.area)!;
   const place: PlaceRef = { level: 'area', id: a.area };
   const fl = flags(a);
-  const day = new Date().getDay();
-  const todayIndex = (day + 6) % 7;
-  const weekend = day === 0 || day === 6;
-  const on = (line: string) => fl.filter((f) => f.line === line);
-  const fit = inPlan ? planFit(a, inPlan.trip, barDay, todayIndex) : { win: dayWindow(DAY_START, DAY_END, null), weekday: todayIndex, stop: null };
+  const todayIndex = (new Date().getDay() + 6) % 7;
+  const on = (line: LineId) => fl.filter((f) => f.line === line);
+  // The day the factors speak about: the trip bar's day in planning, a default day today otherwise.
+  const fit = inPlan
+    ? planFit(a, inPlan.trip, barDay, todayIndex)
+    : { win: dayWindow(DAY_START, DAY_END, null), weekday: todayIndex, dated: false, stop: null };
+  const best = bestWindow(a, fit.win, fit.weekday);
+  // The planned stop falls in the busy part of the day: said on Logistics, with the best block to try.
+  const crowded = fit.stop && busyStop(a, fit.weekday, fit.stop) ? fit.stop : null;
+  const tryBest = crowded && best.kind === 'best' && (best.to <= crowded.start || best.from >= crowded.end) ? ` Try ${hhmm(best.from)}–${hhmm(best.to)}.` : '';
+  const warning = crowded ? `Your stop at ${hhmm(crowded.start)} is in the busiest part of the day.${tryBest}` : null;
+  const tripMonths = inPlan ? monthsOf(inPlan.trip) : null;
+  const read = readings(a);
+  const summary: SummaryItem[] = [
+    { line: 'conditions', verdict: read.conditions, warn: on('conditions').length > 0 },
+    { line: 'effort', verdict: read.effort, warn: on('effort').length > 0 },
+    { line: 'vibe', verdict: read.vibe, warn: on('vibe').length > 0 },
+    // Time at the attraction, as the Logistics row says, not readings' door-to-door time.
+    { line: 'logistics', verdict: crowded ? `Busy at ${hhmm(crowded.start)}` : hm(visitSpan(a).typical), warn: on('logistics').length > 0 || !!crowded },
+    { line: 'cost', verdict: read.cost, warn: on('cost').length > 0 },
+  ];
+  // Rows with something to check start open; a row that gains a warning (another trip day) opens too.
+  const warned = summary.filter((s) => s.warn).map((s) => s.line);
+  const warnKey = warned.join(' ');
+  const [openRows, setOpenRows] = useState<ReadonlySet<LineId>>(() => new Set(warned));
+  const [openedFor, setOpenedFor] = useState(warnKey);
+  if (openedFor !== warnKey) {
+    setOpenedFor(warnKey);
+    setOpenRows((o) => new Set([...o, ...warned]));
+  }
+  const rows = useMemo(
+    () => ({
+      open: openRows,
+      toggle: (line: LineId) =>
+        setOpenRows((o) => {
+          const next = new Set(o);
+          if (!next.delete(line)) next.add(line);
+          return next;
+        }),
+    }),
+    [openRows],
+  );
+  const frowsRef = useRef<HTMLDivElement>(null);
+  /** A summary tile: open its row, go to it, and put focus on its button. */
+  const goToRow = (line: LineId) => {
+    setOpenRows((o) => (o.has(line) ? o : new Set([...o, line])));
+    const row = frowsRef.current?.querySelector<HTMLElement>(`.frow[data-line="${line}"]`);
+    if (!row) return;
+    if (lenis.current) lenis.current.scrollTo(row);
+    else row.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+    row.querySelector<HTMLButtonElement>('.frow-btn')?.focus({ preventScroll: true });
+  };
   const saved = trip.has(a.id);
   const credit = creditFor(a.id);
   const others = useMemo(() => {
@@ -214,13 +264,25 @@ function Detail({ a }: { a: A }) {
               </h2>
               <p className="d-factors-for num">For {fit.win.label}</p>
             </div>
-            <div className="frows">
-              <Conditions a={a} flags={on('conditions')} win={fit.win} weekday={fit.weekday} stop={fit.stop} />
-              <Effort a={a} flags={on('effort')} />
-              <Vibe a={a} flags={on('vibe')} weekend={weekend} />
-              <Logistics a={a} flags={on('logistics')} todayIndex={todayIndex} />
-              <Cost a={a} flags={on('cost')} />
-            </div>
+            <Summary items={summary} onGo={goToRow} />
+            <OpenRows.Provider value={rows}>
+              <div className="frows" ref={frowsRef}>
+                <Conditions
+                  a={a}
+                  flags={on('conditions')}
+                  win={fit.win}
+                  weekday={fit.weekday}
+                  stop={fit.stop}
+                  best={best}
+                  months={tripMonths ?? [new Date().getMonth()]}
+                  monthsWord={tripMonths ? 'your trip' : 'this month'}
+                />
+                <Effort a={a} flags={on('effort')} />
+                <Vibe a={a} flags={on('vibe')} weekend={fit.weekday >= 5} />
+                <Logistics a={a} flags={on('logistics')} weekday={fit.weekday} today={!fit.dated} warning={warning} />
+                <Cost a={a} flags={on('cost')} />
+              </div>
+            </OpenRows.Provider>
           </section>
 
           <section className="also" aria-labelledby="also-title">
@@ -281,10 +343,22 @@ function planFit(a: A, trip: Trip, day: number, todayIndex: number) {
   const plan = trip.days[day];
   const date = dateOf(trip, day);
   const weekday = date ? (date.getDay() + 6) % 7 : todayIndex;
-  if (!plan) return { win: dayWindow(DAY_START, DAY_END, day), weekday, stop: null };
+  const dated = !!date;
+  if (!plan) return { win: dayWindow(DAY_START, DAY_END, day), weekday, dated, stop: null };
   const timed = plan.stops.includes(a.id) ? schedule(stopsOf(plan.stops), plan.start).find((s) => s.a.id === a.id) : undefined;
   const stop: StopTime | null = timed ? { start: timed.start, end: timed.end } : null;
-  return { win: dayWindow(plan.start, plan.end, day), weekday, stop };
+  return { win: dayWindow(plan.start, plan.end, day), weekday, dated, stop };
+}
+
+/** The months a dated trip runs through (0 = January), or null when it has no dates. */
+function monthsOf(trip: Trip): number[] | null {
+  if (!trip.startDate) return null;
+  const out = new Set<number>();
+  trip.days.forEach((_, i) => {
+    const d = dateOf(trip, i);
+    if (d) out.add(d.getMonth());
+  });
+  return out.size ? [...out] : null;
 }
 
 /** A still map of the attraction with its ticker, and how to get there under it. */

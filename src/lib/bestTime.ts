@@ -97,6 +97,36 @@ export function momentsIn(a: Attraction, win: DayWindow): Moment[] {
     .filter((m) => m.to > m.from);
 }
 
+/**
+ * How busy the hour [from, to) is when any part of it is open: the hour's crowd value, or the same 50
+ * the score assumes when the curve has none. Null when it is shut the whole time.
+ */
+export function hourCrowd(a: Attraction, weekday: number, from: number, to: number): number | null {
+  const open = openSpans(a, weekday).filter(([o, c]) => o < to && c > from);
+  if (!open.length) return null;
+  const first = Math.max(from, Math.min(...open.map(([o]) => o)));
+  return crowdAt(a, weekday, first) ?? MISSING;
+}
+
+/** The parts of the window the place is shut on `weekday`, in order. */
+export function closedIn(a: Attraction, weekday: number, win: DayWindow): [number, number][] {
+  const out: [number, number][] = [];
+  let t = win.start;
+  for (const [o, c] of openSpans(a, weekday)) {
+    if (c <= t || o >= win.end) continue;
+    if (o > t) out.push([t, o]);
+    t = Math.max(t, c);
+  }
+  if (t < win.end) out.push([t, win.end]);
+  return out;
+}
+
+/** A planned stop's mean crowd at or above this reads as the busy part of the day. */
+export const BUSY = 70;
+
+/** True when a planned stop falls in the busy part of the day (mean crowd over its time ≥ 70). */
+export const busyStop = (a: Attraction, weekday: number, stop: { start: number; end: number }) => meanCrowd(a, weekday, stop.start, stop.end) >= BUSY;
+
 /** Mean crowd over [from, to), each hour weighted by the minutes spent in it. */
 function meanCrowd(a: Attraction, weekday: number, from: number, to: number): number {
   let sum = 0;

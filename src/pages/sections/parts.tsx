@@ -1,4 +1,4 @@
-import { useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useId, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Rating } from '../../data/types';
 import { lineById, type LineId } from '../../data/lines';
 import type { Flag } from '../../lib/factors';
@@ -25,11 +25,20 @@ export function hm(min: number) {
   return m === 0 ? `${h} h` : `${h} h ${String(m).padStart(2, '0')}`;
 }
 
+/** Which rows are open, when the page keeps it (so the summary strip can open one). */
+export const OpenRows = createContext<{ open: ReadonlySet<LineId>; toggle: (line: LineId) => void } | null>(null);
+
 interface RowProps {
   line: LineId;
   headline: string;
   /** A small pill beside the headline. */
   extra?: ReactNode;
+  /** One plain sentence under the headline. */
+  sub?: string;
+  /** The sentence is a warning about the user's own plan. */
+  subWarn?: boolean;
+  /** What the visual shows that the headline and sentence don't, for screen readers. */
+  srNote?: string;
   /** The headline visual: a track with a marker or band in the line colour. */
   visual: ReactNode;
   /** This factor's "to check" items. */
@@ -38,17 +47,29 @@ interface RowProps {
 }
 
 /**
- * One factor as a full-width row: the line's station on its rail, the label, a large headline and
- * its visual. Clicking the row opens the factor's details in place; several rows can be open.
+ * One factor as a full-width row: the line's station on its rail, the label, a large headline, one
+ * sentence and its visual. Clicking the row opens the factor's details in place; several rows can be
+ * open. Inside `OpenRows` the page decides which are open.
  */
-export function FactorRow({ line, headline, extra, visual, flags, children }: RowProps) {
-  const [open, setOpen] = useState(false);
+export function FactorRow({ line, headline, extra, sub, subWarn, srNote, visual, flags, children }: RowProps) {
+  const rows = useContext(OpenRows);
+  const [mine, setMine] = useState(false);
+  const open = rows ? rows.open.has(line) : mine;
+  const toggle = () => (rows ? rows.toggle(line) : setMine((o) => !o));
   const id = useId();
   const l = lineById(line);
   return (
     <div className={`frow ${open ? 'is-open' : ''}`} style={lineVars(line)} data-line={line}>
       <h3 className="frow-h">
-        <button type="button" id={`${id}-b`} className="frow-btn" aria-expanded={open} aria-controls={`${id}-p`} onClick={() => setOpen((o) => !o)}>
+        <button
+          type="button"
+          id={`${id}-b`}
+          className="frow-btn"
+          aria-expanded={open}
+          aria-controls={`${id}-p`}
+          aria-describedby={srNote ? `${id}-sr` : undefined}
+          onClick={toggle}
+        >
           <span className="frow-station">
             <Station line={line} size={30} filled />
           </span>
@@ -60,12 +81,18 @@ export function FactorRow({ line, headline, extra, visual, flags, children }: Ro
           <span className="frow-head">
             <span className="frow-headline num">{headline}</span>
             {extra}
+            {sub && <span className={`frow-sub ${subWarn ? 'is-warn' : ''}`}>{sub}</span>}
           </span>
           <span className="frow-visual" aria-hidden="true">
             {visual}
           </span>
         </button>
       </h3>
+      {srNote && (
+        <p id={`${id}-sr`} className="sr-only">
+          {srNote}
+        </p>
+      )}
       <div id={`${id}-p`} className="frow-panel" role="region" aria-labelledby={`${id}-b`}>
         <div className="frow-clip">
           <div className="frow-body">
@@ -77,7 +104,10 @@ export function FactorRow({ line, headline, extra, visual, flags, children }: Ro
                 </p>
                 <ul>
                   {flags.map((f) => (
-                    <li key={f.text}>{f.text}</li>
+                    <li key={f.text}>
+                      {f.text}
+                      {f.note && <span className="frow-check-note">{f.note}</span>}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -93,8 +123,27 @@ export function FactorRow({ line, headline, extra, visual, flags, children }: Ro
 /** The expanded area's two-column grid. */
 export const Tiles = ({ children }: { children: ReactNode }) => <div className="ftiles">{children}</div>;
 
-/** A secondary metric: its label, a value and anything below it. `wide` takes both columns. */
-export function Tile({ label, value, unit, wide, aside, rows, children }: { label: string; value?: ReactNode; unit?: string; wide?: boolean; aside?: ReactNode; rows?: number; children?: ReactNode }) {
+/** A secondary metric: its label, a value, anything below it and the short notes that explain it. `wide` takes both columns. */
+export function Tile({
+  label,
+  value,
+  unit,
+  wide,
+  aside,
+  rows,
+  notes = [],
+  children,
+}: {
+  label: string;
+  value?: ReactNode;
+  unit?: string;
+  wide?: boolean;
+  aside?: ReactNode;
+  rows?: number;
+  notes?: (string | undefined | false)[];
+  children?: ReactNode;
+}) {
+  const lines = notes.filter((s): s is string => !!s);
   return (
     <div className={`ftile ${wide ? 'is-wide' : ''}`} style={rows ? { gridRow: `span ${rows}` } : undefined}>
       <div className="ftile-head">
@@ -108,20 +157,12 @@ export function Tile({ label, value, unit, wide, aside, rows, children }: { labe
         </p>
       )}
       {children}
-    </div>
-  );
-}
-
-/** The factor's notes, one short paragraph each. */
-export function Notes({ items }: { items: (string | undefined | false)[] }) {
-  const list = items.filter((s): s is string => !!s);
-  if (!list.length) return null;
-  return (
-    <ul className="fnotes">
-      {list.map((s) => (
-        <li key={s}>{s}</li>
+      {lines.map((s) => (
+        <p key={s} className="ftile-note">
+          {s}
+        </p>
       ))}
-    </ul>
+    </div>
   );
 }
 

@@ -1,9 +1,9 @@
 import type { Attraction, Rating } from '../../data/types';
 import { Icon, type IconName } from '../../components/Icon';
 import { MONTHS, hhmm } from '../../lib/format';
-import { isRainProof, type Flag } from '../../lib/factors';
-import { bestWindow, crowdAt, isOpenAt, momentOver, momentsIn, openSpans, type BestWindow, type DayWindow, type Moment } from '../../lib/bestTime';
-import { FactorRow, Meter, Notes, RATING_WORD, RatingMark, Tile, Tiles } from './parts';
+import { isRainProof, unflagged, type Flag } from '../../lib/factors';
+import { closedIn, hourCrowd, momentOver, momentsIn, openSpans, type BestWindow, type DayWindow, type Moment } from '../../lib/bestTime';
+import { FactorRow, Meter, RATING_WORD, RatingMark, Tile, Tiles } from './parts';
 
 const WEATHER: { key: keyof Attraction['conditions']['weather']; label: string; icon: IconName }[] = [
   { key: 'sun', label: 'Sun', icon: 'sun' },
@@ -29,6 +29,12 @@ interface Props {
   weekday: number;
   /** This attraction's stop on that day, when it is planned there. */
   stop: StopTime | null;
+  /** The best block in that day (bestWindow). */
+  best: BestWindow;
+  /** The months to pick out (0 = January): the trip's, or this month. */
+  months: number[];
+  /** What those months are, for screen readers: "your trip" or "this month". */
+  monthsWord: string;
 }
 
 /** The headline and the sentence under it. */
@@ -44,10 +50,19 @@ function says(a: Attraction, win: DayWindow, weekday: number, best: BestWindow):
   return ['Closed during your day', Number.isFinite(shuts) ? `Shuts at ${hhmm(shuts)}, before your day starts` : `Opens ${hhmm(best.opensAt)}`];
 }
 
-export function Conditions({ a, flags, win, weekday, stop }: Props) {
+/** What the timeline shows beyond the headline: the planned stop and when the place is shut. */
+function timelineNote(a: Attraction, win: DayWindow, weekday: number, stop: StopTime | null) {
+  const out: string[] = [];
+  if (stop && stop.end > win.start && stop.start < win.end) out.push(`Your stop ${hhmm(stop.start)}–${hhmm(stop.end)}.`);
+  for (const [f, t] of closedIn(a, weekday, win)) {
+    if (f === win.start && t === win.end) continue; // the headline says so
+    out.push(f === win.start ? `Closed before ${hhmm(t)}.` : t === win.end ? `Closed from ${hhmm(f)}.` : `Closed ${hhmm(f)}–${hhmm(t)}.`);
+  }
+  return out.join(' ') || undefined;
+}
+
+export function Conditions({ a, flags, win, weekday, stop, best, months, monthsWord }: Props) {
   const c = a.conditions;
-  const month = new Date().getMonth();
-  const best = bestWindow(a, win, weekday);
   const [headline, sentence] = says(a, win, weekday, best);
   const moments = momentsIn(a, win);
 
@@ -56,21 +71,20 @@ export function Conditions({ a, flags, win, weekday, stop }: Props) {
       line="conditions"
       headline={headline}
       extra={
-        <>
-          {isRainProof(a) && (
-            <span className="frow-pill">
-              <Icon name="drop" size={14} />
-              Wet-weather friendly
-            </span>
-          )}
-          <span className="frow-sub">{sentence}</span>
-        </>
+        isRainProof(a) && (
+          <span className="frow-pill">
+            <Icon name="drop" size={14} />
+            Wet-weather friendly
+          </span>
+        )
       }
+      sub={sentence}
+      srNote={timelineNote(a, win, weekday, stop)}
       visual={<DayFit a={a} win={win} weekday={weekday} best={best} stop={stop} moments={moments} />}
       flags={flags}
     >
       <Tiles>
-        <Tile label="Weather" wide>
+        <Tile label="Weather" wide notes={[c.weatherNote]}>
           <ul className="weather">
             {WEATHER.map((w) => {
               const r = c.weather[w.key];
@@ -88,10 +102,11 @@ export function Conditions({ a, flags, win, weekday, stop }: Props) {
         <Tile label="Under a roof" value={c.covered} unit="%">
           <Meter value={c.covered} label="Share of the visit under a roof" />
         </Tile>
-        <Tile label="Clear skies" value={VIS_WORD[c.visibility]} />
+        <Tile label="Clear skies" value={VIS_WORD[c.visibility]} notes={[c.visibilityNote]} />
         <Tile
           label="Months"
           wide
+          notes={[unflagged(c.monthsNote, flags)]}
           aside={
             <span className="legend">
               <span className="legend-item is-good">Best</span>
@@ -101,19 +116,22 @@ export function Conditions({ a, flags, win, weekday, stop }: Props) {
           }
         >
           <ol className="months">
-            {c.months.map((r, i) => (
-              <li key={i} className={`is-${r} ${i === month ? 'is-now' : ''}`} title={`${MONTHS[i]}: ${MONTH_WORD[r]}`}>
-                <span className="months-name">{MONTHS[i]}</span>
-                <span className="sr-only">
-                  {MONTH_WORD[r]}
-                  {i === month ? ', this month' : ''}
-                </span>
-              </li>
-            ))}
+            {c.months.map((r, i) => {
+              const now = months.includes(i);
+              return (
+                <li key={i} className={`is-${r} ${now ? 'is-now' : 'is-other'}`} title={`${MONTHS[i]}: ${MONTH_WORD[r]}`}>
+                  <span className="months-name">{MONTHS[i]}</span>
+                  <span className="sr-only">
+                    {MONTH_WORD[r]}
+                    {now ? `, ${monthsWord}` : ''}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
         </Tile>
-        {moments.length > 0 && (
-          <Tile label={moments.length > 1 ? 'Best windows' : 'Best window'} wide>
+        <Tile label="Time of day" wide notes={[c.timeOfDay.note]}>
+          {moments.length > 0 && (
             <ul className="ftile-list">
               {moments.map((b) => (
                 <li key={b.label}>
@@ -124,10 +142,9 @@ export function Conditions({ a, flags, win, weekday, stop }: Props) {
                 </li>
               ))}
             </ul>
-          </Tile>
-        )}
+          )}
+        </Tile>
       </Tiles>
-      <Notes items={[c.weatherNote, c.monthsNote, c.visibilityNote, c.timeOfDay.note]} />
     </FactorRow>
   );
 }
@@ -141,11 +158,12 @@ function DayFit({ a, win, weekday, best, stop, moments }: { a: Attraction; win: 
   const len = win.end - win.start;
   const x = (m: number) => ((Math.max(win.start, Math.min(win.end, m)) - win.start) / len) * 100;
   const box = (from: number, to: number) => ({ left: `${x(from)}%`, width: `${x(to) - x(from)}%` });
-  // An hour open with no crowd value (before the curve's 06:00) gets the shortest bar, not the closed hatch.
+  // An hour is drawn open when any part of it is, at the crowd the best block's score uses for it.
   const hours: { from: number; to: number; crowd: number | null }[] = [];
   for (let h = Math.floor(win.start / 60); h * 60 < win.end; h++) {
     const from = Math.max(h * 60, win.start);
-    hours.push({ from, to: Math.min((h + 1) * 60, win.end), crowd: isOpenAt(a, weekday, from) ? (crowdAt(a, weekday, from) ?? 0) : null });
+    const to = Math.min((h + 1) * 60, win.end);
+    hours.push({ from, to, crowd: hourCrowd(a, weekday, from, to) });
   }
   const inBest = (from: number, to: number) => best.kind === 'best' && from < best.to && to > best.from;
   const mid = Math.round((win.start + win.end) / 60) * 30;

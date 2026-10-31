@@ -1,7 +1,7 @@
 import type { Attraction } from '../../data/types';
 import { mustPay, withExtras, type Flag } from '../../lib/factors';
 import { yen, yenPlain } from '../../lib/format';
-import { FactorRow, Notes, Tile, Tiles } from './parts';
+import { FactorRow, Tile, Tiles } from './parts';
 
 const CASH_WORD = { 'cash-only': 'Cash only', 'mostly-cash': 'Carry some cash', cards: 'Cards are fine' };
 
@@ -13,6 +13,17 @@ export function costRange(a: Attraction) {
   return lo === hi ? yen(lo) : `${yen(lo)} – ${yenPlain(hi)}`;
 }
 
+const CASH_LINE = { 'cash-only': 'Cash only.', 'mostly-cash': 'Carry some cash.', cards: 'Cards are fine.' };
+
+/** "Free to enter; extras are optional. Carry some cash.": what you pay there, in one line. */
+function spendLine(a: Attraction) {
+  const c = a.cost;
+  const entry = c.entry === 0 ? 'Free to enter' : `Entry ${yen(c.entry)}`;
+  const need = mustPay(a) - c.entry;
+  const money = need > 0 ? `${entry}, plus ${yenPlain(need)} you can’t skip.` : c.extras.length ? `${entry}; extras are optional.` : `${entry}.`;
+  return `${money} ${CASH_LINE[c.cash]}`;
+}
+
 export function Cost({ a, flags }: { a: Attraction; flags: Flag[] }) {
   const c = a.cost;
   const must = mustPay(a);
@@ -21,10 +32,10 @@ export function Cost({ a, flags }: { a: Attraction; flags: Flag[] }) {
   const optional = c.extras.filter((e) => e.optional);
 
   return (
-    <FactorRow line="cost" headline={costRange(a)} visual={<CostBar must={must} all={all} />} flags={flags}>
+    <FactorRow line="cost" headline={costRange(a)} sub={spendLine(a)} visual={<CostBar must={must} all={all} />} flags={flags}>
       <Tiles>
-        <Tile label="Entry" value={<span className="num">{yen(c.entry)}</span>} />
-        <Tile label="Paying" value={CASH_WORD[c.cash]} />
+        <Tile label="Entry" value={<span className="num">{yen(c.entry)}</span>} notes={[c.freeNote]} />
+        <Tile label="Paying" value={CASH_WORD[c.cash]} notes={[c.cashNote]} />
         <Tile label="What you'll spend" wide aside={<span className="ftile-aside">Per adult</span>}>
           <table className="spend">
             <tbody>
@@ -60,7 +71,6 @@ export function Cost({ a, flags }: { a: Attraction; flags: Flag[] }) {
           </table>
         </Tile>
       </Tiles>
-      <Notes items={[c.cashNote, c.freeNote]} />
     </FactorRow>
   );
 }

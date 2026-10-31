@@ -1,7 +1,7 @@
 import type { Access, Attraction, Trigger } from '../../data/types';
 import { EFFORT_LABELS, type Flag } from '../../lib/factors';
 import { duration } from '../../lib/format';
-import { FactorRow, Meter, Notes, Tile, Tiles } from './parts';
+import { FactorRow, Meter, Tile, Tiles } from './parts';
 
 const ACCESS_WORD: Record<Access, string> = { yes: 'Yes', partial: 'Partly', no: 'No' };
 const TRIGGER_WORD: Record<Trigger, string> = {
@@ -18,7 +18,7 @@ export function Effort({ a, flags }: { a: Attraction; flags: Flag[] }) {
   const e = a.effort;
 
   return (
-    <FactorRow line="effort" headline={EFFORT_LABELS[e.level - 1]} visual={<Levels level={e.level} />} flags={flags}>
+    <FactorRow line="effort" headline={EFFORT_LABELS[e.level - 1]} sub={e.note} visual={<Levels level={e.level} />} flags={flags}>
       <Tiles>
         <Tile label="Walking" value={<span className="num">{e.walkKm}</span>} unit=" km" />
         <Tile label="Stairs" value={<span className="num">{e.steps}</span>} unit=" steps" />
@@ -46,7 +46,6 @@ export function Effort({ a, flags }: { a: Attraction; flags: Flag[] }) {
           )}
         </Tile>
       </Tiles>
-      <Notes items={[e.note]} />
     </FactorRow>
   );
 }

@@ -48,6 +48,8 @@ export function readings(a: Attraction): Record<LineId, string> {
 export interface Flag {
   line: LineId;
   text: string;
+  /** The rest of the note the flag came from, when it says more than its first sentence. */
+  note?: string;
   /** Higher sorts first. */
   weight: number;
 }
@@ -66,7 +68,7 @@ export function flags(a: Attraction): Flag[] {
   if (l.lastEntryMin) out.push({ line: 'logistics', text: `Last entry ${duration(l.lastEntryMin)} before closing`, weight: 6 });
   if (l.lastTrainNote) out.push({ line: 'logistics', text: firstSentence(l.lastTrainNote), weight: 7 });
   if (c.months.filter((m) => m === 'poor').length >= 6)
-    out.push({ line: 'conditions', text: firstSentence(c.monthsNote), weight: 10 });
+    out.push({ line: 'conditions', ...fromNote(c.monthsNote), weight: 10 });
   if (c.weather.wind === 'poor' && c.weather.rain === 'poor')
     out.push({ line: 'conditions', text: 'Rain or strong wind closes it', weight: 8 });
   else if (c.weather.rain === 'poor') out.push({ line: 'conditions', text: 'Not worth it in rain', weight: 7 });
@@ -79,7 +81,7 @@ export function flags(a: Attraction): Flag[] {
   const extras = mustPay(a) - cost.entry;
   if (extras > cost.entry && extras >= 1000)
     out.push({ line: 'cost', text: `Extras cost more than entry: ${yen(extras)}`, weight: 5 });
-  if (l.etiquette) out.push({ line: 'vibe', text: firstSentence(l.etiquette), weight: 5 });
+  if (l.etiquette) out.push({ line: 'vibe', ...fromNote(l.etiquette), weight: 5 });
 
   return out.sort((x, y) => y.weight - x.weight);
 }
@@ -91,6 +93,15 @@ function leadText(days: number) {
 }
 
 const firstSentence = (s: string) => s.split(/(?<=\.)\s/)[0].replace(/\.$/, '');
+
+/** A flag's text from a note's first sentence, and the rest of the note, if any, as its note. */
+function fromNote(s: string): { text: string; note?: string } {
+  const rest = s.split(/(?<=\.)\s/).slice(1).join(' ');
+  return rest ? { text: firstSentence(s), note: rest } : { text: firstSentence(s) };
+}
+
+/** The note, unless a flag already says it (a flag made from a note starts with its first sentence). */
+export const unflagged = (note: string | undefined, fl: Flag[]) => (note && !fl.some((f) => note.startsWith(f.text)) ? note : undefined);
 
 export type FilterId = 'all' | 'rain' | 'easy' | 'local' | 'free';
 

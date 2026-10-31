@@ -4,7 +4,7 @@ import { CROWD_START_HOUR, type Attraction } from '../../data/types';
 import { clock } from '../../lib/format';
 import { localWord, natureWord, type Flag } from '../../lib/factors';
 import { EASE_OUT } from '../../lib/motion';
-import { FactorRow, Notes, RATING_WORD, RatingMark, Scale, Tile, Tiles } from './parts';
+import { FactorRow, RATING_WORD, RatingMark, Scale, Tile, Tiles } from './parts';
 
 const ONLY_WORD = { 'only-tokyo': 'Only in Tokyo', 'only-japan': 'Only in Japan', common: 'Found elsewhere' };
 const SUITS = [
@@ -14,14 +14,30 @@ const SUITS = [
   { key: 'friends', label: 'Group of friends' },
 ] as const;
 
+const energyWord = (n: number) => (n >= 65 ? 'Lively' : n >= 35 ? 'Steady' : 'Calm');
+
+/** "Lively, built for photos.": how it feels and what it is for, in one line. */
+function feel(v: Attraction['vibe']) {
+  const photo = v.photo >= 70 ? 'built for photos' : v.photo >= 40 ? 'good for photos and for just being there' : 'more about being there than the photo';
+  return `${energyWord(v.energy)}, ${photo}.`;
+}
+
+/** `weekend`: the day the page is about (the planned day in planning, today otherwise) is a Saturday or Sunday. */
 export function Vibe({ a, flags, weekend }: { a: Attraction; flags: Flag[]; weekend: boolean }) {
   const v = a.vibe;
 
   return (
-    <FactorRow line="vibe" headline={`${localWord(v.local)} · ${natureWord(v.nature)}`} visual={<Sliders local={v.local} nature={v.nature} />} flags={flags}>
+    <FactorRow
+      line="vibe"
+      headline={`${localWord(v.local)} · ${natureWord(v.nature)}`}
+      sub={feel(v)}
+      visual={<Sliders local={v.local} nature={v.nature} />}
+      flags={flags}
+    >
       <Tiles>
-        <Crowds a={a} initialWeekend={weekend} />
-        <Tile label="Energy" value={v.energy >= 65 ? 'Lively' : v.energy >= 35 ? 'Steady' : 'Calm'}>
+        {/* A new day type starts the chart on it again. */}
+        <Crowds key={String(weekend)} a={a} initialWeekend={weekend} />
+        <Tile label="Energy" value={energyWord(v.energy)}>
           <Scale value={v.energy} left="Calm" right="Lively" label="Calm to lively" />
         </Tile>
         <Tile label="Photo or experience" value={v.photo >= 70 ? 'Built for photos' : v.photo >= 40 ? 'Some of each' : 'About being there'}>
@@ -40,9 +56,8 @@ export function Vibe({ a, flags, weekend }: { a: Attraction; flags: Flag[]; week
             ))}
           </dl>
         </Tile>
-        <Tile label="Can you do it at home?" value={ONLY_WORD[v.onlyHere]} wide />
+        <Tile label="Can you do it at home?" value={ONLY_WORD[v.onlyHere]} wide notes={[v.onlyHereNote]} />
       </Tiles>
-      <Notes items={[v.onlyHereNote]} />
     </FactorRow>
   );
 }
