@@ -2297,9 +2297,17 @@ h2:focus {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
-/* Months outside the trip (or other than this one) step back, still labelled. */
+/* Months outside the trip (or other than this one) step back: a paler fill and a quieter label, the
+   label still at 4.5:1 or better (muted on the palest fill is about 5.3:1). */
 .months li.is-other {
-  opacity: 0.6;
+  color: var(--muted);
+}
+.months li.is-other.is-good {
+  background: color-mix(in srgb, var(--track) 55%, var(--surface));
+}
+.months li.is-other.is-ok {
+  background: color-mix(in srgb, var(--soft) 55%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--track) 55%, var(--surface));
 }
 .months-name {
   font-size: 12px;

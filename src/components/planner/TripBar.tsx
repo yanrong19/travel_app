@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Attraction } from '../../data/types';
 import { summarizeDay } from '../../lib/daySummary';
 import { getRainChance, isLikelyWet } from '../../lib/forecast';
-import { duration, plural } from '../../lib/format';
+import { duration, hhmm, plural } from '../../lib/format';
 import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
 import { slotMismatch } from '../../lib/timeOfDay';
@@ -13,7 +13,7 @@ import { useMedia } from '../../lib/useMedia';
 import { undoAddStop, undoRemoveStop, undoUnsave, type Edit } from '../../lib/tripUndo';
 import { Icon } from '../Icon';
 import { Station } from '../Station';
-import { hhmm, shortDate, stopsOf } from './DayList';
+import { shortDate, stopsOf } from './DayList';
 import { DayPicker, type DayOption } from './DayPicker';
 
 const UNDO_MS = 6000;

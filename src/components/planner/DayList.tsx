@@ -4,7 +4,7 @@ import { ATTRACTIONS } from '../../data/attractions';
 import type { Attraction } from '../../data/types';
 import type { PlanTab } from '../../lib/dayView';
 import { getRainChance, isLikelyWet } from '../../lib/forecast';
-import { DAYS, MONTHS, duration, plural } from '../../lib/format';
+import { DAYS, MONTHS, duration, hhmm, plural } from '../../lib/format';
 import { EASE_OUT, useReducedMotion } from '../../lib/motion';
 import { photo } from '../../lib/photos';
 import { schedule } from '../../lib/schedule';
@@ -20,10 +20,6 @@ const byId = new Map(ATTRACTIONS.map((a) => [a.id, a]));
 
 /** The attractions behind a list of ids, skipping any the data no longer has. */
 export const stopsOf = (ids: string[]): Attraction[] => ids.map((id) => byId.get(id)).filter((a): a is Attraction => !!a);
-
-const pad = (n: number) => String(n).padStart(2, '0');
-/** Minutes from midnight → "09:30". */
-export const hhmm = (min: number) => `${pad(Math.floor(min / 60) % 24)}:${pad(Math.round(min) % 60)}`;
 
 /** "Tue 14 Apr" */
 export const shortDate = (d: Date) => `${DAYS[(d.getDay() + 6) % 7]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;

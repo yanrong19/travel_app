@@ -89,7 +89,7 @@ export function FactorRow({ line, headline, extra, sub, subWarn, srNote, visual,
         </button>
       </h3>
       {srNote && (
-        <p id={`${id}-sr`} className="sr-only">
+        <p id={`${id}-sr`} className="sr-only" hidden>
           {srNote}
         </p>
       )}
