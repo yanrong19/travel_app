@@ -17,7 +17,7 @@ import { plural } from '../lib/format';
 import { Icon } from '../components/Icon';
 import { GlobeCard, type CardSubject } from '../components/GlobeCard';
 import { DESTINATIONS, countrySlugOf, destinationByWorldId, destinationBySlug, worldShape, type Destination } from '../data/destinations';
-import { fitPadding, viewQuad, type Bounds, type Insets, type Quad } from './camera';
+import { fitPadding, revealDelta, viewQuad, type Bounds, type Insets, type Quad } from './camera';
 import { spotFitZoom, spotZoom } from '../lib/spotlight';
 import { coreCluster, layoutBubbleBoxes, type Band, type Box as BubbleBox } from './bubbles';
 
@@ -151,10 +151,18 @@ interface Props {
  * A focus overrides the target's framing. `frame` frames its bounds; `spot` centres one attraction in
  * the free area at street zoom, labels its neighbours (`near`) and greys the rest. `key` names the
  * focus for the camera: a new key flies, the same key stays put.
+ *
+ * A spot's `move` says how the camera gets there. `fly`: the spotlight's own camera, as above, saved
+ * first and flown back to on leaving. `reveal` (a dot picked on the map, a row in a list beside it):
+ * the camera keeps its zoom, tilt and centre, and only pans, as little as it can, when the spot or
+ * its label would be off the free area or under the card. Nothing is saved, and leaving a run of
+ * reveals leaves the camera where it is, whatever frame the focus goes back to; that frame stays
+ * unflown until its key changes (a crumb, a bubble).
  */
 export type MapFocus =
   | { kind: 'frame'; key: string; bounds: Bounds }
-  | { kind: 'spot'; key: string; id: string; center: [number, number]; near: string[] };
+  | { kind: 'spot'; key: string; id: string; center: [number, number]; near: string[]; move: SpotMove };
+export type SpotMove = 'reveal' | 'fly';
 
 /** A count bubble: a place one level down, how many checked attractions it holds, and how to go there. */
 export interface MapBubble {
@@ -164,6 +172,10 @@ export interface MapBubble {
   count: number;
   onPick(): void;
 }
+
+/** A revealed spot keeps this far inside the free area's edges, and this far off the card. */
+const REVEAL_MARGIN = 40;
+const REVEAL_CARD_GAP = 12;
 
 /** Dot mode: today's numbered circles closer than this on screen merge into one pill. */
 const STOP_MERGE_PX = 28;
@@ -810,6 +822,13 @@ export function MapExplorer(props: Props) {
   const lastFocus = useRef<MapFocus | null>(null);
   // The camera from just before a run of spots (with the key, insets, mode and kind of tilt it had), to come back to on leaving them.
   const spotReturn = useRef<{ key: string; insets: string; mode: MapMode; tilt: Tilt; cam: Cam } | null>(null);
+  // The current run of spots: the key, insets and tilt it started from, and whether any spot in it
+  // flew. A run of reveals only leaves the camera be; the first fly saves it (spotReturn) under the
+  // run's start.
+  const spotRun = useRef<{ key: string; insets: string; tilt: Tilt; flew: boolean } | null>(null);
+  // The frame (camKey without its insets) a run of reveals left the camera on: not flown to, as the
+  // camera never left the place the reveals started from, until the key changes.
+  const quietKey = useRef<string | null>(null);
   const lastInsets = useRef(insets);
   // Where the camera came to rest after the last framing, to tell whether the user has moved it since.
   const framedAt = useRef<{ center: [number, number]; zoom: number } | null>(null);
@@ -830,28 +849,51 @@ export function MapExplorer(props: Props) {
     if (!map || !ready || camKey === lastKey.current) return;
     const first = lastKey.current === '';
     const [wasKey, wasInsetKey = ''] = lastKey.current.split('|');
-    const onlyInsets = !first && wasKey === camKey.split('|')[0];
+    const head = camKey.split('|')[0];
+    const onlyInsets = !first && wasKey === head;
     lastKey.current = camKey;
     const was = lastInsets.current;
     lastInsets.current = insets;
     const wasFocus = lastFocus.current;
     lastFocus.current = focus;
-    if (focus?.kind === 'spot' && wasFocus?.kind !== 'spot') {
-      // Entering a spot: remember where the camera was, under the key, insets and mode it was at. Not
-      // while it is still flying there: leaving then frames afresh rather than going back half-way.
-      const c = map.getCenter();
-      const lv = levelRef.current;
-      const tilt = tiltKind(wasFocus?.kind === 'frame', lv);
-      spotReturn.current =
-        first || map.isMoving()
-          ? null
-          : { key: wasKey, insets: wasInsetKey, mode: modeRef.current, tilt, cam: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), padding: { ...NO_PAD, ...map.getPadding() } } };
-    } else if (focus?.kind !== 'spot' && wasFocus?.kind === 'spot') {
+    if (focus?.kind === 'spot') {
+      quietKey.current = null;
+      if (wasFocus?.kind !== 'spot') spotRun.current = { key: wasKey, insets: wasInsetKey, tilt: tiltKind(wasFocus?.kind === 'frame', levelRef.current), flew: false };
+      const run = spotRun.current!;
+      // The map's first camera has no place to stay at: it flies.
+      const fly = focus.move === 'fly' || first;
+      if (fly && !run.flew) {
+        // The run's first flight: remember where the camera was, under the key, insets and mode the
+        // run started at. Not while it is still moving there: leaving then frames afresh rather than
+        // going back half-way.
+        run.flew = true;
+        const c = map.getCenter();
+        spotReturn.current =
+          first || map.isMoving()
+            ? null
+            : { key: run.key, insets: run.insets, mode: modeRef.current, tilt: run.tilt, cam: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), padding: { ...NO_PAD, ...map.getPadding() } } };
+      }
+      if (!fly) {
+        revealSpot(focus.id, focus.center);
+        return;
+      }
+    } else if (wasFocus?.kind === 'spot') {
+      const run = spotRun.current;
+      spotRun.current = null;
+      if (run && !run.flew) {
+        // Leaving a run of reveals: the camera stays, on whatever frame the focus is back on (the
+        // spot's neighbourhood, when the leave replaced the spot away). The lists that follow the map
+        // hear what it shows now, for the place now viewed.
+        ++flightId.current;
+        quietKey.current = head;
+        reportQuad(map);
+        return;
+      }
       // Leaving the spots back to the key and free area they started from: fly back to that camera,
       // not a fresh framing. The map style switched meanwhile: the tilt follows the style.
       const back = spotReturn.current;
       spotReturn.current = null;
-      if (back && back.key === camKey.split('|')[0] && back.insets === insetKey) {
+      if (back && back.key === head && back.insets === insetKey) {
         cancelAnimationFrame(spin.current);
         ++flightId.current;
         const [pitch, bearing] = back.mode === modeRef.current ? [back.cam.pitch, back.cam.bearing] : tiltOf(back.tilt, modeRef.current === '3d');
@@ -862,9 +904,14 @@ export function MapExplorer(props: Props) {
         return;
       }
     }
+    // Still on the frame a run of reveals left the camera on: a new free area pans by half the change
+    // (as below) at most, never framing it. A new key is a place picked afresh: it frames.
+    const quiet = quietKey.current !== null && quietKey.current === head;
+    if (!quiet) quietKey.current = null;
     // A spot is centred in the free area by definition: a new free area (the phone's card measured)
     // re-centres it, below, rather than panning by half the change.
-    if (onlyInsets && panOnInsets && focus?.kind !== 'spot' && !stillFramed(map)) {
+    if (quiet || (onlyInsets && panOnInsets && focus?.kind !== 'spot' && !stillFramed(map))) {
+      if (!panOnInsets) return;
       // The free area's centre moves by half the change; the view follows it, gently.
       const dx = (insets.right - was.right - (insets.left - was.left)) / 2;
       const dy = (insets.bottom - was.bottom - (insets.top - was.top)) / 2;
@@ -891,6 +938,77 @@ export function MapExplorer(props: Props) {
     const H = wrap.current!.clientHeight;
     const side = Math.min(70, W * 0.08);
     return fitPadding({ top: insets.top + 56, bottom: insets.bottom + 12, left: insets.left + side, right: insets.right + side }, W, H);
+  }
+
+  /**
+   * A spot opened by `reveal`: the camera keeps its zoom, tilt and centre, and pans only as far as it
+   * takes to bring the spot and its name pill inside the free area the insets leave (by
+   * REVEAL_MARGIN) and clear of the card (pickedClearOf, by REVEAL_CARD_GAP). Where the card overlaps
+   * the free area, the spot goes beside, above or below it, whichever is the shortest pan. After any
+   * move in progress (a flight, a drag) has ended.
+   */
+  function revealSpot(id: string, center: [number, number]) {
+    const map = mapRef.current;
+    if (!map) return;
+    cancelAnimationFrame(spin.current);
+    const flight = ++flightId.current;
+    const reveal = () => {
+      const box = wrap.current;
+      if (flight !== flightId.current || !box) return;
+      const W = box.clientWidth;
+      const H = box.clientHeight;
+      const ins = insetsRef.current;
+      // How far the spot reaches from its point: a dot's name pill sits centred above it, with its
+      // tail down to the point (styles.css, .mdot.is-spot), measured by layout so a transition in
+      // flight doesn't count; a ticker's pill and tail above its point, as the ticker reveal above.
+      const pill = dotModeRef.current ? overlay.current?.querySelector<HTMLElement>(`.mdot[data-id="${CSS.escape(id)}"] .mdot-label`) : null;
+      const [hw, up, down] = !dotModeRef.current ? [70, 52, 0] : pill?.offsetWidth ? [pill.offsetWidth / 2, pill.offsetHeight + 6, 6] : [96, 36, 6];
+      const M = REVEAL_MARGIN;
+      const free = { left: ins.left + hw + M, top: ins.top + up + M, right: W - ins.right - hw - M, bottom: H - ins.bottom - down - M };
+      let areas = [free];
+      const cardEl = pickedClearOf?.current;
+      if (cardEl) {
+        // Where the card rests, without the slide it comes in with, grown by the pill and the gap.
+        const r = cardEl.getBoundingClientRect();
+        const b = box.getBoundingClientRect();
+        const tf = getComputedStyle(cardEl).transform;
+        const t = new DOMMatrixReadOnly(tf === 'none' ? undefined : tf);
+        const g = REVEAL_CARD_GAP;
+        const x = r.left - b.left - t.m41;
+        const y = r.top - b.top - t.m42;
+        const c = { left: x - hw - g, right: x + r.width + hw + g, top: y - down - g, bottom: y + r.height + up + g };
+        const over = r.width > 0 && c.left < free.right && c.right > free.left && c.top < free.bottom && c.bottom > free.top;
+        if (over) {
+          const beside = [
+            { ...free, right: Math.min(free.right, c.left) },
+            { ...free, left: Math.max(free.left, c.right) },
+            { ...free, bottom: Math.min(free.bottom, c.top) },
+            { ...free, top: Math.max(free.top, c.bottom) },
+          ].filter((a) => a.right >= a.left && a.bottom >= a.top);
+          if (beside.length) areas = beside;
+        }
+      }
+      // The margins are in the areas already.
+      const pt = map.project(center);
+      const pans = areas.map((a) => revealDelta([pt.x, pt.y], a, 0));
+      const [dx, dy] = pans.reduce((best, d) => (Math.hypot(...d) < Math.hypot(...best) ? d : best));
+      if (Math.hypot(dx, dy) < 1) return;
+      // The spot itself to its new point: exact under a tilt too, where panBy moves the centre, not it.
+      const pad = { ...NO_PAD, ...map.getPadding() };
+      const cx = pad.left + (W - pad.left - pad.right) / 2;
+      const cy = pad.top + (H - pad.top - pad.bottom) / 2;
+      map.easeTo({ center, offset: [pt.x + dx - cx, pt.y + dy - cy], duration: prefersReducedMotion() ? 0 : 600, essential: true });
+    };
+    if (map.isMoving()) map.once('moveend', reveal);
+    else reveal();
+  }
+
+  /** Tells the lists that follow the map what its free area shows now (onViewQuad). */
+  function reportQuad(map: MapLibreMap) {
+    const report = handlers.current.onViewQuad;
+    if (!report) return;
+    const box = map.getContainer();
+    report(viewQuad(box.clientWidth, box.clientHeight, insetsRef.current, (p) => map.unproject(p).toArray() as [number, number]));
   }
 
   function flyToTarget(duration?: number, all = false, tilt = tilted) {
@@ -1111,10 +1229,14 @@ export function MapExplorer(props: Props) {
     appliedMode.current = mode;
     if (first || !changed) return;
     if (levelRef.current !== 'region' && levelRef.current !== 'area') return;
-    // A spot stays flat and north-up.
-    if (focusRef.current?.kind === 'spot') return;
+    // A spot stays flat and north-up, unless it was only revealed: then the camera is still the
+    // place's, and tilts as the place the run started from does.
+    const f = focusRef.current;
+    const run = spotRun.current;
+    if (f?.kind === 'spot' && (!run || run.flew)) return;
     // The same tilt a framing here takes, so switching and framing agree.
-    const [pitch, bearing] = tiltOf(tiltKind(focusRef.current?.kind === 'frame', levelRef.current), mode === '3d');
+    const kind = f?.kind === 'spot' && run ? run.tilt : tiltKind(f?.kind === 'frame', levelRef.current);
+    const [pitch, bearing] = tiltOf(kind, mode === '3d');
     map.easeTo({ pitch, bearing, duration: prefersReducedMotion() ? 0 : 900 });
   }, [mode, ready]);
   const refit = () => flyToTarget(900, true);
@@ -1123,12 +1245,7 @@ export function MapExplorer(props: Props) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const emit = () => {
-      const report = handlers.current.onViewQuad;
-      if (!report) return;
-      const box = map.getContainer();
-      report(viewQuad(box.clientWidth, box.clientHeight, insetsRef.current, (p) => map.unproject(p).toArray() as [number, number]));
-    };
+    const emit = () => reportQuad(map);
     emit();
     map.on('moveend', emit);
     return () => {

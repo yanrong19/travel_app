@@ -152,3 +152,17 @@ export function viewQuad(W: number, H: number, insets: Insets, unproject: (p: [n
   const b = H - insets.bottom;
   return [unproject([l, t]), unproject([r, t]), unproject([r, b]), unproject([l, b])];
 }
+
+/**
+ * The smallest pan, in screen px, that brings point `p` inside `free` shrunk by `margin` on every
+ * side: positive dx moves the point right, positive dy down. [0, 0] when it is already inside. On an
+ * axis where the shrunk area has no room left, the point goes to the middle of it.
+ */
+export function revealDelta(
+  p: [number, number],
+  free: { left: number; top: number; right: number; bottom: number },
+  margin = 40,
+): [number, number] {
+  const axis = (v: number, lo: number, hi: number) => (lo > hi ? (lo + hi) / 2 - v : v < lo ? lo - v : v > hi ? hi - v : 0);
+  return [axis(p[0], free.left + margin, free.right - margin), axis(p[1], free.top + margin, free.bottom - margin)];
+}

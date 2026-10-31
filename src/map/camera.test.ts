@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { fitPadding, viewQuad } from './camera';
+import { fitPadding, revealDelta, viewQuad } from './camera';
 
 const pad = { top: 206, right: 546, bottom: 342, left: 110 };
 
@@ -27,4 +27,26 @@ test('a narrow screen shrinks the sides the same way', () => {
 test('viewQuad unprojects the free rectangle corners clockwise from top-left', () => {
   const q = viewQuad(1000, 600, { top: 50, right: 400, bottom: 0, left: 0 }, ([x, y]) => [x, -y]);
   expect(q).toEqual([[0, -50], [600, -50], [600, -600], [0, -600]]);
+});
+
+const free = { left: 40, top: 236, right: 804, bottom: 760 };
+test('revealDelta: a point already inside the free area (less the margin) needs no pan', () => {
+  expect(revealDelta([400, 500], free)).toEqual([0, 0]);
+  expect(revealDelta([80, 276], free)).toEqual([0, 0]);
+});
+test('revealDelta: left of the free area pans right just enough', () => {
+  expect(revealDelta([20, 500], free)).toEqual([60, 0]);
+  expect(revealDelta([70, 500], free)).toEqual([10, 0]);
+});
+test('revealDelta: below the free area pans up just enough', () => {
+  expect(revealDelta([400, 790], free)).toEqual([0, -70]);
+});
+test('revealDelta: off a corner pans on both axes', () => {
+  expect(revealDelta([850, 100], free)).toEqual([-86, 176]);
+});
+test('revealDelta: the margin is a parameter', () => {
+  expect(revealDelta([20, 500], free, 0)).toEqual([20, 0]);
+});
+test('revealDelta: a free area narrower than twice the margin centres the point on that axis', () => {
+  expect(revealDelta([0, 500], { left: 100, top: 0, right: 150, bottom: 1000 })).toEqual([125, 0]);
 });

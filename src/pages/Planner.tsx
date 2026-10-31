@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useId, useLayoutEffect, useMemo
 import { Navigate, useLocation, useNavigate, useNavigationType, useParams, useSearchParams } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Insets, Quad } from '../map/camera';
-import type { MapBubble, MapFocus } from '../map/MapExplorer';
+import type { MapBubble, MapFocus, SpotMove } from '../map/MapExplorer';
 import { BottomTabs, TopNav } from '../components/Chrome';
 import { PinCard } from '../components/MapCards';
 import { MapSearch } from '../components/MapSearch';
@@ -267,11 +267,19 @@ function PlannerPage({ trip }: { trip: Trip }) {
     [spotParam, placesKey, pi, viewKey],
   );
   const selected = spotParam && node?.attractionLevel && viewed && spotHome && sameRef(spotHome, viewed) ? spotParam : null;
-  // A spot centres its attraction, labelling the ones within a walk; else a neighbourhood frames its
-  // own box rather than the pins (which are all of Tokyo).
+  // How openStop last opened a spot: a pick on the map (its dot, a neighbour's) or in Browse reveals
+  // it where the map already is; the day list, the wet plan, the search and "See it on the map" fly
+  // to it. Forgotten once the spot closes, so a spot from the URL alone (a reload, a link, a step
+  // back or forward onto one) flies.
+  const spotMove = useRef<{ sid: string; move: SpotMove } | null>(null);
+  // A spot labels the ones within a walk, centring its attraction or (revealed) leaving the map where
+  // it is; else a neighbourhood frames its own box rather than the pins (which are all of Tokyo).
   const focus = useMemo<MapFocus | null>(() => {
     const a = selected ? attractionById(selected) : undefined;
-    if (a) return { kind: 'spot', key: `spot:${a.id}`, id: a.id, center: a.lonlat, near: neighboursOf(a.id, pins) };
+    if (a) {
+      const move = spotMove.current?.sid === a.id ? spotMove.current.move : 'fly';
+      return { kind: 'spot', key: `spot:${a.id}`, id: a.id, center: a.lonlat, near: neighboursOf(a.id, pins), move };
+    }
     return view?.frame ? { kind: 'frame', key: viewKey, bounds: view.frame } : null;
   }, [selected, pins, view, viewKey]);
   // What the map's free area shows, for the in-view Browse list, with the viewed place it was
@@ -794,17 +802,22 @@ function PlannerPage({ trip }: { trip: Trip }) {
   // back off it (and Back leaves on its own); otherwise (a reload, a link) leaving replaces it.
   const spotPushed = useRef(false);
   useEffect(() => {
-    if (!spotParam) spotPushed.current = false;
+    if (spotParam) return;
+    spotPushed.current = false;
+    spotMove.current = null;
   }, [spotParam]);
   /**
    * Every way of opening a card (a dot on the map, Browse, the day list, the wet-weather plan, the
    * search, "See it on the map") comes here: one URL change views the attraction-level place that
    * shows its pin and spotlights it. Entering a spot adds a history entry; moving between spots
-   * replaces it. On phone the sheet goes back down so the map and the card show.
+   * replaces it. On phone the sheet goes back down so the map and the card show. `move`: how the map
+   * gets there (see spotMove). A reveal into another neighbourhood switches the crumb but not the
+   * camera, on the way in or out (MapFocus).
    */
-  const openStop = (sid: string) => {
+  const openStop = (sid: string, move: SpotMove) => {
     const home = attractionHome(sid, trip.places, place, viewed);
     if (!home) return;
+    spotMove.current = { sid, move };
     const push = spotHistory(spotParam, sid) === 'push';
     setParams(
       (p) => {
@@ -893,7 +906,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
     if (!sid || openedFor.current === navKey) return;
     openedFor.current = navKey;
     navigate({ search }, { replace: true, state: null, preventScrollReset: true });
-    openStop(sid);
+    openStop(sid, 'fly');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navKey]);
 
@@ -995,7 +1008,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
       onRemove={removeFromDay}
       onMove={(d, from, to) => edit((t, now) => moveStop(t, d, from, to, now))}
       onReplace={startReplace}
-      onOpen={openStop}
+      onOpen={(sid) => openStop(sid, 'fly')}
       hotId={selected ?? hoverId}
       onHover={setHoverId}
       flashId={flashId}
@@ -1013,7 +1026,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
         swipe: narrow,
         content: !side && analysisContent,
       }}
-      wetPlan={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={openStop} onBrowse={() => pickTab('browse')} />}
+      wetPlan={<WetPlan trip={trip} day={day} onRemove={(sid, i) => removeFromWet(day, sid, i)} onOpen={(sid) => openStop(sid, 'fly')} onBrowse={() => pickTab('browse')} />}
       browseCount={browsing.inView}
       browse={
         <Browse
@@ -1033,7 +1046,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
           wet={wet}
           hotId={selected ?? hoverId}
           onHover={setHoverId}
-          onOpen={openStop}
+          onOpen={(sid) => openStop(sid, 'reveal')}
           onAdd={add}
           onRemove={(sid) => (wet ? removeFromWet(day, sid, trip.days[day].wet.indexOf(sid)) : removeFromDay(day, sid, trip.days[day].stops.indexOf(sid)))}
           onSave={toggleSave}
@@ -1083,7 +1096,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               onCountry={noop}
               onRegion={noop}
               onArea={noop}
-              onAttraction={(sid) => closeSearch(() => openStop(sid))}
+              onAttraction={(sid) => closeSearch(() => openStop(sid, 'fly'))}
               onNotice={setNotice}
               onClose={() => closeSearch()}
               lead={
@@ -1140,7 +1153,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
             onCountry={noop}
             onRegion={noop}
             onArea={noop}
-            onAttraction={openStop}
+            onAttraction={(sid) => openStop(sid, 'fly')}
             onNotice={setNotice}
           />
         )}
@@ -1185,7 +1198,7 @@ function PlannerPage({ trip }: { trip: Trip }) {
               onCountry={noop}
               onRegion={noop}
               onArea={noop}
-              onAttraction={openStop}
+              onAttraction={(sid) => openStop(sid, 'reveal')}
               onNotice={setNotice}
             />
           </Suspense>
