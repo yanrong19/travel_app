@@ -157,7 +157,8 @@ interface Props {
  * the camera keeps its zoom, tilt and centre, and only pans, as little as it can, when the spot or
  * its label would be off the free area or under the card. Nothing is saved, and leaving a run of
  * reveals leaves the camera where it is, whatever frame the focus goes back to; that frame stays
- * unflown until its key changes (a crumb, a bubble).
+ * unflown until its key changes (a crumb, a bubble). A spot's key names its move too, so the same
+ * spot opened the other way (revealed, then picked in the day list) moves again, in the same run.
  */
 export type MapFocus =
   | { kind: 'frame'; key: string; bounds: Bounds }
@@ -829,6 +830,9 @@ export function MapExplorer(props: Props) {
   // The frame (camKey without its insets) a run of reveals left the camera on: not flown to, as the
   // camera never left the place the reveals started from, until the key changes.
   const quietKey = useRef<string | null>(null);
+  // A reveal's own pan while it runs (cleared at its moveend, which a drag or a newer flight cutting
+  // it short also brings), so a leave can stop just that pan.
+  const revealEase = useRef<object | null>(null);
   const lastInsets = useRef(insets);
   // Where the camera came to rest after the last framing, to tell whether the user has moved it since.
   const framedAt = useRef<{ center: [number, number]; zoom: number } | null>(null);
@@ -883,8 +887,13 @@ export function MapExplorer(props: Props) {
       if (run && !run.flew) {
         // Leaving a run of reveals: the camera stays, on whatever frame the focus is back on (the
         // spot's neighbourhood, when the leave replaced the spot away). The lists that follow the map
-        // hear what it shows now, for the place now viewed.
+        // hear what it shows now, for the place now viewed. A reveal's pan still running stops where
+        // it is (its moveend reports too).
         ++flightId.current;
+        if (revealEase.current) {
+          revealEase.current = null;
+          map.stop();
+        }
         quietKey.current = head;
         reportQuad(map);
         return;
@@ -997,6 +1006,12 @@ export function MapExplorer(props: Props) {
       const pad = { ...NO_PAD, ...map.getPadding() };
       const cx = pad.left + (W - pad.left - pad.right) / 2;
       const cy = pad.top + (H - pad.top - pad.bottom) / 2;
+      // Listening first: under reduced motion the camera jumps, and its moveend comes at once.
+      const ease = {};
+      revealEase.current = ease;
+      map.once('moveend', () => {
+        if (revealEase.current === ease) revealEase.current = null;
+      });
       map.easeTo({ center, offset: [pt.x + dx - cx, pt.y + dy - cy], duration: prefersReducedMotion() ? 0 : 600, essential: true });
     };
     if (map.isMoving()) map.once('moveend', reveal);
