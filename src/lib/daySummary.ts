@@ -1,6 +1,7 @@
 // A day's plan read factor by factor. Never one score: the hard or risky parts of a day stay visible
 // on their own rows and as flags, instead of being averaged into a single word.
-import { CROWD_START_HOUR, type Attraction } from '../data/types';
+import type { Attraction } from '../data/types';
+import { busyStop } from './bestTime';
 import { isRainProof, localWord, mustPay, withExtras } from './factors';
 import { DAYS_LONG, duration } from './format';
 import { dayLengthMin, schedule, type ScheduledStop } from './schedule';
@@ -24,7 +25,6 @@ export interface DaySummary {
 
 const HARD = 4;
 const MAX_ON_FEET = 6 * 60;
-const BUSY = 70;
 const MAX_STOPS = 4;
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -110,8 +110,11 @@ function outsideHours(s: ScheduledStop, [o, c]: [string, string]): boolean {
 
 // ---------- the summary ----------
 
-/** A day's stops read factor by factor, scheduled from the day's `start`, with `start` to `end` ('HH:MM') as its time budget. */
-export function summarizeDay(stops: Attraction[], opts: { start: string; end: string; date: Date | null }): DaySummary {
+/**
+ * A day's stops read factor by factor, scheduled from the day's `start`, with `start` to `end` ('HH:MM') as its time budget.
+ * Crowds are read on the date's weekday, or on today's (`today`, now by default) when the day has no date, as the attraction page does.
+ */
+export function summarizeDay(stops: Attraction[], opts: { start: string; end: string; date: Date | null; today?: Date }): DaySummary {
   const budgetMin = dayLengthMin(opts.start, opts.end);
   if (!stops.length) {
     return {
@@ -130,7 +133,8 @@ export function summarizeDay(stops: Attraction[], opts: { start: string; end: st
   const { date } = opts;
   // logistics.hours is Monday first; getDay() is Sunday = 0.
   const weekday = date ? (date.getDay() + 6) % 7 : null;
-  const weekend = date ? date.getDay() === 0 || date.getDay() === 6 : false;
+  // The crowd curves need a weekday even without a date: today's, as the attraction page uses.
+  const crowdDay = ((date ?? opts.today ?? new Date()).getDay() + 6) % 7;
   const flags: Flag[] = [];
   const flag = (factor: Flag['factor'], text: string, a?: Attraction) =>
     flags.push(a ? { factor, text: `${text} (${a.name})`, stopId: a.id } : { factor, text });
@@ -163,12 +167,8 @@ export function summarizeDay(stops: Attraction[], opts: { start: string; end: st
 
   // Vibe
   const naturePct = Math.round(weighted(plan, (a) => a.vibe.nature));
-  for (const s of plan) {
-    const curve = weekend ? s.a.vibe.crowds.weekend : s.a.vibe.crowds.weekday;
-    const hour = Math.floor(s.start / 60);
-    const busy = curve[hour - CROWD_START_HOUR];
-    if (busy != null && busy >= BUSY) flag('vibe', `Busy around ${String(hour).padStart(2, '0')}:00`, s.a);
-  }
+  // The same rule as the attraction page: the mean crowd over the stop's time (busyStop).
+  for (const s of plan) if (busyStop(s.a, crowdDay, s)) flag('vibe', `Busy around ${String(Math.floor(s.start / 60) % 24).padStart(2, '0')}:00`, s.a);
 
   // Logistics
   const travelMin = plan.reduce((s, x) => s + x.travelBefore, 0);

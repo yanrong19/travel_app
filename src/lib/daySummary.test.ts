@@ -1,8 +1,10 @@
 import { expect, test } from 'vitest';
-import { attractionById } from '../data/attractions';
+import { ATTRACTIONS, attractionById } from '../data/attractions';
 import type { Attraction, Rating } from '../data/types';
+import { busyStop } from './bestTime';
 import { summarizeDay } from './daySummary';
 import { duration as durationOf } from './format';
+import { schedule } from './schedule';
 
 const get = (id: string) => attractionById(id)!;
 /** A copy of an attraction with some fields changed. */
@@ -20,11 +22,12 @@ const shimokita = get('shimokitazawa');
 const goldenGai = get('golden-gai'); // poor for families, opens 19:00
 const yanaka = get('yanaka-ginza'); // cash only
 
-/** The day's own start and end (09:00 to 19:00 unless changed) and its date. */
-const opts = (o: Partial<{ start: string; end: string; date: Date | null }> = {}) => ({
+/** The day's own start and end (09:00 to 19:00 unless changed), its date, and today (a Wednesday) for undated crowds. */
+const opts = (o: Partial<{ start: string; end: string; date: Date | null; today: Date }> = {}) => ({
   start: '09:00',
   end: '19:00',
   date: null as Date | null,
+  today: new Date(2026, 9, 28),
   ...o,
 });
 // The old paces' lengths, as a day from 09:00.
@@ -99,7 +102,7 @@ test('out-of-season month is flagged', () => {
   expect(may.flags.some((f) => /season/i.test(f.text))).toBe(false);
 });
 
-test('crowd ≥ 70 at the planned hour is flagged', () => {
+test('a stop whose mean crowd is ≥ 70 is flagged, as the attraction page says it', () => {
   // Takao at 09:00: quiet on a weekday, busy on a weekend.
   const sat = summarizeDay([takao], opts({ date: SATURDAY }));
   expect(sat.flags.some((f) => f.factor === 'vibe' && f.stopId === 'mount-takao' && /busy/i.test(f.text))).toBe(true);
@@ -113,8 +116,11 @@ test('summary without dates skips date checks', () => {
   let s!: ReturnType<typeof summarizeDay>;
   expect(() => (s = summarizeDay([offSeason, closedAllWeek], opts({ date: null })))).not.toThrow();
   expect(s.flags.some((f) => /closed|season/i.test(f.text))).toBe(false);
-  // The weekday curve is used when there's no date: Takao at 09:00 isn't busy then.
+  // Without a date, crowds are read on today's weekday, as the attraction page does: Takao at 09:00
+  // is quiet on a Wednesday, busy on a Saturday.
   expect(s.flags.some((f) => /busy/i.test(f.text))).toBe(false);
+  const sat = summarizeDay([takao], opts({ date: null, today: SATURDAY }));
+  expect(sat.flags.some((f) => f.factor === 'vibe' && /busy/i.test(f.text))).toBe(true);
 });
 
 test('over budget is flagged', () => {
@@ -255,4 +261,16 @@ test('time-of-day boundaries: 11:59 is morning, 12:00 afternoon, 17:00 evening',
   const pmOnly = slots(teamlab, 'poor', 'good', 'poor');
   expect(todFlags(summarizeDay([pmOnly], opts({ start: '16:59' })))).toEqual([]);
   expect(todFlags(summarizeDay([pmOnly], opts({ start: '17:00' }))).map((f) => f.text)).toEqual(['teamLab Planets is best in the afternoon']);
+});
+
+test('the busy flag agrees with the attraction page’s busyStop for every attraction', () => {
+  for (const a of ATTRACTIONS) {
+    for (const date of [WEDNESDAY, SATURDAY]) {
+      for (const start of ['09:00', '13:00']) {
+        const [s] = schedule([a], start);
+        const flagged = summarizeDay([a], opts({ start, end: '23:00', date })).flags.some((f) => f.factor === 'vibe' && /busy/i.test(f.text));
+        expect(flagged, `${a.id} ${start} ${date.getDay()}`).toBe(busyStop(a, (date.getDay() + 6) % 7, s));
+      }
+    }
+  }
 });
