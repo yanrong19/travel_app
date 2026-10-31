@@ -267,23 +267,25 @@ function PlannerPage({ trip }: { trip: Trip }) {
     [spotParam, placesKey, pi, viewKey],
   );
   const selected = spotParam && node?.attractionLevel && viewed && spotHome && sameRef(spotHome, viewed) ? spotParam : null;
-  // How openStop last opened a spot, written with its URL change: a pick on the map (its dot, a
-  // neighbour's) or a Browse row while the list follows the map reveals it where the map already is;
-  // the day list, the wet plan, the search, "See it on the map" and Browse above the attraction level
-  // (the trip-wide list) fly to it. Forgotten once the spot closes, so a spot from the URL alone (a
-  // reload, a link, a step back or forward onto one) flies.
-  const [spotMove, setSpotMove] = useState<{ sid: string; move: SpotMove } | null>(null);
+  // How openStop last opened each spot of the open run: a pick on the map (its dot, a neighbour's) or
+  // a Browse row while the list follows the map reveals it where the map already is; the day list,
+  // the wet plan, the search, "See it on the map" and Browse above the attraction level (the
+  // trip-wide list) fly to it. Kept per spot: the router commits the URL change in a transition, so
+  // this (urgent) write can render first, with the old spot still selected, and must not change that
+  // spot's move (its key would change, and the map would fly to it). Forgotten once the spot closes,
+  // so a spot from the URL alone (a reload, a link, a step back or forward onto one) flies.
+  const [spotMoves, setSpotMoves] = useState<Record<string, SpotMove>>({});
   // A spot labels the ones within a walk, centring its attraction or (revealed) leaving the map where
   // it is; else a neighbourhood frames its own box rather than the pins (which are all of Tokyo). The
   // spot's key names its move, so the open spot picked again the other way moves the map again.
   const focus = useMemo<MapFocus | null>(() => {
     const a = selected ? attractionById(selected) : undefined;
     if (a) {
-      const move = spotMove?.sid === a.id ? spotMove.move : 'fly';
+      const move = spotMoves[a.id] ?? 'fly';
       return { kind: 'spot', key: `spot:${a.id}:${move}`, id: a.id, center: a.lonlat, near: neighboursOf(a.id, pins), move };
     }
     return view?.frame ? { kind: 'frame', key: viewKey, bounds: view.frame } : null;
-  }, [selected, spotMove, pins, view, viewKey]);
+  }, [selected, spotMoves, pins, view, viewKey]);
   // What the map's free area shows, for the in-view Browse list, with the viewed place it was
   // reported for: a new viewed place forgets it until the map reports again. While a spot is open the
   // reports are ignored, so the list keeps its rows, even when a spot in the next neighbourhood moves
@@ -806,21 +808,21 @@ function PlannerPage({ trip }: { trip: Trip }) {
   useEffect(() => {
     if (spotParam) return;
     spotPushed.current = false;
-    setSpotMove(null);
+    setSpotMoves((was) => (Object.keys(was).length ? {} : was));
   }, [spotParam]);
   /**
    * Every way of opening a card (a dot on the map, Browse, the day list, the wet-weather plan, the
    * search, "See it on the map") comes here: one URL change views the attraction-level place that
    * shows its pin and spotlights it. Entering a spot adds a history entry; moving between spots
    * replaces it. On phone the sheet goes back down so the map and the card show. `move`: how the map
-   * gets there (see spotMove): 'reveal' for a pick on the map, or in Browse while it follows the map;
+   * gets there (see spotMoves): 'reveal' for a pick on the map, or in Browse while it follows the map;
    * 'fly' for everything else. A reveal into another neighbourhood switches the crumb but not the
    * camera, on the way in or out (MapFocus).
    */
   const openStop = (sid: string, move: SpotMove) => {
     const home = attractionHome(sid, trip.places, place, viewed);
     if (!home) return;
-    setSpotMove((was) => (was?.sid === sid && was.move === move ? was : { sid, move }));
+    setSpotMoves((was) => (was[sid] === move ? was : { ...was, [sid]: move }));
     const push = spotHistory(spotParam, sid) === 'push';
     setParams(
       (p) => {
